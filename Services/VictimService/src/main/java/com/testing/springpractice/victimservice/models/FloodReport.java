@@ -20,9 +20,12 @@ public class FloodReport {
     private String victimId;
     private String title;
     private String description;
+    private String imageUrl;
+    private String resourceType;
     @GeoSpatialIndexed
     private GeoJsonPoint location;
     private Boolean active = Boolean.TRUE;
+    private Boolean isConsidered = Boolean.TRUE;
     private Integer severityScore;
     private String severityLevel;
     private String rescuePriority;

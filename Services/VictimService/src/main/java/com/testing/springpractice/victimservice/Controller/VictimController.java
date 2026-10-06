@@ -39,6 +39,12 @@ public class VictimController {
     ){
         return victimService.getMyReports();
     }
+
+    @GetMapping({"/report/{id}", "/reports/{id}"})
+    public FloodReport getReportById(@PathVariable String id) {
+        return victimService.getReportById(id);
+    }
+
     @GetMapping("/internal/reports")
     public List<FloodReport> getInternalReports() {
         return victimService.getAllReports();

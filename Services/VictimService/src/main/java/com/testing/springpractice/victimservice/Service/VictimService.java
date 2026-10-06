@@ -37,7 +37,7 @@ public class VictimService {
     @Value("${ai.service.url:https://flood-severity-analyzer.vercel.app/api/v1/score-base64}")
     private String apiUrl;
 
-    @Value("${auth.service.url:http://localhost:5001}")
+    @Value("${auth.service.url:https://capstone-sprint-1.vercel.app}")
     private String authServiceUrl;
 
     public VictimService(FloodReportRepository floodReportRepository, RegionSeverityRepository regionSeverityRepository, RestTemplate restTemplate, Cloudinary cloudinary) {
