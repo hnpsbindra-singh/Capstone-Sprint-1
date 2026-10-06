@@ -1,5 +1,7 @@
 package com.testing.springpractice.victimservice.Service;
 
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
 import com.testing.springpractice.victimservice.DTO.CreateFloodReport;
 import com.testing.springpractice.victimservice.DTO.FloodScoreRequestDTO;
 import com.testing.springpractice.victimservice.DTO.FloodScoreResponseDTO;
@@ -28,17 +30,21 @@ import java.util.Map;
 public class VictimService {
 
     private final FloodReportRepository floodReportRepository;
-    private final String API_URL = "http://localhost:8000/api/v1/score-base64";
     private final RegionSeverityRepository regionSeverityRepository;
     private final RestTemplate restTemplate;
+    private final Cloudinary cloudinary;
+
+    @Value("${ai.service.url:https://flood-severity-analyzer.vercel.app/api/v1/score-base64}")
+    private String apiUrl;
 
     @Value("${auth.service.url:http://localhost:5001}")
     private String authServiceUrl;
 
-    public VictimService(FloodReportRepository floodReportRepository, RegionSeverityRepository regionSeverityRepository, RestTemplate restTemplate) {
+    public VictimService(FloodReportRepository floodReportRepository, RegionSeverityRepository regionSeverityRepository, RestTemplate restTemplate, Cloudinary cloudinary) {
         this.floodReportRepository = floodReportRepository;
         this.regionSeverityRepository = regionSeverityRepository;
         this.restTemplate = restTemplate;
+        this.cloudinary = cloudinary;
     }
 
     public FloodReport create(CreateFloodReport report, MultipartFile file) throws IOException {
@@ -48,13 +54,27 @@ public class VictimService {
         checkIfVictimIsBlocked(jwtPrincipal.getUsername());
 
         String base64Image = Base64.getEncoder().encodeToString(file.getBytes());
+        String link = null;
+        String resourceType = null;
+        try {
+            if (cloudinary != null && file != null && !file.isEmpty()) {
+                Map upload = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.asMap("resource_type", "auto"));
+                if (upload != null) {
+                    link = (String) upload.get("secure_url");
+                    resourceType = (String) upload.get("resource_type");
+                }
+            }
+        } catch (Exception ce) {
+            System.err.println("[VictimService] Cloudinary upload notice: " + ce.getMessage());
+        }
+
         FloodScoreRequestDTO requestDTO = FloodScoreRequestDTO.builder()
                 .imageBase64(base64Image)
                 .build();
 
         FloodScoreResponseDTO responseDTO = null;
         try {
-            responseDTO = restTemplate.postForObject(API_URL, requestDTO, FloodScoreResponseDTO.class);
+            responseDTO = restTemplate.postForObject(apiUrl, requestDTO, FloodScoreResponseDTO.class);
         } catch (Exception e) {
             System.err.println("AI Service call failed: " + e.getMessage());
         }
@@ -77,17 +97,21 @@ public class VictimService {
                 ? responseDTO.getRoadAccess() : "Exercise standard caution.";
         List<String> recommendations = (responseDTO != null && responseDTO.getRecommendations() != null)
                 ? responseDTO.getRecommendations() : Collections.singletonList("Stay in a secure elevated location.");
+     boolean isConsidered = (score != null && score > 2);
 
         FloodReport floodReport = new FloodReport();
         floodReport.setVictimId(jwtPrincipal.getUserId());
+        floodReport.setImageUrl(link);
+        floodReport.setResourceType(resourceType);
         floodReport.setTitle(title);
         floodReport.setDescription(description);
         floodReport.setLocation(new GeoJsonPoint(report.getLongitude(), report.getLatitude()));
-        floodReport.setActive(true);
+        floodReport.setActive(isConsidered);
+        floodReport.setIsConsidered(isConsidered);
         floodReport.setIsDeleted(false);
         floodReport.setSeverityScore(score);
         floodReport.setSeverityLevel(severityLevel);
-        floodReport.setRescuePriority(rescuePriority);
+        floodReport.setRescuePriority(isConsidered ? rescuePriority : "NONE");
         floodReport.setWhatIsInImage(whatIsInImage);
         floodReport.setEstimatedDepth(estimatedDepth);
         floodReport.setRoadAccess(roadAccess);
@@ -96,27 +120,30 @@ public class VictimService {
 
         FloodReport savedReport = floodReportRepository.save(floodReport);
 
-        double roundedLat = Math.round(report.getLatitude() * 100.0) / 100.0;
-        double roundedLng = Math.round(report.getLongitude() * 100.0) / 100.0;
-        RegionSeverity region = regionSeverityRepository.findByCoordinates(roundedLng, roundedLat);
+        // ONLY aggregate into RegionSeverity (heatmap & regional risk metrics) IF score > 2
+        if (isConsidered) {
+            double roundedLat = Math.round(report.getLatitude() * 100.0) / 100.0;
+            double roundedLng = Math.round(report.getLongitude() * 100.0) / 100.0;
+            RegionSeverity region = regionSeverityRepository.findByCoordinates(roundedLng, roundedLat);
 
-        if (region != null) {
-            int oldCount = region.getReportCount();
-            double oldAverage = region.getAverageSeverity();
-            double newAverage = ((oldAverage * oldCount) + score) / (oldCount + 1);
-            region.setAverageSeverity(newAverage);
-            region.setReportCount(oldCount + 1);
-            region.setRiskLevel(calculateRiskLevel(newAverage));
-            region.setUpdatedAt(System.currentTimeMillis());
-            regionSeverityRepository.save(region);
-        } else {
-            RegionSeverity newRegion = new RegionSeverity();
-            newRegion.setLocation(new GeoJsonPoint(roundedLng, roundedLat));
-            newRegion.setAverageSeverity((double) score);
-            newRegion.setReportCount(1);
-            newRegion.setRiskLevel(calculateRiskLevel(score));
-            newRegion.setUpdatedAt(System.currentTimeMillis());
-            regionSeverityRepository.save(newRegion);
+            if (region != null) {
+                int oldCount = region.getReportCount();
+                double oldAverage = region.getAverageSeverity();
+                double newAverage = ((oldAverage * oldCount) + score) / (oldCount + 1);
+                region.setAverageSeverity(newAverage);
+                region.setReportCount(oldCount + 1);
+                region.setRiskLevel(calculateRiskLevel(newAverage));
+                region.setUpdatedAt(System.currentTimeMillis());
+                regionSeverityRepository.save(region);
+            } else {
+                RegionSeverity newRegion = new RegionSeverity();
+                newRegion.setLocation(new GeoJsonPoint(roundedLng, roundedLat));
+                newRegion.setAverageSeverity((double) score);
+                newRegion.setReportCount(1);
+                newRegion.setRiskLevel(calculateRiskLevel(score));
+                newRegion.setUpdatedAt(System.currentTimeMillis());
+                regionSeverityRepository.save(newRegion);
+            }
         }
 
         return savedReport;
@@ -200,5 +227,10 @@ public class VictimService {
 
     public List<FloodReport> getAllReports() {
         return floodReportRepository.findAllActive();
+    }
+
+    public FloodReport getReportById(String reportId) {
+        return floodReportRepository.findById(reportId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Flood report not found with id: " + reportId));
     }
 }
