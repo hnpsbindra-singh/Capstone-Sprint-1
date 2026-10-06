@@ -1,0 +1,43 @@
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Node dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Java / Maven build targets
+target/
+*.class
+.mvn/timing.properties
+
+# Python virtual environments & bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+env/
+venv/
+*.egg-info/
+
+# Large model checkpoint binaries (>100MB blocked by GitHub)
+*.pth
+*.pt
+checkpoints/*.pth
+checkpoints_v2/*.pth
+flood-severity-analyzer/checkpoints/*.pth
+flood-severity-analyzer/checkpoints_v2/*.pth
+
+# IDE and OS files
+.DS_Store
+.idea/
+*.iml
+.vscode/
+
+# Build artifacts
+dist/
+dev-dist/
+build/
