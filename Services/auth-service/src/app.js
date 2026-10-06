@@ -1,4 +1,5 @@
 const express = require('express');
+const cors = require('cors');
 const authRoutes = require('./routes/authRoutes');
 const { errorHandler, notFoundHandler } = require('./middlewares/errorMiddleware');
 const config = require('./config/env');
@@ -6,6 +7,7 @@ const config = require('./config/env');
 const app = express();
 
 // Standard Middlewares
+app.use(cors());
 app.use(express.json());
 
 // Request logging in development
@@ -16,12 +18,12 @@ if (config.env === 'development') {
   });
 }
 
-// Health Check
-app.get('/health', (req, res) => {
+// Health Check & Root Info
+app.get(['/', '/health', '/api', '/api/health'], (req, res) => {
   res.json({
     status: 'UP',
     service: 'auth-service',
-    port: config.port,
+    deployment: 'Vercel Serverless / Cloud',
     timestamp: new Date().toISOString(),
   });
 });
