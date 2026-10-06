@@ -8,7 +8,7 @@ import os
 import sys
 from typing import List, Optional
 from pydantic import BaseModel, Field
-from fastapi import FastAPI, HTTPException, status
+from fastapi import FastAPI, HTTPException, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 
 # Ensure 'src' is in python search path
@@ -27,6 +27,8 @@ app = FastAPI(
     title="ResQFlow AI Vision Serverless API",
     description="Multimodal Gemini 3.8 Flash Vision flood analysis deployed serverless on Vercel",
     version="1.0.0",
+    docs_url="/docs",
+    redoc_url="/redoc"
 )
 
 app.add_middleware(
@@ -36,6 +38,19 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.middleware("http")
+async def normalize_vercel_paths(request: Request, call_next):
+    """Normalize Vercel rewrite paths so routing works with or without prefixes."""
+    path = request.scope.get("path", "")
+    for prefix in ["/api/index.py", "/api/index"]:
+        if path.startswith(prefix):
+            new_path = path[len(prefix):] or "/"
+            request.scope["path"] = new_path
+            break
+    response = await call_next(request)
+    return response
 
 
 # ---------------------------------------------------------------------------
@@ -65,10 +80,12 @@ class FloodScoreResponseDTO(BaseModel):
 
 
 # ---------------------------------------------------------------------------
-# Endpoints
+# Health Check Endpoints
 # ---------------------------------------------------------------------------
 @app.get("/")
 @app.get("/health")
+@app.get("/api")
+@app.get("/api/health")
 def health():
     return {
         "status": "UP",
@@ -78,18 +95,14 @@ def health():
     }
 
 
-@app.post(
-    "/api/v1/flood/score",
-    response_model=FloodScoreResponseDTO,
-    status_code=status.HTTP_200_OK,
-    summary="Analyze Flood Image and Return FloodScoreResponseDTO",
-)
-@app.post(
-    "/api/v1/score-base64",
-    response_model=FloodScoreResponseDTO,
-    status_code=status.HTTP_200_OK,
-    summary="Legacy alias for Spring Boot VictimService",
-)
+# ---------------------------------------------------------------------------
+# Score Image Endpoints (Multiple aliases to prevent any routing mismatch)
+# ---------------------------------------------------------------------------
+@app.post("/api/v1/flood/score", response_model=FloodScoreResponseDTO)
+@app.post("/api/v1/score-base64", response_model=FloodScoreResponseDTO)
+@app.post("/flood/score", response_model=FloodScoreResponseDTO)
+@app.post("/score-base64", response_model=FloodScoreResponseDTO)
+@app.post("/score", response_model=FloodScoreResponseDTO)
 def score_flood_image(request: FloodScoreRequestDTO):
     if not request.image_base64 or not request.image_base64.strip():
         raise HTTPException(
@@ -105,3 +118,16 @@ def score_flood_image(request: FloodScoreRequestDTO):
         )
 
     return FloodScoreResponseDTO(**result)
+
+
+# Catch-all GET fallback
+@app.get("/{catchall:path}")
+def catch_all_get(catchall: str, request: Request):
+    return {
+        "status": "UP",
+        "service": "ResQFlow-AI-Vision",
+        "engine": "Gemini 3.8 Flash Vision",
+        "deployment": "Vercel Serverless",
+        "requested_path": f"/{catchall}",
+        "url": str(request.url)
+    }
