@@ -10,6 +10,11 @@ export const getMyReports = async () => {
   return response.data;
 };
 
+export const getReportById = async (id) => {
+  const response = await API.get(`/api/victim/report/${id}`);
+  return response.data;
+};
+
 export const createFloodReport = async (reportData, file) => {
   const formData = new FormData();
   

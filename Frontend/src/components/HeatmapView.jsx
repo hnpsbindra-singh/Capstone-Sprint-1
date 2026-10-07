@@ -12,15 +12,18 @@ import {
   MdClose
 } from 'react-icons/md';
 
-// Base map layer providers (verified working tile servers)
+// Base map layer providers (verified working tile servers without watermarks)
+const cartoKey = import.meta.env?.VITE_CARTO_API_KEY || '';
 const MAP_STYLES = {
   dark: {
     id: 'dark',
     name: 'Command Dark',
     icon: '🌃',
-    url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-    subdomains: 'abcd',
-    attribution: '&copy; CartoDB &copy; OpenStreetMap'
+    url: cartoKey 
+      ? `https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png?key=${cartoKey}`
+      : 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+    subdomains: cartoKey ? 'abcd' : 'abc',
+    attribution: cartoKey ? '&copy; CartoDB &copy; OpenStreetMap' : '&copy; Esri World Dark Canvas'
   },
   satellite: {
     id: 'satellite',
@@ -108,7 +111,10 @@ const HeatmapView = ({ data = [] }) => {
   const [activeZone, setActiveZone] = useState(null);
   const [showQuickList, setShowQuickList] = useState(false);
 
-  const validData = Array.isArray(data) ? data.filter(p => p && typeof p.latitude === 'number' && typeof p.longitude === 'number') : [];
+  // Only consider points with severity score > 2 as flood hazards
+  const validData = Array.isArray(data) 
+    ? data.filter(p => p && typeof p.latitude === 'number' && typeof p.longitude === 'number' && Number(p.averageSeverity || p.severityScore || 0) > 2) 
+    : [];
 
   // Filter points
   const filteredData = validData.filter(point => {

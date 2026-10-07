@@ -22,6 +22,7 @@ import {
 } from 'react-icons/md';
 import toast from 'react-hot-toast';
 import { useLanguage } from '../../context/LanguageContext';
+import { getReportById } from '../../api/victimApi';
 
 export const SEVERITY_ANALYSIS_DATA = {
   1: {
@@ -223,37 +224,55 @@ const ReportAnalysis = () => {
 
   const [reportData, setReportData] = useState(null);
   const [imageSrc, setImageSrc] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // 1. Try state passed via navigation
+    const searchParams = new URLSearchParams(location.search);
+    const reportId = searchParams.get('id') || location.state?.report?.id || location.state?.report?._id;
+
+    // 1. Optimistic hydration from location.state if available
     if (location.state?.report) {
       setReportData(location.state.report);
-      if (location.state.previewUrl) {
-        setImageSrc(location.state.previewUrl);
-      }
-      // Cache in session storage for refreshing
-      try {
-        sessionStorage.setItem('last_report_analysis', JSON.stringify(location.state.report));
-        if (location.state.previewUrl) {
-          sessionStorage.setItem('last_report_image', location.state.previewUrl);
-        }
-      } catch (e) {
-        console.warn('Session storage quota exceeded', e);
-      }
-    } else {
-      // 2. Fallback to session storage
+      setImageSrc(location.state.previewUrl || location.state.report.imageUrl || null);
+    }
+
+    // 2. Fetch live report from API by ID
+    if (reportId) {
+      setLoading(true);
+      getReportById(reportId)
+        .then((data) => {
+          if (data) {
+            setReportData(data);
+            if (data.imageUrl) {
+              setImageSrc(data.imageUrl);
+            }
+            try {
+              sessionStorage.setItem('last_report_analysis', JSON.stringify(data));
+              if (data.imageUrl) sessionStorage.setItem('last_report_image', data.imageUrl);
+            } catch (e) {}
+          }
+        })
+        .catch((err) => {
+          console.warn('[ReportAnalysis] Live report fetch note:', err);
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+    } else if (!location.state?.report) {
+      // 3. Fallback to session storage if refreshed without ID query param
       try {
         const cachedReport = sessionStorage.getItem('last_report_analysis');
         const cachedImg = sessionStorage.getItem('last_report_image');
         if (cachedReport) {
-          setReportData(JSON.parse(cachedReport));
-          if (cachedImg) setImageSrc(cachedImg);
+          const parsed = JSON.parse(cachedReport);
+          setReportData(parsed);
+          setImageSrc(parsed.imageUrl || cachedImg || null);
         }
       } catch (e) {
         console.error('Failed to load cached report analysis', e);
       }
     }
-  }, [location.state]);
+  }, [location.search, location.state]);
 
   if (!reportData) {
     return (
@@ -363,11 +382,13 @@ const ReportAnalysis = () => {
         </div>
       </div>
 
-      {/* Success Notification Banner */}
+      {/* Status Banner */}
       <div 
         style={{ 
-          background: 'linear-gradient(135deg, rgba(2, 132, 199, 0.08) 0%, rgba(5, 150, 105, 0.08) 100%)',
-          border: '1px solid rgba(2, 132, 199, 0.25)',
+          background: score <= 2 
+            ? 'linear-gradient(135deg, rgba(100, 116, 139, 0.08) 0%, rgba(59, 130, 246, 0.08) 100%)' 
+            : 'linear-gradient(135deg, rgba(2, 132, 199, 0.08) 0%, rgba(5, 150, 105, 0.08) 100%)',
+          border: `1px solid ${score <= 2 ? 'rgba(100, 116, 139, 0.3)' : 'rgba(2, 132, 199, 0.25)'}`,
           borderRadius: 'var(--radius-lg)',
           padding: '1.25rem 1.5rem',
           marginBottom: '1.5rem',
@@ -377,22 +398,26 @@ const ReportAnalysis = () => {
           flexWrap: 'wrap'
         }}
       >
-        <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: '#059669', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', flexShrink: 0 }}>
-          <MdCheckCircle />
+        <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: score <= 2 ? '#64748b' : '#059669', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', flexShrink: 0 }}>
+          {score <= 2 ? <MdInfo /> : <MdCheckCircle />}
         </div>
         <div style={{ flex: 1 }}>
           <h2 style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '0.2rem' }}>
-            Report Successfully Analyzed by ResQFlow AI Model
+            {score <= 2 
+              ? 'Non-Flood Condition (Score ≤ 2: Not Considered for Emergency Dispatch)'
+              : 'Active Flood Emergency Verified (Score > 2: Considered & Dispatched)'}
           </h2>
           <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: 0 }}>
-            Incident coordinates and risk metrics have been recorded on the regional disaster heatmap.
+            {score <= 2
+              ? 'AI confirmed safe/dry conditions. Per disaster response protocols, scores of 2 or below are filtered out from regional flood risk alerts and rescue queues.'
+              : 'Incident coordinates, water depth, and triage priority have been recorded on the regional disaster heatmap for NGO and rescue dispatch.'}
           </p>
         </div>
         <span 
           style={{ 
-            background: fallback.bgColor, 
-            color: fallback.color, 
-            border: `1.5px solid ${fallback.borderColor}`,
+            background: score <= 2 ? 'rgba(100, 116, 139, 0.15)' : fallback.bgColor, 
+            color: score <= 2 ? '#64748b' : fallback.color, 
+            border: `1.5px solid ${score <= 2 ? 'rgba(100, 116, 139, 0.4)' : fallback.borderColor}`,
             padding: '6px 14px', 
             borderRadius: '99px', 
             fontWeight: 800, 
@@ -400,7 +425,7 @@ const ReportAnalysis = () => {
             letterSpacing: '0.04em'
           }}
         >
-          {fallback.urgencyLevel.toUpperCase()}
+          {score <= 2 ? 'SCORE NOT CONSIDERED' : fallback.urgencyLevel.toUpperCase()}
         </span>
       </div>
 

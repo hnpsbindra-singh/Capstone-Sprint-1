@@ -32,22 +32,36 @@ public class ApiGatewayApplication {
 
     @Bean
     public RouteLocator customRouteLocator(RouteLocatorBuilder builder) {
+        String authUri = System.getenv().getOrDefault("AUTH_SERVICE_URI", "https://capstone-sprint-1.vercel.app");
+        String victimUri = System.getenv().getOrDefault("VICTIM_SERVICE_URI", "https://victim-service-latest.onrender.com");
+        String ngoUri = System.getenv().getOrDefault("NGO_SERVICE_URI", "https://ngoservice.vercel.app");
+        String donorUri = System.getenv().getOrDefault("DONOR_SERVICE_URI", "https://donorservice.vercel.app");
         return builder.routes()
                 .route("auth-service", r -> r
                         .path("/api/auth/**")
-                        .uri("http://localhost:5001"))
+                        .filters(f -> f.dedupeResponseHeader("Access-Control-Allow-Origin", "RETAIN_UNIQUE")
+                                       .dedupeResponseHeader("Access-Control-Allow-Credentials", "RETAIN_UNIQUE"))
+                        .uri(authUri))
                 .route("ngo-service", r -> r
                         .path("/api/ngo/**")
-                        .uri("http://localhost:5002"))
+                        .filters(f -> f.dedupeResponseHeader("Access-Control-Allow-Origin", "RETAIN_UNIQUE")
+                                       .dedupeResponseHeader("Access-Control-Allow-Credentials", "RETAIN_UNIQUE"))
+                        .uri(ngoUri))
                 .route("donor-service", r -> r
                         .path("/api/donor/**")
-                        .uri("http://localhost:5003"))
+                        .filters(f -> f.dedupeResponseHeader("Access-Control-Allow-Origin", "RETAIN_UNIQUE")
+                                       .dedupeResponseHeader("Access-Control-Allow-Credentials", "RETAIN_UNIQUE"))
+                        .uri(donorUri))
                 .route("admin-service", r -> r
                         .path("/api/admin/**")
+                        .filters(f -> f.dedupeResponseHeader("Access-Control-Allow-Origin", "RETAIN_UNIQUE")
+                                       .dedupeResponseHeader("Access-Control-Allow-Credentials", "RETAIN_UNIQUE"))
                         .uri("http://localhost:5004"))
                 .route("victim-service", r -> r
                         .path("/api/victim/**")
-                        .uri("http://localhost:5005"))
+                        .filters(f -> f.dedupeResponseHeader("Access-Control-Allow-Origin", "RETAIN_UNIQUE")
+                                       .dedupeResponseHeader("Access-Control-Allow-Credentials", "RETAIN_UNIQUE"))
+                        .uri(victimUri))
                 .build();
     }
 

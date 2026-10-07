@@ -2,12 +2,17 @@
 // Mirrors Spring Boot EmailService.java logic using Brevo REST API
 const axios = require('axios');
 
-const BREVO_API_KEY = process.env.BREVO_API_KEY;
+const BREVO_API_KEY = process.env.BREVO_API_KEY || '';
 const SENDER_EMAIL = process.env.BREVO_SENDER_EMAIL || 'noreply@resqflow.org';
 const SENDER_NAME = process.env.BREVO_SENDER_NAME || 'ResQFlow';
 const BREVO_API = 'https://api.brevo.com/v3/smtp/email';
 
 async function sendEmail(to, subject, htmlContent) {
+  if (!BREVO_API_KEY) {
+    console.warn(`[Shared Email Skipped] BREVO_API_KEY is not defined. Email "${subject}" to ${to} was not sent.`);
+    return;
+  }
+
   try {
     await axios.post(
       BREVO_API,
@@ -22,11 +27,12 @@ async function sendEmail(to, subject, htmlContent) {
           'api-key': BREVO_API_KEY,
           'Content-Type': 'application/json',
         },
+        timeout: 10000,
       }
     );
-    console.log(`[Email] Sent "${subject}" to ${to}`);
+    console.log(`[Shared Email] Sent "${subject}" to ${to}`);
   } catch (err) {
-    console.error(`[Email] Failed to send "${subject}" to ${to}:`, err.response?.data || err.message);
+    console.error(`[Shared Email Error] Failed to send "${subject}" to ${to}:`, err.response?.data || err.message);
   }
 }
 
@@ -80,4 +86,4 @@ async function sendDelivered(to) {
   await sendEmail(to, 'ResQFlow - Your Donation Has Been Delivered', html);
 }
 
-module.exports = { sendWelcome, sendOtp, sendAcceptance, sendDelivered };
+module.exports = { sendEmail, sendWelcome, sendOtp, sendAcceptance, sendDelivered };

@@ -23,6 +23,11 @@ import {
 import { createFloodReport } from '../../api/victimApi';
 import { useLanguage } from '../../context/LanguageContext';
 
+// ==============================================================================
+// FEATURE TOGGLE: Set to false to disable gallery and enforce live camera only
+// ==============================================================================
+const ALLOW_GALLERY_UPLOAD = true;
+
 const CreateReport = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
@@ -229,7 +234,15 @@ const CreateReport = () => {
       const result = await createFloodReport(payload, imageFile);
 
       const severityScore = result?.severityScore ?? result?.data?.severityScore ?? 1;
-      toast.success(`Report Verified! AI Severity Score: ${severityScore}/10`, { id: 'submit-report' });
+      if (severityScore <= 2) {
+        toast('Incident Analyzed: Severity is ≤ 2 (Safe/Dry). Not considered an active flood disaster.', {
+          icon: 'ℹ️',
+          id: 'submit-report',
+          duration: 5000
+        });
+      } else {
+        toast.success(`Emergency Verified! AI Severity Score: ${severityScore}/10 (Considered & Dispatched)`, { id: 'submit-report' });
+      }
 
       const reportState = {
         ...(typeof result === 'object' ? result : {}),
@@ -637,33 +650,35 @@ const CreateReport = () => {
                         Click to Capture Photo
                       </button>
 
-                      <label
-                        className="btn btn-secondary"
-                        style={{ 
-                          borderRadius: '50%', 
-                          width: '44px', 
-                          height: '44px', 
-                          padding: 0, 
-                          display: 'flex', 
-                          alignItems: 'center', 
-                          justifyContent: 'center', 
-                          background: 'rgba(15, 23, 42, 0.85)', 
-                          backdropFilter: 'blur(6px)', 
-                          color: '#ffffff', 
-                          border: '2px solid rgba(255,255,255,0.3)',
-                          cursor: 'pointer',
-                          margin: 0
-                        }}
-                        title="Upload image from gallery/files for testing"
-                      >
-                        <MdPhotoLibrary style={{ fontSize: '1.25rem' }} />
-                        <input 
-                          type="file" 
-                          accept="image/*" 
-                          onChange={handleGalleryFileSelect} 
-                          style={{ display: 'none' }} 
-                        />
-                      </label>
+                      {ALLOW_GALLERY_UPLOAD && (
+                        <label
+                          className="btn btn-secondary"
+                          style={{ 
+                            borderRadius: '50%', 
+                            width: '44px', 
+                            height: '44px', 
+                            padding: 0, 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            justifyContent: 'center', 
+                            background: 'rgba(15, 23, 42, 0.85)', 
+                            backdropFilter: 'blur(6px)', 
+                            color: '#ffffff', 
+                            border: '2px solid rgba(255,255,255,0.3)',
+                            cursor: 'pointer',
+                            margin: 0
+                          }}
+                          title="Upload image from gallery/files for testing"
+                        >
+                          <MdPhotoLibrary style={{ fontSize: '1.25rem' }} />
+                          <input 
+                            type="file" 
+                            accept="image/*" 
+                            onChange={handleGalleryFileSelect} 
+                            style={{ display: 'none' }} 
+                          />
+                        </label>
+                      )}
                     </div>
                   </div>
                 )}

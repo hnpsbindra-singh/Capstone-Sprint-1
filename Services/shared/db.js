@@ -5,17 +5,18 @@ const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/CapstoneDB
 
 let isConnected = false;
 
-async function connect() {
+async function connect(uri = MONGO_URI) {
   if (isConnected) return;
   try {
-    await mongoose.connect(MONGO_URI, {
+    const conn = await mongoose.connect(uri, {
       serverSelectionTimeoutMS: 5000,
     });
     isConnected = true;
-    console.log('[DB] Connected to MongoDB:', MONGO_URI);
+    console.log('[Shared DB] Connected to MongoDB:', uri);
+    return conn;
   } catch (err) {
-    console.error('[DB] Connection failed:', err.message);
-    process.exit(1);
+    console.error('[Shared DB] Connection failed:', err.message);
+    throw err;
   }
 }
 

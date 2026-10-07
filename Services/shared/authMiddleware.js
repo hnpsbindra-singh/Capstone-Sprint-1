@@ -1,9 +1,10 @@
 // Shared JWT Authentication Middleware
-// MUST use same secret as Spring Boot JwtUtils.java
+// Synchronized with Spring Boot JwtUtils.java
 const jwt = require('jsonwebtoken');
 
-const JWT_SECRET = process.env.JWT_SECRET;
-if (!JWT_SECRET && process.env.NODE_ENV === 'production') {
+const JWT_SECRET = process.env.JWT_SECRET || 'IAmSonOfGurvinderSinghWithNameHarnimarPreetSinghAge19AndSexMaleWantingAFemale';
+
+if (!process.env.JWT_SECRET && process.env.NODE_ENV === 'production') {
   console.warn('[SECURITY WARNING] JWT_SECRET environment variable is not defined!');
 }
 
@@ -20,10 +21,11 @@ function authMiddleware(req, res, next) {
   const token = authHeader.split(' ')[1];
   try {
     const decoded = jwt.verify(token, JWT_SECRET, { algorithms: ['HS256'] });
-    // Spring Boot stores: subject = username, claim "role" = role name
+    // Spring Boot stores: subject = username, claim "role" = role name, claim "userId" = user ID
     req.user = {
       username: decoded.sub,
       role: decoded.role,
+      userId: decoded.userId,
     };
     next();
   } catch (err) {
@@ -37,7 +39,7 @@ function authMiddleware(req, res, next) {
  */
 function requireRole(...allowedRoles) {
   return (req, res, next) => {
-    if (!req.user || !allowedRoles.includes(req.user.role)) {
+    if (!req.user || (allowedRoles.length > 0 && !allowedRoles.includes(req.user.role))) {
       return res.status(403).json({ error: 'Forbidden: insufficient role' });
     }
     next();

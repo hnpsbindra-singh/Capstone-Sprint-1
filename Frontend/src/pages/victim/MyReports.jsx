@@ -232,7 +232,7 @@ const MyReports = () => {
                       <td style={{ fontSize: '0.85rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>{formatDate(report.createdAt || report.timestamp)}</td>
                       <td style={{ whiteSpace: 'nowrap' }}>
                         <Link 
-                          to="/victim/report-analysis" 
+                          to={`/victim/report-analysis?id=${report.id || report._id}`} 
                           state={{ report }}
                           className="btn btn-secondary btn-sm"
                           style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '0.78rem', padding: '4px 10px' }}
