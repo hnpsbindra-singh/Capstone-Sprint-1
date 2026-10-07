@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext, useRef, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
-import { getRequests, donate } from '../../api/donorApi';
+import { getRequests, donate, getHeatmap } from '../../api/donorApi';
 import toast from 'react-hot-toast';
 import {
   MdVolunteerActivism, MdInventory, MdClose, MdSearch, MdRefresh,
@@ -36,6 +36,7 @@ const BrowseRequests = () => {
 
   const filterZone = location.state?.filterZone || null;
   const [activeZoneFilter, setActiveZoneFilter] = useState(filterZone);
+  const [floodZones, setFloodZones]             = useState([]);
 
   const [requests, setRequests]     = useState([]);
   const [loading, setLoading]       = useState(true);
@@ -52,22 +53,30 @@ const BrowseRequests = () => {
   const [confirmedDonation, setConfirmedDonation] = useState(null); // Receipt Modal state
   const confirmBtnRef               = useRef(null);
 
-  const fetchNgoRequests = useCallback(async () => {
+  const fetchData = useCallback(async () => {
     try {
       setLoading(true);
-      const data = await getRequests();
-      setRequests(Array.isArray(data) ? data : data?.data || []);
+      const [reqData, heatmapData] = await Promise.all([
+        getRequests().catch(() => []),
+        getHeatmap().catch(() => [])
+      ]);
+      setRequests(Array.isArray(reqData) ? reqData : reqData?.data || []);
+      
+      const validZones = Array.isArray(heatmapData)
+        ? heatmapData.filter(z => Number(z.averageSeverity || z.severityScore || 0) > 2)
+        : [];
+      setFloodZones(validZones);
       setLastFetched(new Date());
       setPage(1);
     } catch (error) {
-      console.error('Error fetching NGO requests:', error);
-      toast.error('Failed to load NGO requests');
+      console.error('Error fetching donor browse data:', error);
+      toast.error('Failed to load relief requests and flood zones');
     } finally {
       setLoading(false);
     }
   }, []);
 
-  useEffect(() => { fetchNgoRequests(); }, [fetchNgoRequests]);
+  useEffect(() => { fetchData(); }, [fetchData]);
 
   // Focus trap + ESC on modal
   useEffect(() => {
@@ -225,11 +234,132 @@ const BrowseRequests = () => {
             </div>
           )}
         </div>
-        <div className="tooltip-wrap" data-tip="Refresh NGO requests">
-          <button className="btn btn-secondary" onClick={fetchNgoRequests} disabled={loading}>
+        <div className="tooltip-wrap" data-tip="Refresh data">
+          <button className="btn btn-secondary" onClick={fetchData} disabled={loading}>
             <MdRefresh /> Refresh
           </button>
         </div>
+      </div>
+
+      {/* ── 🌊 Active Flood Disaster Locations Navigator ── */}
+      <div style={{ background: '#ffffff', border: '1.5px solid var(--border-subtle)', borderRadius: 'var(--radius-lg)', padding: '1.25rem 1.5rem', marginBottom: '1.75rem', boxShadow: '0 2px 10px rgba(15,23,42,0.04)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.875rem', flexWrap: 'wrap', gap: '0.75rem' }}>
+          <div>
+            <h2 style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
+              <span style={{ fontSize: '1.3rem' }}>🌊</span> Active Flood Locations ({floodZones.length})
+            </h2>
+            <p style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)', margin: '0.2rem 0 0 0' }}>
+              Select a reported flood sector below to see all NGO relief requests deployed for that area.
+            </p>
+          </div>
+          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+            {activeZoneFilter && (
+              <button
+                type="button"
+                className="btn btn-secondary btn-sm"
+                onClick={() => setActiveZoneFilter(null)}
+                style={{ fontSize: '0.78rem', color: '#b91c1c', display: 'flex', alignItems: 'center', gap: '4px' }}
+              >
+                <MdClose /> Show All Locations
+              </button>
+            )}
+            <button
+              type="button"
+              className="btn btn-secondary btn-sm"
+              onClick={() => navigate('/donor/heatmap')}
+              style={{ fontSize: '0.78rem', display: 'flex', alignItems: 'center', gap: '4px' }}
+            >
+              <MdMap style={{ color: 'var(--accent-ocean)' }} /> Interactive Radar Map
+            </button>
+          </div>
+        </div>
+
+        {floodZones.length === 0 ? (
+          <div style={{ padding: '1rem', background: '#f8fafc', borderRadius: '8px', color: 'var(--text-muted)', fontSize: '0.85rem', textAlign: 'center' }}>
+            No verified flood emergency zones detected at this moment. Showing all general relief requests.
+          </div>
+        ) : (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '0.75rem' }}>
+            {floodZones.map((z, idx) => {
+              const isSelected = activeZoneFilter &&
+                Math.abs(activeZoneFilter.latitude - z.latitude) < 0.001 &&
+                Math.abs(activeZoneFilter.longitude - z.longitude) < 0.001;
+              const sev = Number(z.averageSeverity || z.severityScore || 0);
+              const isCrit = sev >= 8;
+              const isHigh = sev >= 6 && sev < 8;
+              const badgeBg = isCrit ? 'rgba(239, 68, 68, 0.12)' : isHigh ? 'rgba(249, 115, 22, 0.12)' : 'rgba(245, 158, 11, 0.12)';
+              const badgeColor = isCrit ? '#ef4444' : isHigh ? '#f97316' : '#d97706';
+
+              // Count requests in this area
+              const nearbyReqCount = requests.filter(req => {
+                let rLat = null;
+                let rLon = null;
+                if (req.location?.coordinates && req.location.coordinates.length >= 2) {
+                  rLon = req.location.coordinates[0];
+                  rLat = req.location.coordinates[1];
+                } else if (typeof req.latitude === 'number' && typeof req.longitude === 'number') {
+                  rLat = req.latitude;
+                  rLon = req.longitude;
+                }
+                if (rLat == null || rLon == null) return false;
+                const d = calculateDistanceKm(z.latitude, z.longitude, rLat, rLon);
+                return d !== null && d <= 50;
+              }).length;
+
+              return (
+                <div
+                  key={idx}
+                  onClick={() => setActiveZoneFilter(isSelected ? null : z)}
+                  style={{
+                    background: isSelected ? 'rgba(2, 132, 199, 0.08)' : '#ffffff',
+                    border: `2px solid ${isSelected ? 'var(--accent-ocean)' : 'var(--border-subtle)'}`,
+                    borderRadius: '10px',
+                    padding: '0.875rem 1rem',
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '0.375rem',
+                    boxShadow: isSelected ? '0 4px 14px rgba(2, 132, 199, 0.18)' : '0 1px 3px rgba(0,0,0,0.03)'
+                  }}
+                  onMouseEnter={e => {
+                    if (!isSelected) {
+                      e.currentTarget.style.borderColor = 'var(--accent-ocean)';
+                      e.currentTarget.style.transform = 'translateY(-2px)';
+                    }
+                  }}
+                  onMouseLeave={e => {
+                    if (!isSelected) {
+                      e.currentTarget.style.borderColor = 'var(--border-subtle)';
+                      e.currentTarget.style.transform = 'translateY(0)';
+                    }
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '0.72rem', fontWeight: 800, padding: '2px 8px', borderRadius: '12px', background: badgeBg, color: badgeColor }}>
+                      🚨 {z.riskLevel || 'HAZARD'}
+                    </span>
+                    <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)' }}>
+                      Severity: <strong style={{ color: badgeColor }}>{sev.toFixed(1)}/10</strong>
+                    </span>
+                  </div>
+
+                  <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <MdLocationOn style={{ color: isSelected ? 'var(--accent-ocean)' : '#64748b' }} />
+                    <span>Sector ({z.latitude.toFixed(3)}, {z.longitude.toFixed(3)})</span>
+                  </div>
+
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+                    <span>{nearbyReqCount} NGO request{nearbyReqCount === 1 ? '' : 's'} here</span>
+                    <span style={{ color: isSelected ? 'var(--accent-ocean)' : 'var(--accent-ocean)', fontWeight: 700 }}>
+                      {isSelected ? '✓ Filtered' : 'Click to View →'}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* ── Active Flood Zone Radar Filter Banner ── */}
@@ -241,32 +371,23 @@ const BrowseRequests = () => {
             </div>
             <div>
               <div style={{ fontSize: '0.95rem', fontWeight: 800, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span>Filtered by Flood Sector ({activeZoneFilter.latitude.toFixed(3)}, {activeZoneFilter.longitude.toFixed(3)})</span>
+                <span>Viewing NGO Requests for Flood Sector ({activeZoneFilter.latitude.toFixed(3)}, {activeZoneFilter.longitude.toFixed(3)})</span>
                 <span style={{ fontSize: '0.72rem', background: '#ef4444', color: '#ffffff', padding: '2px 8px', borderRadius: '12px', fontWeight: 800 }}>
                   {activeZoneFilter.riskLevel || 'HAZARD'}
                 </span>
               </div>
               <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0, marginTop: '2px' }}>
-                Showing NGO relief requests deployed in and around this active disaster sector (sorted by proximity).
+                Only displaying relief requests active for this disaster location. Click any request card below to donate.
               </p>
             </div>
           </div>
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
-            <button
-              className="btn btn-secondary btn-sm"
-              onClick={() => navigate('/donor/heatmap')}
-              style={{ fontSize: '0.8rem' }}
-            >
-              <MdMap /> View Heatmap
-            </button>
-            <button
-              className="btn btn-secondary btn-sm"
-              onClick={() => setActiveZoneFilter(null)}
-              style={{ fontSize: '0.8rem', color: '#b91c1c' }}
-            >
-              <MdClose /> Clear Sector Filter
-            </button>
-          </div>
+          <button
+            className="btn btn-secondary btn-sm"
+            onClick={() => setActiveZoneFilter(null)}
+            style={{ fontSize: '0.8rem', color: '#b91c1c' }}
+          >
+            <MdClose /> Clear Location Filter
+          </button>
         </div>
       )}
 
