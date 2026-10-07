@@ -4,10 +4,17 @@ import axios from 'axios';
 // If opened on localhost -> http://localhost:8080
 // If opened via Wi-Fi IP (e.g. from a mobile phone) -> http://<WiFi-IP>:8080
 const getBaseUrl = () => {
-  if (typeof window !== 'undefined' && window.location && window.location.hostname) {
-    return `http://${window.location.hostname}:8080`;
+  if (import.meta.env.VITE_API_GATEWAY_URL) {
+    return import.meta.env.VITE_API_GATEWAY_URL;
   }
-  return 'http://localhost:8080';
+  if (typeof window !== 'undefined' && window.location) {
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+      return 'http://localhost:8080';
+    }
+    // Production deployment (e.g. Vercel)
+    return 'https://apigateway-latest-kz57.onrender.com';
+  }
+  return 'https://apigateway-latest-kz57.onrender.com';
 };
 
 const API = axios.create({
