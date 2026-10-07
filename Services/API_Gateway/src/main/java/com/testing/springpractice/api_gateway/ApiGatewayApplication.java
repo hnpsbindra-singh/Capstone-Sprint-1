@@ -36,6 +36,7 @@ public class ApiGatewayApplication {
         String victimUri = System.getenv().getOrDefault("VICTIM_SERVICE_URI", "https://victim-service-latest.onrender.com");
         String ngoUri = System.getenv().getOrDefault("NGO_SERVICE_URI", "https://ngoservice.vercel.app");
         String donorUri = System.getenv().getOrDefault("DONOR_SERVICE_URI", "https://donorservice.vercel.app");
+        String adminUri = System.getenv().getOrDefault("ADMIN_SERVICE_URI", "https://admnservicebjgr.vercel.app");
         return builder.routes()
                 .route("auth-service", r -> r
                         .path("/api/auth/**")
@@ -56,7 +57,7 @@ public class ApiGatewayApplication {
                         .path("/api/admin/**")
                         .filters(f -> f.dedupeResponseHeader("Access-Control-Allow-Origin", "RETAIN_UNIQUE")
                                        .dedupeResponseHeader("Access-Control-Allow-Credentials", "RETAIN_UNIQUE"))
-                        .uri("http://localhost:5004"))
+                        .uri(adminUri))
                 .route("victim-service", r -> r
                         .path("/api/victim/**")
                         .filters(f -> f.dedupeResponseHeader("Access-Control-Allow-Origin", "RETAIN_UNIQUE")
