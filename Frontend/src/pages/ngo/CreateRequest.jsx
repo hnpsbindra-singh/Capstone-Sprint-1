@@ -149,13 +149,8 @@ const CreateRequest = () => {
     const latNum = parseFloat(formData.latitude);
     const lngNum = parseFloat(formData.longitude);
 
-    if (isNaN(latNum) || latNum < -90 || latNum > 90) {
-      toast.error('Please enter a valid latitude between -90 and 90');
-      return;
-    }
-
-    if (isNaN(lngNum) || lngNum < -180 || lngNum > 180) {
-      toast.error('Please enter a valid longitude between -180 and 180');
+    if (isNaN(latNum) || isNaN(lngNum) || !formData.latitude || !formData.longitude) {
+      toast.error('Please select an active flood emergency sector from the list above');
       return;
     }
 
@@ -381,86 +376,78 @@ const CreateRequest = () => {
                 </button>
               </div>
 
+              {/* Interactive Flood Area Cards Grid */}
               {activeFloodZones.length > 0 ? (
-                <div className="form-group" style={{ marginBottom: '1rem' }}>
-                  <label className="form-label" htmlFor="floodZoneSelect">
-                    Verified Active Flood Zones ({activeFloodZones.length} detected)
-                  </label>
-                  <select
-                    id="floodZoneSelect"
-                    className="form-input"
-                    value={selectedZoneIndex}
-                    onChange={handleSelectZone}
-                    style={{ background: '#ffffff', fontWeight: 600 }}
-                  >
-                    <option value="">-- Choose a Flood Zone from Heatmap --</option>
-                    {activeFloodZones.map((z, idx) => (
-                      <option key={idx} value={idx}>
-                        🚨 {z.riskLevel || 'HAZARD'} Zone: ({z.latitude.toFixed(4)}, {z.longitude.toFixed(4)}) — Severity {(z.averageSeverity || z.severityScore || 0).toFixed(1)}/10 ({z.reportCount || 1} reports)
-                      </option>
-                    ))}
-                  </select>
-                  <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
-                    Selecting an active flood sector automatically syncs the verified disaster GPS coordinates.
-                  </p>
+                <div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '0.75rem', marginBottom: '1rem' }}>
+                    {activeFloodZones.map((z, idx) => {
+                      const isSelected = selectedZoneIndex === String(idx);
+                      const sev = Number(z.averageSeverity || z.severityScore || 0);
+                      const isCrit = sev >= 8;
+                      const isHigh = sev >= 6 && sev < 8;
+                      const badgeBg = isCrit ? 'rgba(239, 68, 68, 0.12)' : isHigh ? 'rgba(249, 115, 22, 0.12)' : 'rgba(245, 158, 11, 0.12)';
+                      const badgeColor = isCrit ? '#ef4444' : isHigh ? '#f97316' : '#d97706';
+
+                      return (
+                        <div
+                          key={idx}
+                          onClick={() => handleSelectZone({ target: { value: String(idx) } })}
+                          style={{
+                            background: isSelected ? 'rgba(2, 132, 199, 0.08)' : '#ffffff',
+                            border: `2px solid ${isSelected ? 'var(--accent-ocean)' : 'var(--border-subtle)'}`,
+                            borderRadius: '10px',
+                            padding: '0.875rem 1rem',
+                            cursor: 'pointer',
+                            transition: 'all 0.15s ease',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '0.4rem',
+                            boxShadow: isSelected ? '0 4px 12px rgba(2, 132, 199, 0.15)' : 'none'
+                          }}
+                        >
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span style={{ fontSize: '0.75rem', fontWeight: 800, padding: '2px 8px', borderRadius: '12px', background: badgeBg, color: badgeColor }}>
+                              🚨 {z.riskLevel || 'HAZARD'}
+                            </span>
+                            <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)' }}>
+                              Severity: <strong style={{ color: badgeColor }}>{sev.toFixed(1)}/10</strong>
+                            </span>
+                          </div>
+
+                          <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <MdLocationOn style={{ color: isSelected ? 'var(--accent-ocean)' : '#64748b' }} />
+                            <span>Lat: {z.latitude.toFixed(4)}, Lon: {z.longitude.toFixed(4)}</span>
+                          </div>
+
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+                            <span>{z.reportCount || 1} distress report{(z.reportCount || 1) > 1 ? 's' : ''}</span>
+                            <span style={{ color: isSelected ? 'var(--accent-ocean)' : 'var(--text-muted)', fontWeight: 700 }}>
+                              {isSelected ? '✓ Selected' : 'Click to Select'}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Locked coordinates status indicator */}
+                  <div style={{ background: '#f1f5f9', border: '1px solid #cbd5e1', borderRadius: '8px', padding: '0.625rem 0.875rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
+                    <div style={{ fontSize: '0.8rem', color: '#334155', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span style={{ fontWeight: 700 }}>Selected Flood Coordinates:</span>
+                      <code style={{ background: '#e2e8f0', padding: '2px 6px', borderRadius: '4px', fontWeight: 700, color: '#0f172a' }}>
+                        {formData.latitude || 'None'}, {formData.longitude || 'None'}
+                      </code>
+                    </div>
+                    <span style={{ fontSize: '0.72rem', color: '#16a34a', fontWeight: 700 }}>
+                      ✓ Verified against live hazard radar
+                    </span>
+                  </div>
                 </div>
               ) : (
-                <div style={{ background: 'rgba(239, 68, 68, 0.08)', border: '1px solid rgba(239, 68, 68, 0.25)', borderRadius: '8px', padding: '0.75rem 1rem', marginBottom: '1rem', fontSize: '0.8rem', color: '#b91c1c' }}>
-                  ⚠️ No active flood sectors are currently detected from the radar. You can manually enter verified incident coordinates below.
+                <div style={{ background: 'rgba(239, 68, 68, 0.08)', border: '1px solid rgba(239, 68, 68, 0.25)', borderRadius: '8px', padding: '0.875rem 1rem', fontSize: '0.85rem', color: '#b91c1c' }}>
+                  ⚠️ No active flood sectors are currently detected from the radar. You can view the live hazard radar from the Heatmap page.
                 </div>
               )}
-
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-secondary)' }}>
-                  Coordinates:
-                </span>
-                <button
-                  type="button"
-                  className="btn btn-secondary btn-sm"
-                  onClick={handleUseMyLocation}
-                  disabled={gettingLocation}
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: '0.375rem', padding: '2px 8px', fontSize: '0.75rem' }}
-                >
-                  <MdMyLocation style={{ color: 'var(--accent-ocean)' }} />
-                  {gettingLocation ? 'Getting...' : 'My GPS'}
-                </button>
-              </div>
-
-              <div className="grid-2">
-                <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label className="form-label" htmlFor="latitude">
-                    Latitude <span style={{ color: 'var(--color-critical)' }}>*</span>
-                  </label>
-                  <input
-                    id="latitude"
-                    name="latitude"
-                    type="number"
-                    step="any"
-                    className="form-input"
-                    placeholder="e.g. 19.0760"
-                    value={formData.latitude}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-
-                <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label className="form-label" htmlFor="longitude">
-                    Longitude <span style={{ color: 'var(--color-critical)' }}>*</span>
-                  </label>
-                  <input
-                    id="longitude"
-                    name="longitude"
-                    type="number"
-                    step="any"
-                    className="form-input"
-                    placeholder="e.g. 72.8777"
-                    value={formData.longitude}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-              </div>
             </div>
 
             {/* Submit Button */}
