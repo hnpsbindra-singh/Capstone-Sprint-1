@@ -40,28 +40,28 @@ public class ApiGatewayApplication {
         return builder.routes()
                 .route("auth-service", r -> r
                         .path("/api/auth/**")
-                        .filters(f -> f.dedupeResponseHeader("Access-Control-Allow-Origin", "RETAIN_UNIQUE")
-                                       .dedupeResponseHeader("Access-Control-Allow-Credentials", "RETAIN_UNIQUE"))
+                        .filters(f -> f.dedupeResponseHeader("Access-Control-Allow-Origin", "RETAIN_FIRST")
+                                       .dedupeResponseHeader("Access-Control-Allow-Credentials", "RETAIN_FIRST"))
                         .uri(authUri))
                 .route("ngo-service", r -> r
                         .path("/api/ngo/**")
-                        .filters(f -> f.dedupeResponseHeader("Access-Control-Allow-Origin", "RETAIN_UNIQUE")
-                                       .dedupeResponseHeader("Access-Control-Allow-Credentials", "RETAIN_UNIQUE"))
+                        .filters(f -> f.dedupeResponseHeader("Access-Control-Allow-Origin", "RETAIN_FIRST")
+                                       .dedupeResponseHeader("Access-Control-Allow-Credentials", "RETAIN_FIRST"))
                         .uri(ngoUri))
                 .route("donor-service", r -> r
                         .path("/api/donor/**")
-                        .filters(f -> f.dedupeResponseHeader("Access-Control-Allow-Origin", "RETAIN_UNIQUE")
-                                       .dedupeResponseHeader("Access-Control-Allow-Credentials", "RETAIN_UNIQUE"))
+                        .filters(f -> f.dedupeResponseHeader("Access-Control-Allow-Origin", "RETAIN_FIRST")
+                                       .dedupeResponseHeader("Access-Control-Allow-Credentials", "RETAIN_FIRST"))
                         .uri(donorUri))
                 .route("admin-service", r -> r
                         .path("/api/admin/**")
-                        .filters(f -> f.dedupeResponseHeader("Access-Control-Allow-Origin", "RETAIN_UNIQUE")
-                                       .dedupeResponseHeader("Access-Control-Allow-Credentials", "RETAIN_UNIQUE"))
+                        .filters(f -> f.dedupeResponseHeader("Access-Control-Allow-Origin", "RETAIN_FIRST")
+                                       .dedupeResponseHeader("Access-Control-Allow-Credentials", "RETAIN_FIRST"))
                         .uri(adminUri))
                 .route("victim-service", r -> r
                         .path("/api/victim/**")
-                        .filters(f -> f.dedupeResponseHeader("Access-Control-Allow-Origin", "RETAIN_UNIQUE")
-                                       .dedupeResponseHeader("Access-Control-Allow-Credentials", "RETAIN_UNIQUE"))
+                        .filters(f -> f.dedupeResponseHeader("Access-Control-Allow-Origin", "RETAIN_FIRST")
+                                       .dedupeResponseHeader("Access-Control-Allow-Credentials", "RETAIN_FIRST"))
                         .uri(victimUri))
                 .build();
     }
