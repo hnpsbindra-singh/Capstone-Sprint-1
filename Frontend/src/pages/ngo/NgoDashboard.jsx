@@ -133,7 +133,11 @@ const NgoDashboard = () => {
           <MdMap style={{ fontSize: '1.5rem', color: 'var(--accent-blue)' }} />
           <h2 style={{ fontSize: '1.25rem', fontWeight: 700 }}>Disaster Risk Heatmap</h2>
         </div>
-        <HeatmapView data={heatmapData} />
+        <HeatmapView
+          data={heatmapData}
+          role="NGO"
+          onRequestFromZone={(zone) => navigate('/ngo/create-request', { state: { fromHeatmap: zone } })}
+        />
       </div>
 
       {/* Latest Requests Overview */}

@@ -28,6 +28,42 @@ class NgoService {
       throw err;
     }
 
+    const reqLat = Number(latitude);
+    const reqLon = Number(longitude);
+
+    // Enforce that requests can only be created for verified flood hazard areas
+    let activeFloodZones = [];
+    try {
+      activeFloodZones = await victimClient.getHeatmap();
+    } catch (fetchErr) {
+      console.warn('[NGO Service] Warning: Failed to query victim service heatmap:', fetchErr.message);
+    }
+
+    if (Array.isArray(activeFloodZones) && activeFloodZones.length > 0) {
+      const MAX_DISTANCE_KM = 30; // Radius within which request is valid
+      const calculateDistance = (lat1, lon1, lat2, lon2) => {
+        const R = 6371;
+        const dLat = (lat2 - lat1) * (Math.PI / 180);
+        const dLon = (lon2 - lon1) * (Math.PI / 180);
+        const a =
+          Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+          Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) *
+          Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      };
+
+      const matchedZone = activeFloodZones.find(zone => {
+        const d = calculateDistance(reqLat, reqLon, zone.latitude, zone.longitude);
+        return d <= MAX_DISTANCE_KM && Number(zone.averageSeverity || zone.severityScore || 0) > 2;
+      });
+
+      if (!matchedZone) {
+        const err = new Error('Resource requests are strictly permitted only for verified active flood areas. Please select a flood zone from the disaster heatmap.');
+        err.statusCode = 400;
+        throw err;
+      }
+    }
+
     const ngoRequest = new NgoRequest({
       ngoId,
       title,
@@ -41,7 +77,7 @@ class NgoService {
       status: 'OPEN',
       location: {
         type: 'Point',
-        coordinates: [Number(longitude), Number(latitude)],
+        coordinates: [reqLon, reqLat],
       },
     });
 

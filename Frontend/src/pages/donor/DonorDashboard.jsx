@@ -163,7 +163,11 @@ const DonorDashboard = () => {
                 </div>
               </div>
             </div>
-            <HeatmapView data={heatmapData} />
+            <HeatmapView
+              data={heatmapData}
+              role="DONOR"
+              onDonateInZone={(zone) => navigate('/donor/browse-requests', { state: { filterZone: zone } })}
+            />
           </div>
 
           {/* Recent Donations List Section */}

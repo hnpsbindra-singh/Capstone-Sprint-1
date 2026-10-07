@@ -9,7 +9,10 @@ import {
   MdLocationOn,
   MdRadar,
   MdRefresh,
-  MdClose
+  MdClose,
+  MdAddCircle,
+  MdVolunteerActivism,
+  MdSearch
 } from 'react-icons/md';
 
 // Base map layer providers (verified working tile servers without watermarks)
@@ -105,7 +108,7 @@ const MapAutoFitter = ({ points, activeLocation }) => {
   return null;
 };
 
-const HeatmapView = ({ data = [] }) => {
+const HeatmapView = ({ data = [], role = null, onRequestFromZone = null, onDonateInZone = null }) => {
   const [activeStyle, setActiveStyle] = useState('dark');
   const [severityFilter, setSeverityFilter] = useState('ALL');
   const [activeZone, setActiveZone] = useState(null);
@@ -307,7 +310,29 @@ const HeatmapView = ({ data = [] }) => {
                         </div>
                       </div>
 
-                      <div className="popup-footer">
+                      <div className="popup-footer" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                        {role === 'NGO' && onRequestFromZone && (
+                          <button
+                            type="button"
+                            className="btn btn-primary btn-sm"
+                            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px', width: '100%', padding: '6px 10px', fontSize: '0.8rem', fontWeight: 700 }}
+                            onClick={() => onRequestFromZone(point)}
+                          >
+                            <MdAddCircle style={{ fontSize: '1.1rem' }} /> Request Resources for this Zone
+                          </button>
+                        )}
+
+                        {role === 'DONOR' && onDonateInZone && (
+                          <button
+                            type="button"
+                            className="btn btn-primary btn-sm"
+                            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px', width: '100%', padding: '6px 10px', fontSize: '0.8rem', fontWeight: 700, background: 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)' }}
+                            onClick={() => onDonateInZone(point)}
+                          >
+                            <MdVolunteerActivism style={{ fontSize: '1.1rem' }} /> Find NGOs & Donate Here
+                          </button>
+                        )}
+
                         <a
                           href={`https://www.google.com/maps/dir/?api=1&destination=${point.latitude},${point.longitude}`}
                           target="_blank"
@@ -357,9 +382,37 @@ const HeatmapView = ({ data = [] }) => {
                         <MdLocationOn style={{ color: rk.main }} />
                         <span>Lat: {pt.latitude.toFixed(4)}, Lng: {pt.longitude.toFixed(4)}</span>
                       </div>
-                      <div className="drawer-card-sub">
-                        <span>Reports: {pt.reportCount || 1}</span>
-                        <span className="drawer-focus-hint">Click to Focus &rarr;</span>
+                      <div className="drawer-card-sub" style={{ display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'stretch' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span>Reports: {pt.reportCount || 1}</span>
+                          <span className="drawer-focus-hint">Click to Focus &rarr;</span>
+                        </div>
+                        {role === 'NGO' && onRequestFromZone && (
+                          <button
+                            type="button"
+                            className="btn btn-primary btn-sm"
+                            style={{ padding: '4px 8px', fontSize: '0.75rem', marginTop: '4px' }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onRequestFromZone(pt);
+                            }}
+                          >
+                            <MdAddCircle /> Request Resources Here
+                          </button>
+                        )}
+                        {role === 'DONOR' && onDonateInZone && (
+                          <button
+                            type="button"
+                            className="btn btn-primary btn-sm"
+                            style={{ padding: '4px 8px', fontSize: '0.75rem', marginTop: '4px', background: '#0284c7' }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onDonateInZone(pt);
+                            }}
+                          >
+                            <MdVolunteerActivism /> Find NGOs & Donate
+                          </button>
+                        )}
                       </div>
                     </div>
                   );

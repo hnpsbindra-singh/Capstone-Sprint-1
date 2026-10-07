@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import HeatmapView from '../../components/HeatmapView';
 import * as victimApi from '../../api/victimApi';
 import * as donorApi from '../../api/donorApi';
@@ -13,6 +14,7 @@ const apiMap = {
 };
 
 export default function HeatmapPage({ role }) {
+  const navigate = useNavigate();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -32,6 +34,14 @@ export default function HeatmapPage({ role }) {
     };
     fetchData();
   }, [role]);
+
+  const handleNgoRequestFromZone = (zone) => {
+    navigate('/ngo/create-request', { state: { fromHeatmap: zone } });
+  };
+
+  const handleDonorDonateInZone = (zone) => {
+    navigate('/donor/browse-requests', { state: { filterZone: zone } });
+  };
 
   if (loading) {
     return (
@@ -54,7 +64,12 @@ export default function HeatmapPage({ role }) {
           </p>
         </div>
       </div>
-      <HeatmapView data={data} />
+      <HeatmapView
+        data={data}
+        role={role}
+        onRequestFromZone={handleNgoRequestFromZone}
+        onDonateInZone={handleDonorDonateInZone}
+      />
     </div>
   );
 }

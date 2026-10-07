@@ -1,21 +1,41 @@
 import React, { useState, useEffect, useContext, useRef, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
 import { getRequests, donate } from '../../api/donorApi';
 import toast from 'react-hot-toast';
 import {
   MdVolunteerActivism, MdInventory, MdClose, MdSearch, MdRefresh,
   MdAccessTime, MdLocalShipping, MdCheckCircle, MdFireTruck, MdOpenInNew,
-  MdLocationOn, MdEmail, MdPhone, MdCelebration, MdDoneAll, MdInfo
+  MdLocationOn, MdEmail, MdPhone, MdCelebration, MdDoneAll, MdInfo, MdWarning, MdMap
 } from 'react-icons/md';
 import { useLanguage } from '../../context/LanguageContext';
 
 const PAGE_SIZE = 9;
 
+// Calculate distance in kilometers using the Haversine formula
+const calculateDistanceKm = (lat1, lon1, lat2, lon2) => {
+  if (typeof lat1 !== 'number' || typeof lon1 !== 'number' || typeof lat2 !== 'number' || typeof lon2 !== 'number') {
+    return null;
+  }
+  const R = 6371; // Earth's radius in km
+  const dLat = (lat2 - lat1) * (Math.PI / 180);
+  const dLon = (lon2 - lon1) * (Math.PI / 180);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+};
+
 const BrowseRequests = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { getUserId } = useContext(AuthContext);
   const { t } = useLanguage();
+
+  const filterZone = location.state?.filterZone || null;
+  const [activeZoneFilter, setActiveZoneFilter] = useState(filterZone);
 
   const [requests, setRequests]     = useState([]);
   const [loading, setLoading]       = useState(true);
@@ -136,19 +156,58 @@ const BrowseRequests = () => {
     return 'linear-gradient(90deg, #34d399, #059669)';
   };
 
-  // Filter & paginate
-  const filtered = requests.filter(req => {
-    const q = searchTerm.toLowerCase();
-    const match = (req.title || '').toLowerCase().includes(q)
-      || (req.description || '').toLowerCase().includes(q)
-      || (req.resourceNeeded || '').toLowerCase().includes(q);
-    const needed   = req.quantityNeeded   || 0;
-    const received = req.quantityReceived || 0;
-    const fulfilled = needed > 0 && received >= needed;
-    if (filterStatus === 'OPEN')      return match && !fulfilled;
-    if (filterStatus === 'FULFILLED') return match && fulfilled;
-    return match;
-  });
+  // Filter & sort (with zone proximity calculation)
+  const filtered = requests
+    .map(req => {
+      let reqLat = null;
+      let reqLon = null;
+      if (req.location?.coordinates && req.location.coordinates.length >= 2) {
+        reqLon = req.location.coordinates[0];
+        reqLat = req.location.coordinates[1];
+      } else if (typeof req.latitude === 'number' && typeof req.longitude === 'number') {
+        reqLat = req.latitude;
+        reqLon = req.longitude;
+      }
+
+      let distanceKm = null;
+      if (activeZoneFilter && reqLat !== null && reqLon !== null) {
+        distanceKm = calculateDistanceKm(activeZoneFilter.latitude, activeZoneFilter.longitude, reqLat, reqLon);
+      }
+
+      return {
+        ...req,
+        resolvedLat: reqLat,
+        resolvedLon: reqLon,
+        distanceKm
+      };
+    })
+    .filter(req => {
+      const q = searchTerm.toLowerCase();
+      const match = (req.title || '').toLowerCase().includes(q)
+        || (req.description || '').toLowerCase().includes(q)
+        || (req.resourceNeeded || '').toLowerCase().includes(q)
+        || (req.deliveryAddress || '').toLowerCase().includes(q);
+
+      const needed   = req.quantityNeeded   || 0;
+      const received = req.quantityReceived || 0;
+      const fulfilled = needed > 0 && received >= needed;
+
+      if (filterStatus === 'OPEN' && fulfilled) return false;
+      if (filterStatus === 'FULFILLED' && !fulfilled) return false;
+
+      // If activeZoneFilter is enabled, show requests within 50km or requests specifically around that coordinate
+      if (activeZoneFilter && req.distanceKm !== null && req.distanceKm > 50) {
+        return false;
+      }
+
+      return match;
+    })
+    .sort((a, b) => {
+      if (activeZoneFilter && a.distanceKm !== null && b.distanceKm !== null) {
+        return a.distanceKm - b.distanceKm;
+      }
+      return 0;
+    });
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const paged      = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
@@ -172,6 +231,44 @@ const BrowseRequests = () => {
           </button>
         </div>
       </div>
+
+      {/* ── Active Flood Zone Radar Filter Banner ── */}
+      {activeZoneFilter && (
+        <div style={{ background: 'rgba(2, 132, 199, 0.08)', border: '1.5px solid rgba(2, 132, 199, 0.3)', borderRadius: '12px', padding: '1rem 1.25rem', marginBottom: '1.25rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'rgba(2, 132, 199, 0.15)', color: 'var(--accent-ocean)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem' }}>
+              <MdMap />
+            </div>
+            <div>
+              <div style={{ fontSize: '0.95rem', fontWeight: 800, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span>Filtered by Flood Sector ({activeZoneFilter.latitude.toFixed(3)}, {activeZoneFilter.longitude.toFixed(3)})</span>
+                <span style={{ fontSize: '0.72rem', background: '#ef4444', color: '#ffffff', padding: '2px 8px', borderRadius: '12px', fontWeight: 800 }}>
+                  {activeZoneFilter.riskLevel || 'HAZARD'}
+                </span>
+              </div>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0, marginTop: '2px' }}>
+                Showing NGO relief requests deployed in and around this active disaster sector (sorted by proximity).
+              </p>
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <button
+              className="btn btn-secondary btn-sm"
+              onClick={() => navigate('/donor/heatmap')}
+              style={{ fontSize: '0.8rem' }}
+            >
+              <MdMap /> View Heatmap
+            </button>
+            <button
+              className="btn btn-secondary btn-sm"
+              onClick={() => setActiveZoneFilter(null)}
+              style={{ fontSize: '0.8rem', color: '#b91c1c' }}
+            >
+              <MdClose /> Clear Sector Filter
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* ── Stats row ── */}
       {!loading && requests.length > 0 && (
@@ -283,9 +380,16 @@ const BrowseRequests = () => {
 
                   {/* Resource needed & Delivery details */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', background: 'rgba(2,132,199,0.08)', border: '1px solid rgba(2,132,199,0.2)', padding: '4px 10px', borderRadius: '8px', fontSize: '0.8rem', color: 'var(--accent-ocean)', fontWeight: 700, alignSelf: 'flex-start' }}>
-                      <MdInventory size={14} />
-                      {req.resourceNeeded || 'Relief Supplies'}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
+                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', background: 'rgba(2,132,199,0.08)', border: '1px solid rgba(2,132,199,0.2)', padding: '4px 10px', borderRadius: '8px', fontSize: '0.8rem', color: 'var(--accent-ocean)', fontWeight: 700, alignSelf: 'flex-start' }}>
+                        <MdInventory size={14} />
+                        {req.resourceNeeded || 'Relief Supplies'}
+                      </div>
+                      {req.distanceKm !== null && (
+                        <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#0369a1', background: '#e0f2fe', padding: '3px 8px', borderRadius: '12px' }}>
+                          📍 {req.distanceKm.toFixed(1)} km away
+                        </span>
+                      )}
                     </div>
 
                     {req.deliveryAddress && (

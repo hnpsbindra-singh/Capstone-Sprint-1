@@ -1,28 +1,77 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { createRequest } from '../../api/ngoApi';
+import { createRequest, getHeatmap } from '../../api/ngoApi';
 import toast from 'react-hot-toast';
-import { MdAddCircle, MdMyLocation, MdArrowBack } from 'react-icons/md';
+import { MdAddCircle, MdMyLocation, MdArrowBack, MdWarning, MdMap, MdFlood } from 'react-icons/md';
 
 const CreateRequest = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { getUserId } = useAuth();
 
+  const heatmapContext = location.state?.fromHeatmap || null;
+
+  const [activeFloodZones, setActiveFloodZones] = useState([]);
+  const [selectedZoneIndex, setSelectedZoneIndex] = useState('');
+
   const [formData, setFormData] = useState({
-    title: '',
-    description: '',
+    title: heatmapContext ? `Emergency Relief: Flood Zone (${heatmapContext.latitude.toFixed(3)}, ${heatmapContext.longitude.toFixed(3)})` : '',
+    description: heatmapContext ? `Emergency resource mobilization for disaster sector with risk level ${heatmapContext.riskLevel || 'HIGH'} (Severity: ${(heatmapContext.averageSeverity || heatmapContext.severityScore || 7).toFixed(1)}/10, ${heatmapContext.reportCount || 1} active distress reports).` : '',
     resourceNeeded: '',
     quantityNeeded: '',
     deliveryAddress: '',
     contactEmail: '',
     contactPhone: '',
-    latitude: '19.0760',
-    longitude: '72.8777'
+    latitude: heatmapContext ? String(heatmapContext.latitude) : '',
+    longitude: heatmapContext ? String(heatmapContext.longitude) : ''
   });
 
   const [loading, setLoading] = useState(false);
   const [gettingLocation, setGettingLocation] = useState(false);
+
+  useEffect(() => {
+    const fetchZones = async () => {
+      try {
+        const zones = await getHeatmap();
+        if (Array.isArray(zones)) {
+          const valid = zones.filter(z => Number(z.averageSeverity || z.severityScore || 0) > 2);
+          setActiveFloodZones(valid);
+
+          // If no initial coordinates set and zones available, select the first active zone
+          if (!heatmapContext && valid.length > 0 && !formData.latitude) {
+            const first = valid[0];
+            setSelectedZoneIndex('0');
+            setFormData(prev => ({
+              ...prev,
+              latitude: String(first.latitude),
+              longitude: String(first.longitude),
+              title: prev.title || `Emergency Relief: Flood Sector (${first.latitude.toFixed(3)}, ${first.longitude.toFixed(3)})`,
+              description: prev.description || `Relief supply mobilization for flood emergency (Risk: ${first.riskLevel || 'HIGH'}, Severity: ${Number(first.averageSeverity || 7).toFixed(1)}/10, ${first.reportCount || 1} reports).`
+            }));
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load active flood zones:', err);
+      }
+    };
+    fetchZones();
+  }, []);
+
+  const handleSelectZone = (e) => {
+    const idx = e.target.value;
+    setSelectedZoneIndex(idx);
+    if (idx !== '' && activeFloodZones[idx]) {
+      const z = activeFloodZones[idx];
+      setFormData(prev => ({
+        ...prev,
+        latitude: String(z.latitude),
+        longitude: String(z.longitude),
+        title: `Emergency Relief: Flood Sector (${z.latitude.toFixed(3)}, ${z.longitude.toFixed(3)})`,
+        description: `Emergency resource mobilization for disaster sector with risk level ${z.riskLevel || 'HIGH'} (Severity: ${(z.averageSeverity || z.severityScore || 7).toFixed(1)}/10, ${z.reportCount || 1} active distress reports).`
+      }));
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -156,6 +205,25 @@ const CreateRequest = () => {
       {/* Form Container */}
       <div style={{ maxWidth: '720px', margin: '0 auto' }}>
         <div className="glass-card">
+          {heatmapContext && (
+            <div style={{ background: 'rgba(239, 68, 68, 0.08)', border: '1.5px solid rgba(239, 68, 68, 0.3)', borderRadius: 'var(--radius-md)', padding: '1rem 1.25rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
+              <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.25rem', flexShrink: 0 }}>
+                <MdWarning />
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: '0.95rem', fontWeight: 800, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                  <span>Disaster Heatmap Emergency Zone Selected</span>
+                  <span style={{ fontSize: '0.75rem', background: '#ef4444', color: '#fff', padding: '2px 8px', borderRadius: '12px' }}>
+                    {heatmapContext.riskLevel || 'CRITICAL'} ({(heatmapContext.averageSeverity || heatmapContext.severityScore || 7).toFixed(1)}/10)
+                  </span>
+                </div>
+                <p style={{ fontSize: '0.825rem', color: 'var(--text-secondary)', marginTop: '0.25rem', marginBottom: 0 }}>
+                  Coordinates: <strong>{heatmapContext.latitude.toFixed(4)}, {heatmapContext.longitude.toFixed(4)}</strong> ({heatmapContext.reportCount || 1} reported incidents). Location and description have been auto-populated below.
+                </p>
+              </div>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit}>
             {/* Title */}
             <div className="form-group">
@@ -297,20 +365,64 @@ const CreateRequest = () => {
             </div>
 
             {/* Location Section */}
-            <div style={{ marginTop: '1rem', marginBottom: '1.5rem', padding: '1rem', background: '#f8fafc', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
-                <span className="form-label" style={{ margin: 0, fontWeight: 700 }}>
-                  Target Location Coordinates <span style={{ color: 'var(--color-critical)' }}>*</span>
+            <div style={{ marginTop: '1rem', marginBottom: '1.5rem', padding: '1.25rem', background: '#f8fafc', borderRadius: 'var(--radius-md)', border: '1.5px solid var(--border-subtle)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                <span className="form-label" style={{ margin: 0, fontWeight: 800, fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <MdMap style={{ color: 'var(--accent-ocean)' }} /> Select Target Flood Emergency Area <span style={{ color: 'var(--color-critical)' }}>*</span>
+                </span>
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm"
+                  onClick={() => navigate('/ngo/heatmap')}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '0.375rem', fontSize: '0.8rem' }}
+                >
+                  <MdMap style={{ color: 'var(--accent-ocean)' }} />
+                  View Heatmap
+                </button>
+              </div>
+
+              {activeFloodZones.length > 0 ? (
+                <div className="form-group" style={{ marginBottom: '1rem' }}>
+                  <label className="form-label" htmlFor="floodZoneSelect">
+                    Verified Active Flood Zones ({activeFloodZones.length} detected)
+                  </label>
+                  <select
+                    id="floodZoneSelect"
+                    className="form-input"
+                    value={selectedZoneIndex}
+                    onChange={handleSelectZone}
+                    style={{ background: '#ffffff', fontWeight: 600 }}
+                  >
+                    <option value="">-- Choose a Flood Zone from Heatmap --</option>
+                    {activeFloodZones.map((z, idx) => (
+                      <option key={idx} value={idx}>
+                        🚨 {z.riskLevel || 'HAZARD'} Zone: ({z.latitude.toFixed(4)}, {z.longitude.toFixed(4)}) — Severity {(z.averageSeverity || z.severityScore || 0).toFixed(1)}/10 ({z.reportCount || 1} reports)
+                      </option>
+                    ))}
+                  </select>
+                  <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
+                    Selecting an active flood sector automatically syncs the verified disaster GPS coordinates.
+                  </p>
+                </div>
+              ) : (
+                <div style={{ background: 'rgba(239, 68, 68, 0.08)', border: '1px solid rgba(239, 68, 68, 0.25)', borderRadius: '8px', padding: '0.75rem 1rem', marginBottom: '1rem', fontSize: '0.8rem', color: '#b91c1c' }}>
+                  ⚠️ No active flood sectors are currently detected from the radar. You can manually enter verified incident coordinates below.
+                </div>
+              )}
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-secondary)' }}>
+                  Coordinates:
                 </span>
                 <button
                   type="button"
                   className="btn btn-secondary btn-sm"
                   onClick={handleUseMyLocation}
                   disabled={gettingLocation}
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: '0.375rem' }}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '0.375rem', padding: '2px 8px', fontSize: '0.75rem' }}
                 >
                   <MdMyLocation style={{ color: 'var(--accent-ocean)' }} />
-                  {gettingLocation ? 'Getting Location...' : 'Use My GPS Location'}
+                  {gettingLocation ? 'Getting...' : 'My GPS'}
                 </button>
               </div>
 
