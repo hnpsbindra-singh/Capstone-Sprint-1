@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { createRequest, getHeatmap } from '../../api/ngoApi';
 import toast from 'react-hot-toast';
-import { MdAddCircle, MdMyLocation, MdArrowBack, MdWarning, MdMap, MdFlood } from 'react-icons/md';
+import { MdAddCircle, MdMyLocation, MdArrowBack, MdWarning, MdMap, MdFlood, MdLocationOn } from 'react-icons/md';
 
 const CreateRequest = () => {
   const navigate = useNavigate();
