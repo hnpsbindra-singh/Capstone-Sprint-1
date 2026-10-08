@@ -87,6 +87,7 @@ const AllDonations = () => {
     const statusStr = (d.status || '').toString().toUpperCase();
     if (filterStatus === 'PENDING') return matchesSearch && statusStr === 'PENDING';
     if (filterStatus === 'ACCEPTED') return matchesSearch && statusStr === 'ACCEPTED';
+    if (filterStatus === 'DISPATCHED') return matchesSearch && statusStr === 'DISPATCHED';
     if (filterStatus === 'DELIVERED') return matchesSearch && statusStr === 'DELIVERED';
     return matchesSearch;
   });
@@ -130,7 +131,7 @@ const AllDonations = () => {
           </div>
           <div className="filter-pills-container">
             <span style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--text-muted)' }}>Status:</span>
-            {['ALL', 'PENDING', 'ACCEPTED', 'DELIVERED'].map(status => (
+            {['ALL', 'PENDING', 'ACCEPTED', 'DISPATCHED', 'DELIVERED'].map(status => (
               <button
                 key={status}
                 className={`filter-pill-btn ${filterStatus === status ? 'active' : ''}`}

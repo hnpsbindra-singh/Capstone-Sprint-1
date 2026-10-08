@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { AuthContext } from '../../context/AuthContext';
-import { getMyDonations } from '../../api/donorApi';
+import { getMyDonations, dispatchDonation } from '../../api/donorApi';
 import StatusBadge from '../../components/StatusBadge';
 import toast from 'react-hot-toast';
 import { 
   MdVolunteerActivism, MdInventory, MdSearch, MdDownload, MdRefresh, 
   MdArrowUpward, MdArrowDownward, MdUnfoldMore, MdAccessTime, 
-  MdLocationOn, MdEmail, MdPhone, MdClose, MdInfo 
+  MdLocationOn, MdEmail, MdPhone, MdClose, MdLocalShipping, 
+  MdVpnKey, MdContentCopy, MdCheck 
 } from 'react-icons/md';
 
 const PAGE_SIZE = 8;
@@ -22,7 +23,18 @@ const MyDonations = () => {
   const [sortDir, setSortDir] = useState('desc');
   const [page, setPage] = useState(1);
   const [lastFetched, setLastFetched] = useState(null);
+  
+  // Modals state
   const [selectedDonation, setSelectedDonation] = useState(null); // Detail modal
+  const [dispatchModalDonation, setDispatchModalDonation] = useState(null); // Dispatch modal
+  const [dispatchSubmitting, setDispatchSubmitting] = useState(false);
+  const [copiedPinId, setCopiedPinId] = useState(null);
+  const [dispatchForm, setDispatchForm] = useState({
+    deliveryMethod: 'COURIER',
+    carrier: '',
+    trackingNumber: '',
+    estimatedArrival: '',
+  });
 
   const fetchDonations = useCallback(async () => {
     try {
@@ -61,13 +73,64 @@ const MyDonations = () => {
     return `${Math.floor(diffH / 24)}d ago`;
   };
 
+  const copyPin = (pin, donationId) => {
+    if (!pin) return;
+    navigator.clipboard.writeText(String(pin));
+    setCopiedPinId(donationId);
+    toast.success(`Handoff PIN ${pin} copied to clipboard!`);
+    setTimeout(() => setCopiedPinId(null), 2500);
+  };
+
+  const openDispatchModal = (donation) => {
+    setDispatchModalDonation(donation);
+    setDispatchForm({
+      deliveryMethod: 'COURIER',
+      carrier: '',
+      trackingNumber: '',
+      estimatedArrival: '',
+    });
+  };
+
+  const handleDispatchSubmit = async (e) => {
+    e.preventDefault();
+    if (!dispatchModalDonation) return;
+
+    const donationId = dispatchModalDonation.id || dispatchModalDonation._id || dispatchModalDonation.donationId;
+    if (dispatchForm.deliveryMethod === 'COURIER' && !dispatchForm.carrier && !dispatchForm.trackingNumber) {
+      toast.error('Please enter a carrier or tracking number for courier shipment.');
+      return;
+    }
+
+    try {
+      setDispatchSubmitting(true);
+      await dispatchDonation(donationId, {
+        deliveryMethod: dispatchForm.deliveryMethod,
+        carrier: dispatchForm.carrier || (dispatchForm.deliveryMethod === 'SELF_DROPOFF' ? 'Self Drop-off' : 'Volunteer Fleet'),
+        trackingNumber: dispatchForm.trackingNumber || 'N/A',
+        estimatedArrival: dispatchForm.estimatedArrival || '',
+      });
+      toast.success('Supplies dispatched successfully! Tracking details attached.');
+      setDispatchModalDonation(null);
+      await fetchDonations();
+    } catch (err) {
+      console.error('Dispatch error:', err);
+      toast.error(err.response?.data?.message || 'Failed to dispatch donation');
+    } finally {
+      setDispatchSubmitting(false);
+    }
+  };
+
   const exportToCSV = () => {
     if (!donations.length) { toast.error('No donations to export.'); return; }
-    const headers = ['Item Name', 'Quantity', 'Status', 'Donated At', 'Drop-off Address', 'NGO Email'];
+    const headers = ['Item Name', 'Quantity', 'Status', 'Verification PIN', 'Delivery Method', 'Carrier', 'Tracking Number', 'Donated At', 'Drop-off Address', 'NGO Email'];
     const rows = filtered.map(d => [
       `"${(d.itemName || d.item || '').replace(/"/g, '""')}"`,
       d.quantity || 0,
       `"${d.status || 'PENDING'}"`,
+      `"${d.verificationCode || ''}"`,
+      `"${d.deliveryMethod || ''}"`,
+      `"${(d.carrier || '').replace(/"/g, '""')}"`,
+      `"${(d.trackingNumber || '').replace(/"/g, '""')}"`,
       `"${formatDate(d.createdAt || d.donatedAt || d.date)}"`,
       `"${(d.ngoDeliveryAddress || '').replace(/"/g, '""')}"`,
       `"${d.ngoContactEmail || ''}"`
@@ -94,6 +157,7 @@ const MyDonations = () => {
     const statusStr = (d.status || '').toString().toUpperCase();
     if (filterStatus === 'PENDING') return itemMatch && statusStr === 'PENDING';
     if (filterStatus === 'ACCEPTED') return itemMatch && statusStr === 'ACCEPTED';
+    if (filterStatus === 'DISPATCHED') return itemMatch && statusStr === 'DISPATCHED';
     if (filterStatus === 'DELIVERED') return itemMatch && statusStr === 'DELIVERED';
     return itemMatch;
   });
@@ -118,7 +182,7 @@ const MyDonations = () => {
       <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
           <h1 className="page-title">My Donations</h1>
-          <p className="page-subtitle">View history, status, and drop-off instructions for all relief items you have contributed.</p>
+          <p className="page-subtitle">View history, status, dispatch shipments, and track drop-off instructions for your relief supplies.</p>
           {lastFetched && (
             <div className="last-updated-badge" style={{ marginTop: '0.375rem' }}>
               <MdAccessTime size={12} />
@@ -148,7 +212,7 @@ const MyDonations = () => {
           </div>
           <div className="filter-pills-container">
             <span style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--text-muted)' }}>Status:</span>
-            {['ALL', 'PENDING', 'ACCEPTED', 'DELIVERED'].map(status => (
+            {['ALL', 'PENDING', 'ACCEPTED', 'DISPATCHED', 'DELIVERED'].map(status => (
               <button key={status} className={`filter-pill-btn ${filterStatus === status ? 'active' : ''}`} onClick={() => { setFilterStatus(status); setPage(1); }}>{status}</button>
             ))}
           </div>
@@ -182,38 +246,85 @@ const MyDonations = () => {
                   <th className={`th-sortable ${sortKey === 'status' ? `sort-${sortDir}` : ''}`} onClick={() => handleSort('status')}>
                     Status <SortIcon col="status" />
                   </th>
+                  <th>Delivery PIN</th>
                   <th className={`th-sortable ${sortKey === 'createdAt' ? `sort-${sortDir}` : ''}`} onClick={() => handleSort('createdAt')}>
                     Donated At <SortIcon col="createdAt" />
                   </th>
-                  <th>Drop-off & NGO Contact</th>
+                  <th style={{ textAlign: 'right' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {paged.map((donation, index) => (
-                  <tr key={donation.id || donation.donationId || donation._id || index}>
-                    <td>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                        <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'rgba(2, 132, 199, 0.12)', color: 'var(--accent-ocean)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', flexShrink: 0 }}>
-                          <MdInventory />
+                {paged.map((donation, index) => {
+                  const donationId = donation.id || donation.donationId || donation._id || index;
+                  const statusStr = (donation.status || '').toString().toUpperCase();
+                  const isCopied = copiedPinId === donationId;
+
+                  return (
+                    <tr key={donationId}>
+                      <td>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                          <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'rgba(2, 132, 199, 0.12)', color: 'var(--accent-ocean)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', flexShrink: 0 }}>
+                            <MdInventory />
+                          </div>
+                          <div>
+                            <div style={{ fontWeight: 700 }}>{donation.itemName || donation.item || 'Relief Item'}</div>
+                            {donation.carrier && donation.trackingNumber && (
+                              <div style={{ fontSize: '0.75rem', color: '#7c3aed', display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
+                                <MdLocalShipping size={12} /> {donation.carrier}: #{donation.trackingNumber}
+                              </div>
+                            )}
+                          </div>
                         </div>
-                        <span style={{ fontWeight: 700 }}>{donation.itemName || donation.item || 'Relief Item'}</span>
-                      </div>
-                    </td>
-                    <td><span style={{ fontWeight: 700, color: 'var(--accent-ocean)' }}>{donation.quantity}</span></td>
-                    <td><StatusBadge status={donation.status} /></td>
-                    <td style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>{formatDate(donation.createdAt || donation.donatedAt || donation.date)}</td>
-                    <td>
-                      <button
-                        type="button"
-                        className="btn btn-secondary btn-sm"
-                        style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem', padding: '4px 8px' }}
-                        onClick={() => setSelectedDonation(donation)}
-                      >
-                        <MdLocationOn style={{ color: 'var(--accent-ocean)' }} /> View Drop-off Details
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                      <td><span style={{ fontWeight: 700, color: 'var(--accent-ocean)' }}>{donation.quantity}</span></td>
+                      <td><StatusBadge status={donation.status} /></td>
+                      <td>
+                        {donation.verificationCode ? (
+                          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(2, 132, 199, 0.08)', padding: '3px 8px', borderRadius: '6px' }}>
+                            <MdVpnKey size={14} style={{ color: 'var(--accent-ocean)' }} />
+                            <span style={{ fontFamily: 'monospace', fontWeight: 800, fontSize: '0.875rem', letterSpacing: '1px', color: 'var(--text-primary)' }}>
+                              {donation.verificationCode}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => copyPin(donation.verificationCode, donationId)}
+                              title="Copy 6-digit PIN"
+                              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px', display: 'flex', alignItems: 'center', color: isCopied ? '#16a34a' : 'var(--text-muted)' }}
+                            >
+                              {isCopied ? <MdCheck size={14} /> : <MdContentCopy size={13} />}
+                            </button>
+                          </div>
+                        ) : (
+                          <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>—</span>
+                        )}
+                      </td>
+                      <td style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>{formatDate(donation.createdAt || donation.donatedAt || donation.date)}</td>
+                      <td style={{ textAlign: 'right' }}>
+                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+                          {statusStr === 'ACCEPTED' && (
+                            <button
+                              type="button"
+                              className="btn btn-primary btn-sm"
+                              style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem', padding: '4px 9px', background: '#7c3aed', borderColor: '#7c3aed' }}
+                              onClick={() => openDispatchModal(donation)}
+                            >
+                              <MdLocalShipping /> Dispatch / Track
+                            </button>
+                          )}
+
+                          <button
+                            type="button"
+                            className="btn btn-secondary btn-sm"
+                            style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem', padding: '4px 8px' }}
+                            onClick={() => setSelectedDonation(donation)}
+                          >
+                            <MdLocationOn style={{ color: 'var(--accent-ocean)' }} /> Details
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -229,6 +340,146 @@ const MyDonations = () => {
         </div>
       )}
 
+      {/* ── Dispatch Shipment Modal ── */}
+      {dispatchModalDonation && (
+        <div
+          role="dialog" aria-modal="true"
+          style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.6)', backdropFilter: 'blur(6px)', zIndex: 2100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}
+          onClick={() => !dispatchSubmitting && setDispatchModalDonation(null)}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{ background: '#ffffff', borderRadius: 'var(--radius-xl)', padding: '2rem', width: '100%', maxWidth: '480px', boxShadow: '0 24px 64px rgba(15,23,42,0.25)', position: 'relative', animation: 'fadeInScale 0.2s ease' }}
+          >
+            <button
+              onClick={() => !dispatchSubmitting && setDispatchModalDonation(null)}
+              aria-label="Close"
+              style={{ position: 'absolute', top: '1.25rem', right: '1.25rem', background: '#f1f5f9', border: 'none', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--text-secondary)', fontSize: '1.1rem' }}
+            >
+              <MdClose />
+            </button>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.25rem' }}>
+              <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'rgba(124, 58, 237, 0.1)', color: '#7c3aed', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem', flexShrink: 0 }}>
+                <MdLocalShipping />
+              </div>
+              <div>
+                <h2 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '2px' }}>
+                  Dispatch Relief Shipment
+                </h2>
+                <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>
+                  Item: {dispatchModalDonation.quantity}x {dispatchModalDonation.itemName}
+                </p>
+              </div>
+            </div>
+
+            <form onSubmit={handleDispatchSubmit}>
+              <div style={{ marginBottom: '1rem' }}>
+                <label style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.375rem' }}>
+                  Delivery Method
+                </label>
+                <select
+                  className="form-control"
+                  value={dispatchForm.deliveryMethod}
+                  onChange={e => setDispatchForm(prev => ({ ...prev, deliveryMethod: e.target.value }))}
+                  style={{ width: '100%', padding: '0.625rem', borderRadius: '8px', border: '1px solid var(--border-subtle)', fontWeight: 600 }}
+                >
+                  <option value="COURIER">Courier / Postal Service</option>
+                  <option value="SELF_DROPOFF">Self Drop-off (Personal Vehicle)</option>
+                  <option value="VOLUNTEER_FLEET">Volunteer Fleet / Logistics Group</option>
+                </select>
+              </div>
+
+              {dispatchForm.deliveryMethod === 'COURIER' ? (
+                <>
+                  <div style={{ marginBottom: '1rem' }}>
+                    <label style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.375rem' }}>
+                      Courier / Carrier Name
+                    </label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder="e.g. BlueDart, Delhivery, DTDC, India Post, FedEx"
+                      value={dispatchForm.carrier}
+                      onChange={e => setDispatchForm(prev => ({ ...prev, carrier: e.target.value }))}
+                      style={{ width: '100%', padding: '0.625rem', borderRadius: '8px', border: '1px solid var(--border-subtle)' }}
+                    />
+                  </div>
+                  <div style={{ marginBottom: '1rem' }}>
+                    <label style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.375rem' }}>
+                      Tracking / Consignment Number
+                    </label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder="e.g. BD-89234821"
+                      value={dispatchForm.trackingNumber}
+                      onChange={e => setDispatchForm(prev => ({ ...prev, trackingNumber: e.target.value }))}
+                      style={{ width: '100%', padding: '0.625rem', borderRadius: '8px', border: '1px solid var(--border-subtle)', fontFamily: 'monospace' }}
+                    />
+                  </div>
+                </>
+              ) : (
+                <div style={{ marginBottom: '1rem' }}>
+                  <label style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.375rem' }}>
+                    Vehicle or Contact Reference
+                  </label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="e.g. Vehicle plate, driver contact or 'Self drop'"
+                    value={dispatchForm.carrier}
+                    onChange={e => setDispatchForm(prev => ({ ...prev, carrier: e.target.value }))}
+                    style={{ width: '100%', padding: '0.625rem', borderRadius: '8px', border: '1px solid var(--border-subtle)' }}
+                  />
+                </div>
+              )}
+
+              <div style={{ marginBottom: '1.25rem' }}>
+                <label style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.375rem' }}>
+                  Estimated Arrival / Drop-off Time
+                </label>
+                <input
+                  type="date"
+                  className="form-control"
+                  value={dispatchForm.estimatedArrival}
+                  onChange={e => setDispatchForm(prev => ({ ...prev, estimatedArrival: e.target.value }))}
+                  style={{ width: '100%', padding: '0.625rem', borderRadius: '8px', border: '1px solid var(--border-subtle)' }}
+                />
+              </div>
+
+              {/* Security info card */}
+              <div style={{ background: '#f8fafc', border: '1px solid var(--border-subtle)', borderRadius: '10px', padding: '0.875rem', marginBottom: '1.5rem', fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.25rem' }}>
+                  <MdVpnKey style={{ color: 'var(--accent-ocean)' }} />
+                  Delivery Verification Required
+                </div>
+                Your 6-digit PIN <strong>({dispatchModalDonation.verificationCode || 'Assigned Code'})</strong> will be requested by the NGO when supplies arrive to verify delivery.
+              </div>
+
+              <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  disabled={dispatchSubmitting}
+                  onClick={() => setDispatchModalDonation(null)}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="btn btn-primary"
+                  disabled={dispatchSubmitting}
+                  style={{ background: '#7c3aed', borderColor: '#7c3aed', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                >
+                  {dispatchSubmitting ? 'Updating...' : 'Confirm Dispatch'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* ── Donation Drop-off & Contact Info Modal ── */}
       {selectedDonation && (
         <div
@@ -238,7 +489,7 @@ const MyDonations = () => {
         >
           <div
             onClick={e => e.stopPropagation()}
-            style={{ background: '#ffffff', borderRadius: 'var(--radius-xl)', padding: '2rem', width: '100%', maxWidth: '480px', boxShadow: '0 24px 64px rgba(15,23,42,0.25)', position: 'relative', animation: 'fadeInScale 0.2s ease' }}
+            style={{ background: '#ffffff', borderRadius: 'var(--radius-xl)', padding: '2rem', width: '100%', maxWidth: '480px', boxShadow: '0 24px 64px rgba(15,23,42,0.25)', position: 'relative', animation: 'fadeInScale 0.2s ease', maxHeight: '90vh', overflowY: 'auto' }}
           >
             {/* Close btn */}
             <button onClick={() => setSelectedDonation(null)} aria-label="Close" style={{ position: 'absolute', top: '1.25rem', right: '1.25rem', background: '#f1f5f9', border: 'none', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--text-secondary)', fontSize: '1.1rem' }}>
@@ -252,13 +503,53 @@ const MyDonations = () => {
               </div>
               <div>
                 <h2 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '2px' }}>
-                  Delivery & NGO Contact Details
+                  Delivery & Drop-off Details
                 </h2>
                 <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>
                   For Donation: {selectedDonation.quantity} units of {selectedDonation.itemName}
                 </p>
               </div>
             </div>
+
+            {/* Delivery Verification PIN Box */}
+            {selectedDonation.verificationCode && (
+              <div style={{ background: '#eff6ff', border: '1.5px dashed #60a5fa', borderRadius: '10px', padding: '1rem', marginBottom: '1.25rem' }}>
+                <div style={{ fontSize: '0.8rem', fontWeight: 800, color: '#1e40af', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '0.35rem' }}>
+                  <MdVpnKey style={{ color: '#2563eb' }} /> 6-Digit Delivery Handoff PIN:
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#ffffff', padding: '0.5rem 0.875rem', borderRadius: '8px', border: '1px solid #bfdbfe' }}>
+                  <span style={{ fontFamily: 'monospace', fontSize: '1.35rem', fontWeight: 900, letterSpacing: '4px', color: '#1e3a8a' }}>
+                    {selectedDonation.verificationCode}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => copyPin(selectedDonation.verificationCode, 'modal')}
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: '#2563eb', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '4px 10px', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer' }}
+                  >
+                    {copiedPinId === 'modal' ? <MdCheck /> : <MdContentCopy />} {copiedPinId === 'modal' ? 'Copied' : 'Copy'}
+                  </button>
+                </div>
+                <p style={{ margin: '0.45rem 0 0 0', fontSize: '0.75rem', color: '#1e40af', lineHeight: 1.4 }}>
+                  Provide this PIN to the receiving NGO workers or courier delivery agent on handoff. They will enter it to verify physical receipt.
+                </p>
+              </div>
+            )}
+
+            {/* Tracking Info if Dispatched */}
+            {(selectedDonation.status === 'DISPATCHED' || selectedDonation.trackingNumber) && (
+              <div style={{ background: '#f5f3ff', border: '1.5px solid #ddd6fe', borderRadius: '10px', padding: '1rem', marginBottom: '1.25rem' }}>
+                <div style={{ fontSize: '0.8rem', fontWeight: 800, color: '#6d28d9', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '0.5rem' }}>
+                  <MdLocalShipping style={{ color: '#7c3aed' }} /> Shipment & Dispatch Details:
+                </div>
+                <div style={{ fontSize: '0.825rem', color: '#5b21b6', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <div>Method: <strong>{selectedDonation.deliveryMethod || 'COURIER'}</strong></div>
+                  {selectedDonation.carrier && <div>Carrier: <strong>{selectedDonation.carrier}</strong></div>}
+                  {selectedDonation.trackingNumber && <div>Tracking ID: <strong style={{ fontFamily: 'monospace' }}>{selectedDonation.trackingNumber}</strong></div>}
+                  {selectedDonation.estimatedArrival && <div>Estimated Arrival: <strong>{formatDate(selectedDonation.estimatedArrival)}</strong></div>}
+                  {selectedDonation.dispatchedAt && <div>Dispatched At: <strong>{formatDate(selectedDonation.dispatchedAt)}</strong></div>}
+                </div>
+              </div>
+            )}
 
             {/* Where to send box */}
             <div style={{ background: '#f0fdf4', border: '1.5px solid #86efac', borderRadius: '10px', padding: '1.125rem', marginBottom: '1.25rem' }}>
@@ -312,7 +603,3 @@ const MyDonations = () => {
 };
 
 export default MyDonations;
-
-
-
-

@@ -49,6 +49,9 @@ class DonorService {
     const ngoDeliveryAddress = ngoRequest.deliveryAddress || 'Designated Regional Relief Hub';
     const ngoContactPhone = ngoRequest.contactPhone || '';
 
+    // Generate 6-digit verification code for delivery handoff
+    const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+
     const donation = new Donation({
       donorId,
       ngoRequestId,
@@ -59,6 +62,7 @@ class DonorService {
       ngoDeliveryAddress,
       ngoContactPhone,
       status: 'PENDING',
+      verificationCode,
       donatedAt: Date.now(),
     });
 
@@ -73,6 +77,7 @@ class DonorService {
         ngoDeliveryAddress,
         ngoContactEmail,
         ngoContactPhone,
+        verificationCode,
       })
       .catch((e) => console.error('[Donor Email Async Error]', e.message));
 
@@ -83,6 +88,33 @@ class DonorService {
       ngoDeliveryAddress,
       ngoContactPhone,
     };
+  }
+
+  /**
+   * Dispatch a donation: Donor marks supplies as shipped/dropped-off with tracking details
+   */
+  async dispatchDonation(id, donorId, { trackingNumber, deliveryMethod, carrier, estimatedArrival }) {
+    const donation = await Donation.findOne({ _id: id, donorId });
+    if (!donation) {
+      const err = new Error('Donation not found or unauthorized');
+      err.statusCode = 404;
+      throw err;
+    }
+
+    if (donation.status === 'DELIVERED') {
+      const err = new Error('Donation has already been marked delivered');
+      err.statusCode = 400;
+      throw err;
+    }
+
+    donation.status = 'DISPATCHED';
+    donation.trackingNumber = trackingNumber?.trim() || '';
+    donation.deliveryMethod = deliveryMethod || 'COURIER';
+    donation.carrier = carrier?.trim() || '';
+    donation.estimatedArrival = estimatedArrival || '';
+    donation.dispatchedAt = Date.now();
+
+    return donation.save();
   }
 
   /**
@@ -107,9 +139,11 @@ class DonorService {
     if (ngoRequestIds) {
       query.ngoRequestId = { $in: ngoRequestIds.split(',') };
     }
-    query.status = status || 'PENDING';
+    if (status) {
+      query.status = status;
+    }
 
-    return Donation.find(query);
+    return Donation.find(query).sort({ donatedAt: -1 });
   }
 
   /**
@@ -126,16 +160,22 @@ class DonorService {
   }
 
   /**
-   * Inter-Service: Update donation status (ACCEPTED | DELIVERED)
+   * Inter-Service: Update donation status (ACCEPTED | DISPATCHED | DELIVERED)
    */
-  async updateDonationStatus(id, status) {
-    if (!['ACCEPTED', 'DELIVERED'].includes(status)) {
-      const err = new Error('Invalid status. Must be ACCEPTED or DELIVERED');
+  async updateDonationStatus(id, status, extraFields = {}) {
+    const allowed = ['ACCEPTED', 'DISPATCHED', 'DELIVERED'];
+    if (!allowed.includes(status)) {
+      const err = new Error(`Invalid status. Must be one of: ${allowed.join(', ')}`);
       err.statusCode = 400;
       throw err;
     }
 
-    const donation = await Donation.findByIdAndUpdate(id, { status }, { new: true });
+    const updateData = { status, ...extraFields };
+    if (status === 'DELIVERED' && !updateData.deliveredAt) {
+      updateData.deliveredAt = Date.now();
+    }
+
+    const donation = await Donation.findByIdAndUpdate(id, updateData, { new: true });
     if (!donation) {
       const err = new Error('Donation not found');
       err.statusCode = 404;

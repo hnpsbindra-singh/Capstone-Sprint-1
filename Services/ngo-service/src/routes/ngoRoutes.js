@@ -10,6 +10,7 @@ router.get('/my-requests', authMiddleware, (req, res, next) => ngoController.get
 router.get('/available-donations', authMiddleware, (req, res, next) => ngoController.getAvailableDonations(req, res, next));
 router.post('/accept/:id', authMiddleware, (req, res, next) => ngoController.acceptDonation(req, res, next));
 router.post('/delivered/:id', authMiddleware, (req, res, next) => ngoController.markDelivered(req, res, next));
+router.post('/donations/:id/verify-receipt', authMiddleware, (req, res, next) => ngoController.markDelivered(req, res, next));
 router.get('/heatmap', authMiddleware, (req, res, next) => ngoController.getHeatmap(req, res, next));
 
 // Inter-Service Internal endpoints (OpenFeign equivalents)

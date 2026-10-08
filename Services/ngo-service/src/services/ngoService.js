@@ -163,9 +163,9 @@ class NgoService {
   }
 
   /**
-   * Mark an accepted donation as DELIVERED and notify donor
+   * Verify receipt of donation using 6-digit security code and mark as DELIVERED
    */
-  async markDonationDelivered(donationId, ngoId) {
+  async markDonationDelivered(donationId, ngoId, verificationCode = '') {
     const donation = await donorClient.getDonationById(donationId);
     if (!donation) {
       const err = new Error('Donation not found');
@@ -186,13 +186,37 @@ class NgoService {
       throw err;
     }
 
-    if (donation.status !== 'ACCEPTED') {
-      const err = new Error('Donation must be accepted first');
+    if (donation.status === 'DELIVERED') {
+      const err = new Error('Donation is already marked as DELIVERED');
       err.statusCode = 400;
       throw err;
     }
 
-    await donorClient.updateDonationStatus(donationId, { status: 'DELIVERED' });
+    if (!['ACCEPTED', 'DISPATCHED'].includes(donation.status)) {
+      const err = new Error('Donation must be in ACCEPTED or DISPATCHED status before delivery confirmation');
+      err.statusCode = 400;
+      throw err;
+    }
+
+    // Verify 6-digit handoff code if set on donation
+    if (donation.verificationCode) {
+      const cleanCode = String(verificationCode || '').trim();
+      if (!cleanCode) {
+        const err = new Error('Verification code is required to confirm physical receipt of supplies');
+        err.statusCode = 400;
+        throw err;
+      }
+      if (cleanCode !== String(donation.verificationCode).trim()) {
+        const err = new Error('Invalid verification code. Please confirm the 6-digit handoff PIN with the donor/courier.');
+        err.statusCode = 400;
+        throw err;
+      }
+    }
+
+    await donorClient.updateDonationStatus(donationId, {
+      status: 'DELIVERED',
+      deliveredAt: Date.now(),
+    });
 
     // Send delivered email
     authClient
@@ -204,7 +228,7 @@ class NgoService {
       })
       .catch((e) => console.error('[NGO Deliver Email Error]', e.message));
 
-    return { message: 'Donation marked as delivered' };
+    return { message: 'Donation verified and marked as delivered successfully' };
   }
 
   /**

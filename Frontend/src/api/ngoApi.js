@@ -25,7 +25,9 @@ export const acceptDonation = async (donationId) => {
   return response.data;
 };
 
-export const deliverDonation = async (donationId) => {
-  const response = await API.post(`/api/ngo/delivered/${donationId}`);
+export const deliverDonation = async (donationId, verificationCode = '') => {
+  const response = await API.post(`/api/ngo/donations/${donationId}/verify-receipt`, { verificationCode });
   return response.data;
 };
+
+export const verifyReceipt = deliverDonation;

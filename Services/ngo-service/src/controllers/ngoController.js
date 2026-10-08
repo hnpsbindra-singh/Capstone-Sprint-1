@@ -39,7 +39,8 @@ class NgoController {
 
   async markDelivered(req, res, next) {
     try {
-      const result = await ngoService.markDonationDelivered(req.params.id, req.user.username);
+      const verificationCode = req.body?.verificationCode || req.query?.verificationCode || '';
+      const result = await ngoService.markDonationDelivered(req.params.id, req.user.username, verificationCode);
       res.json(result);
     } catch (err) {
       next(err);

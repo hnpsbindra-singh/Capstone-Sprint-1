@@ -19,3 +19,8 @@ export const getMyDonations = async () => {
   const response = await API.get('/api/donor/my-donations');
   return response.data;
 };
+
+export const dispatchDonation = async (id, dispatchData) => {
+  const response = await API.put(`/api/donor/donations/${id}/dispatch`, dispatchData);
+  return response.data;
+};

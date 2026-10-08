@@ -26,6 +26,22 @@ class DonorController {
     }
   }
 
+  async dispatch(req, res, next) {
+    try {
+      const { id } = req.params;
+      const { trackingNumber, deliveryMethod, carrier, estimatedArrival } = req.body;
+      const updated = await donorService.dispatchDonation(id, req.user.username, {
+        trackingNumber,
+        deliveryMethod,
+        carrier,
+        estimatedArrival,
+      });
+      res.json(updated);
+    } catch (err) {
+      next(err);
+    }
+  }
+
   async getMyDonations(req, res, next) {
     try {
       const donations = await donorService.getMyDonations(req.user.username);

@@ -41,8 +41,40 @@ const donationSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ['PENDING', 'ACCEPTED', 'DELIVERED'],
+      enum: ['PENDING', 'ACCEPTED', 'DISPATCHED', 'DELIVERED'],
       default: 'PENDING',
+    },
+    trackingNumber: {
+      type: String,
+      default: '',
+      trim: true,
+    },
+    deliveryMethod: {
+      type: String,
+      enum: ['COURIER', 'SELF_DROPOFF', 'VOLUNTEER_FLEET'],
+      default: 'COURIER',
+    },
+    carrier: {
+      type: String,
+      default: '',
+      trim: true,
+    },
+    estimatedArrival: {
+      type: String,
+      default: '',
+    },
+    verificationCode: {
+      type: String,
+      default: '',
+      trim: true,
+    },
+    dispatchedAt: {
+      type: Number,
+      default: null,
+    },
+    deliveredAt: {
+      type: Number,
+      default: null,
     },
     donatedAt: {
       type: Number,

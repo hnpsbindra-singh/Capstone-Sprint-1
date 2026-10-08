@@ -21,6 +21,15 @@ const getStatusStyle = (status) => {
         borderColor: 'rgba(2, 132, 199, 0.3)',
         pulseClass: ''
       };
+    case 'DISPATCHED':
+    case 'SHIPPED':
+    case 'IN_TRANSIT':
+      return {
+        color: '#7c3aed',
+        backgroundColor: 'rgba(124, 58, 237, 0.12)',
+        borderColor: 'rgba(124, 58, 237, 0.3)',
+        pulseClass: ''
+      };
     case 'DELIVERED':
     case 'COMPLETED':
       return {
