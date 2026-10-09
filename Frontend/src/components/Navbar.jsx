@@ -39,31 +39,31 @@ const getNavItems = (t) => ({
 const ROLE_THEMES = {
   VICTIM: {
     label: 'VICTIM',
-    avatarGradient: 'linear-gradient(135deg, #0284c7 0%, #38bdf8 100%)',
-    badgeBg: 'rgba(2, 132, 199, 0.08)',
-    badgeBorder: 'rgba(2, 132, 199, 0.22)',
-    badgeText: '#0284c7'
+    avatarGradient: '#09090b',
+    badgeBg: '#f4f4f5',
+    badgeBorder: '#e4e4e7',
+    badgeText: '#09090b'
   },
   DONOR: {
     label: 'DONOR',
-    avatarGradient: 'linear-gradient(135deg, #d97706 0%, #fbbf24 100%)',
-    badgeBg: 'rgba(245, 158, 11, 0.08)',
-    badgeBorder: 'rgba(245, 158, 11, 0.25)',
-    badgeText: '#b45309'
+    avatarGradient: '#09090b',
+    badgeBg: '#f4f4f5',
+    badgeBorder: '#e4e4e7',
+    badgeText: '#09090b'
   },
   NGO: {
     label: 'NGO',
-    avatarGradient: 'linear-gradient(135deg, #059669 0%, #34d399 100%)',
-    badgeBg: 'rgba(16, 185, 129, 0.08)',
-    badgeBorder: 'rgba(16, 185, 129, 0.25)',
-    badgeText: '#047857'
+    avatarGradient: '#09090b',
+    badgeBg: '#f4f4f5',
+    badgeBorder: '#e4e4e7',
+    badgeText: '#09090b'
   },
   ADMIN: {
     label: 'ADMIN',
-    avatarGradient: 'linear-gradient(135deg, #4f46e5 0%, #9333ea 100%)',
-    badgeBg: 'rgba(99, 102, 241, 0.08)',
-    badgeBorder: 'rgba(99, 102, 241, 0.25)',
-    badgeText: '#4338ca'
+    avatarGradient: '#09090b',
+    badgeBg: '#f4f4f5',
+    badgeBorder: '#e4e4e7',
+    badgeText: '#09090b'
   }
 };
 
@@ -163,53 +163,49 @@ const Navbar = () => {
         }
 
         .resq-brand-name {
-          font-size: 22px;
+          font-size: 20px;
           font-weight: 800;
           letter-spacing: -0.04em;
-          color: #0f172a;
+          color: #09090b;
           line-height: 1;
         }
 
         .resq-brand-name .flow-accent {
-          background: linear-gradient(135deg, #0284c7 0%, #3b82f6 100%);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
+          color: #09090b;
         }
 
         /* Center Segmented Pill Navigation */
         .resq-nav-pill-group {
-          background: rgba(241, 245, 249, 0.72);
-          border: 1px solid rgba(226, 232, 240, 0.85);
-          padding: 4px;
+          background: #f4f4f5;
+          border: 1px solid #e4e4e7;
+          padding: 3px;
           border-radius: 9999px;
           display: flex;
           align-items: center;
-          gap: 3px;
+          gap: 2px;
         }
 
         .resq-nav-pill-item {
           text-decoration: none;
           font-size: 13px;
           font-weight: 500;
-          padding: 6px 14px;
+          padding: 5px 13px;
           border-radius: 9999px;
-          color: #475569;
-          transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+          color: #52525b;
+          transition: all 0.15s ease;
           white-space: nowrap;
           border: 1px solid transparent;
         }
 
         .resq-nav-pill-item:hover {
-          color: #0f172a;
-          background: rgba(255, 255, 255, 0.85);
-          box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+          color: #09090b;
+          background: #ffffff;
         }
 
         .resq-nav-pill-item.active {
           color: #ffffff;
-          background: #0f172a;
+          background: #09090b;
           font-weight: 600;
-          box-shadow: 0 2px 8px rgba(15, 23, 42, 0.18);
         }
 
         /* User Capsule */

@@ -109,7 +109,7 @@ const MapAutoFitter = ({ points, activeLocation }) => {
 };
 
 const HeatmapView = ({ data = [], role = null, onRequestFromZone = null, onDonateInZone = null }) => {
-  const [activeStyle, setActiveStyle] = useState('dark');
+  const [activeStyle, setActiveStyle] = useState('streets');
   const [severityFilter, setSeverityFilter] = useState('ALL');
   const [activeZone, setActiveZone] = useState(null);
   const [showQuickList, setShowQuickList] = useState(false);
