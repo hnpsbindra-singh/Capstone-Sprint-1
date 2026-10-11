@@ -127,12 +127,7 @@ const RegisterPage = () => {
   };
 
   return (
-    <AuthLayout
-      badge="NODE ENROLLMENT"
-      title="Enroll in the Disaster Relief Network"
-      description="Register as a stranded citizen, certified relief NGO, or active donor to coordinate disaster operations with verified chain-of-custody."
-      wide
-    >
+    <AuthLayout wide>
       <div className="auth-card auth-card-wide animate-fade-in-up">
         {/* Brand */}
         <div className="auth-brand">

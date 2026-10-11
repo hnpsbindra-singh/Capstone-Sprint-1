@@ -75,11 +75,7 @@ const LoginPage = () => {
   };
 
   return (
-    <AuthLayout
-      badge="GRID AUTHENTICATION"
-      title="Access Disaster Operations Command"
-      description="Sign in with your verified credentials to access role-specific incident telemetry, active flood heatmaps, and relief logistics."
-    >
+    <AuthLayout>
       <div className="auth-card animate-fade-in-up">
         {/* Brand */}
         <div className="auth-brand">

@@ -151,11 +151,7 @@ const ForgotPasswordPage = () => {
   const otp = otpDigits.join('');
 
   return (
-    <AuthLayout
-      badge="CREDENTIAL RECOVERY"
-      title="Reset Network Credentials"
-      description="Follow the 3-step verification protocol to securely reset your ResQFlow command access credentials."
-    >
+    <AuthLayout>
       <div className="auth-card animate-fade-in-up">
         {/* Brand */}
         <div className="auth-brand">

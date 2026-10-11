@@ -98,11 +98,7 @@ const VerifyOtpPage = () => {
   const isComplete = otp.length === 6;
 
   return (
-    <AuthLayout
-      badge="SECURITY HANDSHAKE"
-      title="Cryptographic OTP Code Verification"
-      description="Enter the 6-digit one-time access passcode transmitted to your registered email address to verify your disaster node identity."
-    >
+    <AuthLayout>
       <div className="auth-card animate-fade-in-up">
         {/* Brand */}
         <div className="auth-brand">
