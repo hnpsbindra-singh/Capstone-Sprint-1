@@ -4,6 +4,7 @@ import { jwtDecode } from 'jwt-decode';
 import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
 import { login as loginApi } from '../../api/authApi';
+import AuthLayout from '../../components/AuthLayout';
 
 const LoginPage = () => {
   const [username, setUsername] = useState('');
@@ -74,11 +75,11 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="auth-layout">
-      <Link to="/" className="auth-back-link">
-        ← Back to Home
-      </Link>
-
+    <AuthLayout
+      badge="GRID AUTHENTICATION"
+      title="Access Disaster Operations Command"
+      description="Sign in with your verified credentials to access role-specific incident telemetry, active flood heatmaps, and relief logistics."
+    >
       <div className="auth-card animate-fade-in-up">
         {/* Brand */}
         <div className="auth-brand">
@@ -174,7 +175,7 @@ const LoginPage = () => {
           <Link to="/register">Create one here</Link>
         </div>
       </div>
-    </div>
+    </AuthLayout>
   );
 };
 

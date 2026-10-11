@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { verifyOtp } from '../../api/authApi';
+import AuthLayout from '../../components/AuthLayout';
 
 const VerifyOtpPage = () => {
   const [searchParams] = useSearchParams();
@@ -97,11 +98,11 @@ const VerifyOtpPage = () => {
   const isComplete = otp.length === 6;
 
   return (
-    <div className="auth-layout">
-      <Link to="/" className="auth-back-link">
-        ← Back to Home
-      </Link>
-
+    <AuthLayout
+      badge="SECURITY HANDSHAKE"
+      title="Cryptographic OTP Code Verification"
+      description="Enter the 6-digit one-time access passcode transmitted to your registered email address to verify your disaster node identity."
+    >
       <div className="auth-card animate-fade-in-up">
         {/* Brand */}
         <div className="auth-brand">
@@ -198,7 +199,7 @@ const VerifyOtpPage = () => {
           Back to <Link to="/login">Sign in</Link>
         </div>
       </div>
-    </div>
+    </AuthLayout>
   );
 };
 

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { register } from '../../api/authApi';
+import AuthLayout from '../../components/AuthLayout';
 
 const ROLES = [
   {
@@ -126,11 +127,12 @@ const RegisterPage = () => {
   };
 
   return (
-    <div className="auth-layout">
-      <Link to="/" className="auth-back-link">
-        ← Back to Home
-      </Link>
-
+    <AuthLayout
+      badge="NODE ENROLLMENT"
+      title="Enroll in the Disaster Relief Network"
+      description="Register as a stranded citizen, certified relief NGO, or active donor to coordinate disaster operations with verified chain-of-custody."
+      wide
+    >
       <div className="auth-card auth-card-wide animate-fade-in-up">
         {/* Brand */}
         <div className="auth-brand">
@@ -297,7 +299,7 @@ const RegisterPage = () => {
           Already have an account? <Link to="/login">Sign in</Link>
         </div>
       </div>
-    </div>
+    </AuthLayout>
   );
 };
 

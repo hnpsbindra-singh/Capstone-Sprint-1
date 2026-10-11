@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { sendResetOtp, resetPassword } from '../../api/authApi';
+import AuthLayout from '../../components/AuthLayout';
 
 const STEPS = [
   { id: 1, label: 'Enter Email' },
@@ -150,11 +151,11 @@ const ForgotPasswordPage = () => {
   const otp = otpDigits.join('');
 
   return (
-    <div className="auth-layout">
-      <Link to="/" className="auth-back-link">
-        ← Back to Home
-      </Link>
-
+    <AuthLayout
+      badge="CREDENTIAL RECOVERY"
+      title="Reset Network Credentials"
+      description="Follow the 3-step verification protocol to securely reset your ResQFlow command access credentials."
+    >
       <div className="auth-card animate-fade-in-up">
         {/* Brand */}
         <div className="auth-brand">
@@ -395,7 +396,7 @@ const ForgotPasswordPage = () => {
           Remember your password? <Link to="/login">Sign in</Link>
         </div>
       </div>
-    </div>
+    </AuthLayout>
   );
 };
 
