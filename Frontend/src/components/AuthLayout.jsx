@@ -8,16 +8,13 @@ import {
   MdArrowBack,
   MdLocationOn,
   MdCheckCircle,
-  MdPhoneInTalk,
   MdLock
 } from 'react-icons/md';
 
 const AuthLayout = ({ 
   children, 
   badge = 'AUTHENTICATION PROTOCOL',
-  title = 'Decentralized flood rescue. Distress beacon to verified delivery.',
-  description = 'An open disaster logistics grid uniting stranded citizens, autonomous computer vision severity scoring, and registered relief NGOs on a real-time GIS tactical map.',
-  wide = false
+  wide = false 
 }) => {
   const [liveUtc, setLiveUtc] = useState('');
 
@@ -32,137 +29,181 @@ const AuthLayout = ({
   }, []);
 
   return (
-    <div className="auth-split-wrapper">
-      {/* ─── 1. LEFT COLUMN: TACTICAL MISSION COMMAND DECK ─── */}
-      <aside className="auth-sidebar-deck">
-        {/* Subtle Ambient Tactical Grid Marking */}
-        <div className="sidebar-ambient-grid" />
-
-        {/* Top Telemetry Strip */}
-        <div className="sidebar-top-bar">
-          <div className="sidebar-status-tag">
-            <span className="sidebar-live-pulsar" />
-            <span className="sidebar-status-text">DISASTER GRID ONLINE // LATENCY &lt;2MS</span>
-          </div>
-          <div className="sidebar-utc-clock">{liveUtc || 'SYNCING UTC...'}</div>
-        </div>
-
-        {/* Main Brand & Editorial Section */}
-        <div className="sidebar-hero-content">
-          <Link to="/" className="sidebar-brand-lockup">
-            <div className="sidebar-brand-icon">
-              <MdShield />
-            </div>
-            <div className="sidebar-brand-titles">
-              <span className="sidebar-brand-main">ResQFlow</span>
-              <span className="sidebar-brand-sub">// CRISIS DISPATCH GRID</span>
-            </div>
-          </Link>
-
-          <div className="sidebar-protocol-kicker">
-            <span>PROTOCOL v2.4</span>
-            <span className="kicker-sep">/</span>
-            <span>{badge}</span>
-          </div>
-
-          <h2 className="sidebar-hero-title">{title}</h2>
-          <p className="sidebar-hero-desc">{description}</p>
-
-          {/* 3 Real Capability Telemetry Cells */}
-          <div className="sidebar-capability-matrix">
-            <div className="sidebar-cap-card">
-              <div className="cap-icon-box">
-                <MdSensors />
+    <div className="auth-ambient-root">
+      {/* ─── 1. TOP OPERATIONAL TELEMETRY BAR ─── */}
+      <header className="auth-ambient-topbar">
+        <div className="ambient-topbar-inner">
+          <div className="ambient-top-left">
+            <Link to="/" className="ambient-brand-link">
+              <div className="ambient-brand-icon">
+                <MdShield />
               </div>
-              <div className="cap-body">
-                <div className="cap-title">
-                  <span>1-Tap Geolocation Beacon</span>
-                  <span className="cap-tag">&lt; 2s BROADCAST</span>
-                </div>
-                <p className="cap-desc">
-                  WGS84 high-precision GPS lock transmitted instantly without typing manual addresses.
-                </p>
+              <div className="ambient-brand-text">
+                <span className="brand-title">ResQFlow</span>
+                <span className="brand-sub">// DISASTER GRID</span>
               </div>
-            </div>
+            </Link>
 
-            <div className="sidebar-cap-card">
-              <div className="cap-icon-box">
-                <MdAutoAwesome />
-              </div>
-              <div className="cap-body">
-                <div className="cap-title">
-                  <span>AI Computer Vision Triage</span>
-                  <span className="cap-tag">1.0 – 10.0 SCORE</span>
-                </div>
-                <p className="cap-desc">
-                  Deep learning assesses flood depth, structural collapse risk, and rooftop refuge.
-                </p>
-              </div>
-            </div>
-
-            <div className="sidebar-cap-card">
-              <div className="cap-icon-box">
-                <MdVpnKey />
-              </div>
-              <div className="cap-body">
-                <div className="cap-title">
-                  <span>Physical 6-Digit Handshake</span>
-                  <span className="cap-tag">CHAIN OF CUSTODY</span>
-                </div>
-                <p className="cap-desc">
-                  Parcels cannot mark delivered without the receiving NGO matching the donor's security PIN.
-                </p>
-              </div>
+            <div className="ambient-status-chip">
+              <span className="ambient-live-dot" />
+              <span>GRID ONLINE // LATENCY &lt;2MS</span>
             </div>
           </div>
-        </div>
 
-        {/* Bottom Infrastructure Telemetry Footer */}
-        <div className="sidebar-footer-ticker">
-          <div className="ticker-label">CLUSTER TELEMETRY:</div>
-          <div className="ticker-badges">
-            <span className="ticker-pill">API GATEWAY: 100% UP</span>
-            <span className="ticker-pill">VICTIM NODE: UP</span>
-            <span className="ticker-pill">AI VISION: UP</span>
-            <span className="ticker-pill">NGO DISPATCH: UP</span>
-            <span className="ticker-pill">DONOR LEDGER: UP</span>
+          <div className="ambient-top-center">
+            <span className="ambient-utc-clock">{liveUtc || 'SYNCING UTC...'}</span>
           </div>
-        </div>
-      </aside>
 
-      {/* ─── 2. RIGHT COLUMN: INTERACTIVE AUTHENTICATION CANVAS ─── */}
-      <main className={`auth-form-canvas ${wide ? 'canvas-wide' : ''}`}>
-        {/* Top Action Header */}
-        <div className="canvas-header-bar">
-          <Link to="/" className="canvas-back-link">
-            <MdArrowBack size={16} />
-            <span>Return to Operations Base</span>
-          </Link>
-
-          <div className="canvas-emergency-links">
-            <span className="hotline-kicker">EMERGENCY LINES:</span>
-            <a href="tel:112" className="canvas-hotline-tag" title="National Police & Rescue">
+          <div className="ambient-top-right">
+            <a href="tel:112" className="ambient-hotline-tag" title="National Police & Rescue">
               POLICE 112
             </a>
-            <a href="tel:108" className="canvas-hotline-tag" title="Emergency Ambulance">
+            <a href="tel:108" className="ambient-hotline-tag" title="Emergency Ambulance">
               AMBULANCE 108
             </a>
+            <Link to="/" className="ambient-back-btn">
+              <MdArrowBack size={15} />
+              <span>Base</span>
+            </Link>
+          </div>
+        </div>
+      </header>
+
+      {/* ─── 2. ATMOSPHERIC DISASTER TOPOGRAPHY & TELEMETRY BACKGROUND ─── */}
+      <div className="auth-ambient-canvas" aria-hidden="true">
+        {/* Architectural Coordinate Hairline Grid */}
+        <div className="ambient-grid-overlay" />
+
+        {/* Topographic Bathymetry / Inundation Contour Lines */}
+        <svg 
+          className="ambient-topo-svg" 
+          viewBox="0 0 1440 900" 
+          fill="none" 
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          {/* Contour Depth Level 1 (+5.0m) */}
+          <path 
+            d="M-50 250 C 200 180, 450 320, 720 220 C 990 120, 1200 280, 1500 200" 
+            stroke="currentColor" 
+            strokeWidth="1" 
+            strokeDasharray="6 6"
+            className="topo-line-1"
+          />
+          {/* Contour Depth Level 2 (+3.5m) */}
+          <path 
+            d="M-50 400 C 180 320, 420 480, 720 380 C 1020 280, 1250 460, 1500 360" 
+            stroke="currentColor" 
+            strokeWidth="1" 
+            className="topo-line-2"
+          />
+          {/* Contour Depth Level 3 (+2.0m) */}
+          <path 
+            d="M-50 560 C 220 490, 480 620, 720 540 C 960 460, 1220 610, 1500 520" 
+            stroke="currentColor" 
+            strokeWidth="1" 
+            strokeDasharray="4 4"
+            className="topo-line-3"
+          />
+          {/* Contour Depth Level 4 (+1.0m Basin) */}
+          <path 
+            d="M-50 720 C 260 650, 500 780, 720 700 C 940 620, 1200 750, 1500 680" 
+            stroke="currentColor" 
+            strokeWidth="1" 
+            className="topo-line-4"
+          />
+
+          {/* Focal Depth Concentric Rings (Centered behind card) */}
+          <circle cx="720" cy="460" r="280" stroke="currentColor" strokeWidth="1" strokeDasharray="3 6" className="topo-ring" />
+          <circle cx="720" cy="460" r="440" stroke="currentColor" strokeWidth="1" className="topo-ring" />
+          <circle cx="720" cy="460" r="620" stroke="currentColor" strokeWidth="1" strokeDasharray="8 8" className="topo-ring" />
+
+          {/* Crosshair Coordinates Axis */}
+          <line x1="720" y1="60" x2="720" y2="860" stroke="currentColor" strokeWidth="1" strokeDasharray="2 4" className="topo-axis" />
+          <line x1="120" y1="460" x2="1320" y2="460" stroke="currentColor" strokeWidth="1" strokeDasharray="2 4" className="topo-axis" />
+        </svg>
+
+        {/* Large Brutalist Typographic Watermark */}
+        <div className="ambient-watermark">
+          <div className="watermark-line">RESQFLOW // CRISIS DISPATCH</div>
+          <div className="watermark-sub">WGS84 28.6139° N, 77.2090° E // ZERO SUPPLY LEAKAGE</div>
+        </div>
+
+        {/* Technical Corner Crosshairs & Coordinate Tags */}
+        <div className="ambient-corner top-left">
+          <span className="corner-bracket">+</span>
+          <span className="corner-meta">LAT 28°38'42" N // SECTOR 04</span>
+        </div>
+        <div className="ambient-corner top-right">
+          <span className="corner-bracket">+</span>
+          <span className="corner-meta">LON 77°13'08" E // ELEV +18M</span>
+        </div>
+        <div className="ambient-corner bottom-left">
+          <span className="corner-bracket">+</span>
+          <span className="corner-meta">AI VISION // REST API v2.4</span>
+        </div>
+        <div className="ambient-corner bottom-right">
+          <span className="corner-bracket">+</span>
+          <span className="corner-meta">SHA-256 JWT // 6-DIGIT PIN</span>
+        </div>
+
+        {/* Perimeter Telemetry Chips (Floating in negative space) */}
+        <div className="ambient-perimeter-chip chip-left-1">
+          <div className="chip-indicator" />
+          <div>
+            <div className="chip-title">HOTSPOT 04 // YAMUNA BASIN</div>
+            <div className="chip-sub">Depth +5.4ft • Severity 8.7 (Critical)</div>
           </div>
         </div>
 
-        {/* Form Container */}
-        <div className="canvas-form-wrapper">
+        <div className="ambient-perimeter-chip chip-left-2">
+          <div className="chip-indicator blue" />
+          <div>
+            <div className="chip-title">RELIEF DEPOT ALPHA // IN TRANSIT</div>
+            <div className="chip-sub">DTDC Cargo #DT-948102 • 40 Vests</div>
+          </div>
+        </div>
+
+        <div className="ambient-perimeter-chip chip-right-1">
+          <div className="chip-indicator green" />
+          <div>
+            <div className="chip-title">HANDSHAKE PIN VALIDATED</div>
+            <div className="chip-sub">Depot Handshake PIN: 482-910</div>
+          </div>
+        </div>
+
+        <div className="ambient-perimeter-chip chip-right-2">
+          <div className="chip-indicator" />
+          <div>
+            <div className="chip-title">AI VISION TRIAGE ACTIVE</div>
+            <div className="chip-sub">Structural Risk Evaluated in &lt;1.8s</div>
+          </div>
+        </div>
+      </div>
+
+      {/* ─── 3. CENTERED FORM CONTAINER ─── */}
+      <main className="auth-ambient-main">
+        <div className={`auth-card-anchor ${wide ? 'anchor-wide' : ''}`}>
           {children}
         </div>
+      </main>
 
-        {/* Security Footer */}
-        <div className="canvas-security-footer">
-          <div className="security-tag">
+      {/* ─── 4. BOTTOM SECURITY TELEMETRY FOOTER ─── */}
+      <footer className="auth-ambient-footer">
+        <div className="ambient-footer-inner">
+          <div className="footer-security-tag">
             <MdLock size={13} style={{ color: '#16a34a' }} />
-            <span>End-to-End Encrypted Session // SHA-256 JWT Architecture</span>
+            <span>256-Bit Encrypted Session // SHA-256 JWT Protocol</span>
+          </div>
+
+          <div className="footer-cluster-pills">
+            <span className="cluster-pill">GATEWAY: 100% UP</span>
+            <span className="cluster-pill">AI MODEL: UP</span>
+            <span className="cluster-pill">NGO NODE: UP</span>
+            <span className="cluster-pill">DONOR NODE: UP</span>
+            <span className="cluster-pill">VICTIM NODE: UP</span>
           </div>
         </div>
-      </main>
+      </footer>
     </div>
   );
 };
