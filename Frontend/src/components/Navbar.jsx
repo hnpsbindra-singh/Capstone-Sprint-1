@@ -359,13 +359,8 @@ const Navbar = () => {
         <div className="app-navbar-container">
           {/* Brand Mark */}
           <Link to="/" className="app-brand-link">
-            <div className="app-brand-logo-box">
-              <MdShield />
-            </div>
-            <div style={{ display: 'flex', alignItems: 'baseline' }}>
-              <span className="app-brand-text">ResQFlow</span>
-              <span className="app-brand-badge">// {roleTheme.label}</span>
-            </div>
+            <span className="app-brand-text">ResQFlow</span>
+            <span className="app-brand-badge">{roleTheme.label}</span>
           </Link>
 
           {/* Center Navigation Group */}

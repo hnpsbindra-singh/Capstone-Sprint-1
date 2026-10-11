@@ -9,13 +9,7 @@ const AuthLayout = ({ children, wide = false }) => {
       <header className="auth-ambient-topbar">
         <div className="ambient-topbar-inner">
           <Link to="/" className="ambient-brand-link">
-            <div className="ambient-brand-icon">
-              <MdShield size={18} />
-            </div>
-            <div className="ambient-brand-text">
-              <span className="brand-title">ResQFlow</span>
-              <span className="brand-sub">Emergency Relief</span>
-            </div>
+            <span className="brand-title">ResQFlow</span>
           </Link>
 
           <div className="ambient-top-right">

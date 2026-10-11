@@ -1,77 +1,48 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import './LandingPage.css';
 import {
-  MdShield,
-  MdWarning,
   MdLocationOn,
   MdCheckCircle,
   MdArrowForward,
   MdMap,
-  MdPhoneInTalk,
   MdDirectionsRun,
-  MdLocalShipping,
-  MdVpnKey,
-  MdClose,
-  MdCheck,
-  MdLogin,
   MdVolunteerActivism,
-  MdSensors,
-  MdCameraAlt,
   MdAutoAwesome,
-  MdLayers,
-  MdRefresh
+  MdVpnKey,
+  MdLocalShipping,
+  MdCheck,
+  MdPhone
 } from 'react-icons/md';
 
-const SIMULATED_SECTORS = [
+const SECTOR_HOTSPOTS = [
   {
     id: 'SEC-01',
-    name: 'Sector 01: Yamuna Basin, Delhi',
-    coords: '28.6712° N, 77.2341° E',
-    waterDepth: '5.4 ft',
+    name: 'Yamuna Basin, Delhi',
+    depth: '5.4 ft',
     severity: '8.7',
-    severityLevel: 'CRITICAL',
-    severityColor: '#dc2626',
-    aiDiagnosis: 'Ground floor submerged. Structural compromise risk. 4 elderly citizens on second-floor balcony.',
-    neededSupplies: '30x Inflatable Life Vests • 120x Water Purification Tablets',
-    carrier: 'DTDC Cargo Express',
-    trackingId: 'DT-948102',
-    pin: '482-910',
-    status: 'IN TRANSIT',
-    assignedNgo: 'Delhi Civil Defence Depot 4'
+    level: 'Critical',
+    trapped: 18,
+    status: 'Rescue Squad En Route'
   },
   {
     id: 'SEC-02',
-    name: 'Sector 02: Kaziranga Buffer, Assam',
-    coords: '26.5775° N, 93.1711° E',
-    waterDepth: '7.8 ft',
+    name: 'Kaziranga Buffer, Assam',
+    depth: '7.8 ft',
     severity: '9.4',
-    severityLevel: 'CATASTROPHIC',
-    severityColor: '#dc2626',
-    aiDiagnosis: 'Embankment breached. Fast current +3.5 knots. Evacuation launch required immediately.',
-    neededSupplies: '15x Heavy-duty Inflatable Rafts • 80x High-Calorie Rations',
-    carrier: 'BlueDart Air Freight',
-    trackingId: 'BD-551029',
-    pin: '719-304',
-    status: 'VERIFIED DELIVERED',
-    assignedNgo: 'Assam Riverine Relief Force'
+    level: 'Catastrophic',
+    trapped: 42,
+    status: 'Air-boat Evacuation Underway'
   },
   {
     id: 'SEC-03',
-    name: 'Sector 03: Wayanad Slopes, Kerala',
-    coords: '11.6854° N, 76.1320° E',
-    waterDepth: '3.9 ft',
+    name: 'Wayanad Slopes, Kerala',
+    depth: '3.9 ft',
     severity: '7.2',
-    severityLevel: 'HIGH',
-    severityColor: '#ea580c',
-    aiDiagnosis: 'Silt runoff cut road access. Community shelter isolated. Medical supplies depleted.',
-    neededSupplies: '200x Sterile First-Aid Kits • Baby Nutrition Formula',
-    carrier: 'Direct Volunteer Vehicle',
-    trackingId: 'VOL-882194',
-    pin: '502-831',
-    status: 'ACCEPTED BY DEPOT',
-    assignedNgo: 'Wayanad Community Relief Hub'
+    level: 'High',
+    trapped: 9,
+    status: 'Medical Kits Dispatched'
   }
 ];
 
@@ -79,21 +50,8 @@ const LandingPage = () => {
   const { token, user } = useAuth();
   const navigate = useNavigate();
 
-  const [activeRoleTab, setActiveRoleTab] = useState('VICTIM');
-  const [selectedSectorIndex, setSelectedSectorIndex] = useState(0);
-  const [liveUtc, setLiveUtc] = useState('');
-
-  const currentSector = SIMULATED_SECTORS[selectedSectorIndex];
-
-  useEffect(() => {
-    const updateTime = () => {
-      const now = new Date();
-      setLiveUtc(now.toUTCString().replace('GMT', 'UTC'));
-    };
-    updateTime();
-    const interval = setInterval(updateTime, 1000);
-    return () => clearInterval(interval);
-  }, []);
+  const [activeFrameTab, setActiveFrameTab] = useState('sos'); // 'sos' | 'map' | 'pin'
+  const [selectedHotspot, setSelectedHotspot] = useState(0);
 
   const handleDashboardRedirect = () => {
     if (user?.role) navigate(`/${user.role.toLowerCase()}`);
@@ -101,61 +59,48 @@ const LandingPage = () => {
   };
 
   return (
-    <div className="min-landing">
-      {/* ─── 1. TOP OPERATIONAL STATUS STRIP ─── */}
-      <div className="min-top-strip">
-        <div className="min-strip-inner">
-          <div className="min-strip-indicator">
-            <span className="min-live-dot" />
-            <span className="min-strip-telemetry">
-              24/7 National Emergency Helpline: Police & Rescue <strong>112</strong> • Ambulance <strong>108</strong>
-            </span>
+    <div className="rp-landing">
+      {/* ─── 1. TOP UTILITY HELPLINE STRIP ─── */}
+      <div className="rp-utility-strip">
+        <div className="rp-container rp-utility-inner">
+          <div className="rp-utility-helpline">
+            <span className="rp-utility-dot" />
+            <span>24/7 National Emergency Hotlines: Police & Rescue <strong>112</strong> • Ambulance <strong>108</strong> • Disaster <strong>1078</strong></span>
           </div>
-
-          <div className="min-strip-links">
-            <a href="tel:112" className="min-hotline-link" title="Call National Police and Rescue">
-              <span className="min-hotline-tag">POLICE / RESCUE</span> 112
-            </a>
-            <a href="tel:108" className="min-hotline-link" title="Call Emergency Ambulance">
-              <span className="min-hotline-tag">AMBULANCE</span> 108
-            </a>
+          <div className="rp-utility-links">
+            <a href="tel:112" className="rp-helpline-tag">POLICE 112</a>
+            <a href="tel:108" className="rp-helpline-tag">AMBULANCE 108</a>
           </div>
         </div>
       </div>
 
-      {/* ─── 2. ARCHITECTURAL NAVBAR ─── */}
-      <header className="min-navbar">
-        <div className="min-container min-nav-container">
-          <Link to="/" className="min-nav-brand">
-            <div className="min-brand-icon">
-              <MdShield />
-            </div>
-            <div className="min-brand-text-group">
-              <span className="min-brand-title">ResQFlow</span>
-              <span className="min-brand-badge">DISPATCH</span>
-            </div>
+      {/* ─── 2. CLEAN NAVBAR ─── */}
+      <header className="rp-navbar">
+        <div className="rp-container rp-nav-inner">
+          <Link to="/" className="rp-brand">
+            <span className="rp-brand-text">ResQFlow</span>
+            <span className="rp-brand-tag">RELIEF</span>
           </Link>
 
-          <nav className="min-nav-menu">
-            <a href="#overview" className="min-nav-link">Overview</a>
-            <a href="#telemetry-console" className="min-nav-link">Recent Incidents</a>
-            <a href="#capabilities" className="min-nav-link">Features</a>
-            <a href="#workflow" className="min-nav-link">How It Works</a>
-            <a href="#comparison" className="min-nav-link">Accountability</a>
+          <nav className="rp-nav-links">
+            <a href="#features" className="rp-nav-link">Features</a>
+            <a href="#workflow" className="rp-nav-link">How It Works</a>
+            <a href="#roles" className="rp-nav-link">Who It's For</a>
+            <a href="#helplines" className="rp-nav-link">Emergency Contacts</a>
           </nav>
 
-          <div className="min-nav-ctas">
+          <div className="rp-nav-actions">
             {token ? (
-              <button onClick={handleDashboardRedirect} className="min-btn min-btn-black">
-                <MdShield /> Operations Dashboard
+              <button onClick={handleDashboardRedirect} className="rp-btn rp-btn-primary">
+                Dashboard
               </button>
             ) : (
               <>
-                <Link to="/login" className="min-btn min-btn-outline">
-                  <MdLogin /> Sign In
+                <Link to="/login" className="rp-btn rp-btn-outline">
+                  Sign In
                 </Link>
-                <Link to="/register?role=VICTIM" className="min-btn min-btn-danger">
-                  <MdDirectionsRun /> Report SOS
+                <Link to="/register?role=VICTIM" className="rp-btn rp-btn-danger">
+                  Report SOS
                 </Link>
               </>
             )}
@@ -163,562 +108,413 @@ const LandingPage = () => {
         </div>
       </header>
 
-      {/* ─── 3. SWISS EDITORIAL HERO ─── */}
-      <section className="min-hero" id="overview">
-        <div className="min-container">
-          <div className="min-hero-kicker">
-            <span>EMERGENCY FLOOD RELIEF COORDINATION</span>
+      {/* ─── 3. PRODUCT-LED HERO SECTION ─── */}
+      <section className="rp-hero">
+        <div className="rp-container">
+          <div className="rp-hero-badge">
+            <span>Disaster Response & Relief Coordination</span>
           </div>
 
-          <h1 className="min-hero-title">
-            Rapid flood relief. <br />
-            From distress call to verified delivery.
+          <h1 className="rp-hero-title">
+            Software for real-time flood response.
           </h1>
 
-          <p className="min-hero-subtitle">
-            Connecting stranded families, registered relief NGOs, and donors on an interactive live map. 
-            Protected by physical 6-digit delivery verification so supplies directly reach people in need.
+          <p className="rp-hero-subtitle">
+            ResQFlow coordinates emergency rescue signals, live flood heatmaps, and verified supply delivery between stranded citizens, certified relief NGOs, and donors.
           </p>
 
-          <div className="min-hero-actions">
-            <Link to="/register?role=VICTIM" className="min-btn min-btn-danger min-btn-lg">
-              <MdDirectionsRun /> Report Emergency (SOS)
+          <div className="rp-hero-actions">
+            <Link to="/register?role=VICTIM" className="rp-btn rp-btn-danger rp-btn-lg">
+              <MdDirectionsRun size={18} /> Report Emergency (SOS)
             </Link>
-            <Link to="/register?role=DONOR" className="min-btn min-btn-black min-btn-lg">
-              <MdVolunteerActivism /> Donate Supplies
+            <Link to="/register?role=DONOR" className="rp-btn rp-btn-primary rp-btn-lg">
+              <MdVolunteerActivism size={18} /> Donate Relief Supplies
             </Link>
-            <Link to="/login" className="min-btn min-btn-outline min-btn-lg">
-              <MdMap /> View Live Map
+            <Link to="/login" className="rp-btn rp-btn-outline rp-btn-lg">
+              <MdMap size={18} /> View Live Flood Map
             </Link>
           </div>
 
-          {/* Operational Guarantees Bar */}
-          <div className="min-hero-guarantees">
-            <div className="min-guarantee-item">
-              <MdCheckCircle className="guarantee-icon" />
-              <span>Physical 6-Digit Delivery PIN Verification</span>
-            </div>
-            <div className="min-guarantee-item">
-              <MdCheckCircle className="guarantee-icon" />
-              <span>1-Tap GPS Location Capture</span>
-            </div>
-            <div className="min-guarantee-item">
-              <MdCheckCircle className="guarantee-icon" />
-              <span>Real-Time Courier & Supply Tracking</span>
-            </div>
-          </div>
-
-          {/* ─── 4. INTERACTIVE LIVE TELEMETRY CONSOLE ─── */}
-          <div className="min-showcase-box" id="telemetry-console">
-            {/* Top Toolbar */}
-            <div className="min-showcase-bar">
-              <div className="showcase-bar-left">
-                <span className="min-live-dot" />
-                <span className="bar-title">LIVE RELIEF WORKFLOW // RECENT INCIDENT DISPATCH</span>
+          {/* ── Interactive Software Preview (Hero Artifact) ── */}
+          <div className="rp-product-frame">
+            <div className="rp-frame-header">
+              <div className="rp-frame-tabs">
+                <button
+                  type="button"
+                  className={`rp-frame-tab-btn ${activeFrameTab === 'sos' ? 'active' : ''}`}
+                  onClick={() => setActiveFrameTab('sos')}
+                >
+                  Citizen SOS Signal
+                </button>
+                <button
+                  type="button"
+                  className={`rp-frame-tab-btn ${activeFrameTab === 'map' ? 'active' : ''}`}
+                  onClick={() => setActiveFrameTab('map')}
+                >
+                  Live Incident Map
+                </button>
+                <button
+                  type="button"
+                  className={`rp-frame-tab-btn ${activeFrameTab === 'pin' ? 'active' : ''}`}
+                  onClick={() => setActiveFrameTab('pin')}
+                >
+                  Delivery PIN Verification
+                </button>
               </div>
 
-              {/* Sector Switcher Tabs */}
-              <div className="sector-switcher">
-                {SIMULATED_SECTORS.map((sec, idx) => (
-                  <button
-                    key={sec.id}
-                    onClick={() => setSelectedSectorIndex(idx)}
-                    className={`sector-tab-btn ${selectedSectorIndex === idx ? 'active' : ''}`}
-                  >
-                    {sec.id}
-                  </button>
-                ))}
+              <div className="rp-frame-meta">
+                <span>Interactive Software Preview</span>
               </div>
             </div>
 
-            {/* Main Interactive Grid */}
-            <div className="min-showcase-grid">
-              {/* Left Column: Spatial Telemetry */}
-              <div className="min-preview-map">
-                <div className="sector-header-row">
+            <div className="rp-frame-body">
+              {/* Tab 1: Citizen SOS View */}
+              {activeFrameTab === 'sos' && (
+                <div className="rp-sos-preview-grid">
+                  <div className="rp-preview-card">
+                    <div className="rp-preview-label">GPS Location Capture</div>
+                    <div className="rp-preview-value" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <MdLocationOn style={{ color: '#0284c7' }} /> 28.6712° N, 77.2341° E (Auto-detected)
+                    </div>
+                    <p style={{ fontSize: '0.8125rem', color: '#52525b', marginTop: '0.35rem' }}>
+                      Sector 01: Yamuna Lowlands, North Delhi. 1-tap capture without typing an address.
+                    </p>
+                  </div>
+
+                  <div className="rp-preview-card">
+                    <div className="rp-preview-label">AI Water Level Analysis</div>
+                    <div className="rp-preview-value">5.4 ft • Ground Floor Submerged</div>
+                    <div className="rp-ai-badge">
+                      <MdAutoAwesome /> Severity 8.7 (Critical Structural Risk)
+                    </div>
+                    <p style={{ fontSize: '0.8125rem', color: '#52525b', marginTop: '0.35rem' }}>
+                      4 elderly residents stranded on balcony. Priority evacuation flagged.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Tab 2: Live Heatmap Sector View */}
+              {activeFrameTab === 'map' && (
+                <div className="rp-heatmap-preview-grid">
+                  <div className="rp-sector-list">
+                    {SECTOR_HOTSPOTS.map((sec, idx) => (
+                      <div
+                        key={sec.id}
+                        className={`rp-sector-item ${selectedHotspot === idx ? 'active' : ''}`}
+                        onClick={() => setSelectedHotspot(idx)}
+                      >
+                        <div>
+                          <strong style={{ fontSize: '0.9rem', color: '#09090b' }}>{sec.name}</strong>
+                          <div style={{ fontSize: '0.78rem', color: '#71717a', marginTop: '2px' }}>
+                            Depth: {sec.depth} • {sec.trapped} citizens stranded
+                          </div>
+                        </div>
+                        <span className={`rp-sector-badge ${sec.level === 'Critical' || sec.level === 'Catastrophic' ? 'critical' : 'high'}`}>
+                          {sec.level} ({sec.severity})
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="rp-preview-card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                    <div className="rp-preview-label">Dispatch Status</div>
+                    <div className="rp-preview-value" style={{ color: '#0284c7', marginBottom: '0.5rem' }}>
+                      {SECTOR_HOTSPOTS[selectedHotspot].status}
+                    </div>
+                    <p style={{ fontSize: '0.8125rem', color: '#52525b' }}>
+                      Teams route straight to density hotspots on the live GIS map, avoiding isolated pockets.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Tab 3: Supply Handshake PIN */}
+              {activeFrameTab === 'pin' && (
+                <div className="rp-pin-preview-box">
                   <div>
-                    <div className="sector-name">{currentSector.name}</div>
-                    <div className="sector-coords">
-                      <MdLocationOn style={{ color: '#0284c7' }} />
-                      <span>{currentSector.coords}</span>
+                    <div className="rp-preview-label">Consignment Receipt Protection</div>
+                    <div className="rp-preview-value" style={{ marginBottom: '0.25rem' }}>
+                      DTDC Consignment #DT-948102 (40x Life Vests, 120x Water Tablets)
+                    </div>
+                    <p style={{ fontSize: '0.8125rem', color: '#52525b' }}>
+                      Receiving relief camp must physically enter this 6-digit PIN to mark items delivered into inventory.
+                    </p>
+                  </div>
+
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: '0.6875rem', fontWeight: 700, color: '#71717a', marginBottom: '0.35rem' }}>
+                      DONOR VERIFICATION PIN
+                    </div>
+                    <div className="rp-pin-digits">
+                      {['4', '8', '2', '9', '1', '0'].map((digit, i) => (
+                        <div key={i} className="rp-pin-digit">{digit}</div>
+                      ))}
                     </div>
                   </div>
-                  <span 
-                    className="sector-severity-pill"
-                    style={{
-                      backgroundColor: `${currentSector.severityColor}15`,
-                      color: currentSector.severityColor,
-                      borderColor: `${currentSector.severityColor}40`
-                    }}
-                  >
-                    SEVERITY {currentSector.severity} / 10 • {currentSector.severityLevel}
-                  </span>
                 </div>
-
-                {/* Simulated Incident Card */}
-                <div className="min-preview-hotspot">
-                  <div className="hotspot-kicker">
-                    <MdAutoAwesome style={{ color: '#0284c7' }} />
-                    <span>AI FLOOD PHOTO ASSESSMENT</span>
-                  </div>
-
-                  <div className="hotspot-metric-row">
-                    <div className="hotspot-metric">
-                      <span className="metric-num">{currentSector.waterDepth}</span>
-                      <span className="metric-tag">ESTIMATED DEPTH</span>
-                    </div>
-                    <div className="hotspot-metric">
-                      <span className="metric-num">HIGH</span>
-                      <span className="metric-tag">DEBRIS RISK</span>
-                    </div>
-                    <div className="hotspot-metric">
-                      <span className="metric-num">DETECTED</span>
-                      <span className="metric-tag">GPS LOCATION</span>
-                    </div>
-                  </div>
-
-                  <p className="hotspot-diagnosis">{currentSector.aiDiagnosis}</p>
-                </div>
-
-                <div className="sector-footer-meta">
-                  <span>Assigned NGO: <strong>{currentSector.assignedNgo}</strong></span>
-                  <span className="click-hint">Click sector tabs above to inspect other incident areas</span>
-                </div>
-              </div>
-
-              {/* Right Column: Custody Chain & PIN Verification */}
-              <div className="min-preview-pipeline">
-                <div className="pipeline-header">
-                  <span>DELIVERY & VERIFICATION STATUS</span>
-                  <span className="pipeline-state-tag">{currentSector.status}</span>
-                </div>
-
-                {/* Step 1: Request */}
-                <div className="min-pipeline-step">
-                  <div className="min-step-head">
-                    <span className="step-tag-blue">1. CITIZEN SOS SIGNAL LOGGED</span>
-                    <span className="step-time">RECORDED</span>
-                  </div>
-                  <div className="step-content-title">Location & Water Depth Uploaded</div>
-                  <div className="step-content-sub">Needed: {currentSector.neededSupplies}</div>
-                </div>
-
-                {/* Step 2: Courier */}
-                <div className="min-pipeline-step">
-                  <div className="min-step-head">
-                    <span className="step-tag-purple">2. RELIEF SUPPLIES DISPATCHED</span>
-                    <span className="step-time">IN TRANSIT</span>
-                  </div>
-                  <div className="step-content-title">{currentSector.carrier}</div>
-                  <div className="step-content-sub">Consignment Tracking ID: {currentSector.trackingId}</div>
-                </div>
-
-                {/* Step 3: Physical PIN Verification */}
-                <div className="min-pipeline-step step-complete">
-                  <div className="min-step-head">
-                    <span className="step-tag-green">3. 6-DIGIT DELIVERY VERIFICATION PIN</span>
-                    <span className="step-tag-verified">PROTECTED</span>
-                  </div>
-                  <div className="pin-handoff-row">
-                    <span className="pin-label">RECIPIENT CAMP HANDSHAKE PIN:</span>
-                    <span className="pin-value">{currentSector.pin}</span>
-                  </div>
-                  <div className="pin-subtext">
-                    Delivery cannot be marked complete without the receiving camp entering this PIN, preventing lost supplies.
-                  </div>
-                </div>
-              </div>
+              )}
             </div>
           </div>
         </div>
       </section>
 
-      {/* ─── 5. ARCHITECTURAL BENTO GRID ─── */}
-      <section className="min-bento-section" id="capabilities">
-        <div className="min-container">
-          <div className="min-section-header">
-            <div className="min-section-kicker">ENGINEERED ARCHITECTURE</div>
-            <h2 className="min-section-title">Mission-Critical Incident Coordination</h2>
-            <p className="min-section-desc">
-              Every component is built to eliminate supply stockpiling, prevent missing parcels, 
-              and direct rescue teams straight to acute flood zones.
+      {/* ─── 4. CORE PLATFORM CAPABILITIES ─── */}
+      <section className="rp-features-section" id="features">
+        <div className="rp-container">
+          <div className="rp-section-header">
+            <div className="rp-section-kicker">Core Capabilities</div>
+            <h2 className="rp-section-title">Built for fast, accountable flood relief.</h2>
+            <p className="rp-section-desc">
+              Every tool is engineered to speed up rescue response and guarantee that supplies directly reach affected families.
             </p>
           </div>
 
-          <div className="min-bento-grid">
-            {/* Card 1: 1-Tap Geolocation */}
-            <div className="min-bento-card min-span-8">
+          <div className="rp-grid-4">
+            <div className="rp-feature-card">
               <div>
-                <div className="min-card-icon">
+                <div className="rp-feature-icon red">
                   <MdDirectionsRun />
                 </div>
-                <h3 className="min-card-title">1-Tap Precision Geolocation Beacon</h3>
-                <p className="min-card-desc">
-                  Stranded citizens in rising water transmit precision WGS84 coordinates instantly with 1 tap. 
-                  No address typing, no manual forms. Captures live camera frames, current water level, and dependent counts 
-                  to prioritize vulnerable families first.
+                <h3 className="rp-feature-title">1-Tap GPS Location</h3>
+                <p className="rp-feature-desc">
+                  Stranded citizens transmit exact device coordinates instantly. No typing addresses or landmarks while standing in water.
                 </p>
-              </div>
-              <div className="card-footer-action">
-                <span className="card-footer-note">Operates seamlessly over low-bandwidth mobile networks</span>
-                <Link to="/register?role=VICTIM" className="min-btn min-btn-outline card-link-sm">
-                  Report Emergency <MdArrowForward />
-                </Link>
               </div>
             </div>
 
-            {/* Card 2: AI Computer Vision */}
-            <div className="min-bento-card min-span-4">
+            <div className="rp-feature-card">
               <div>
-                <div className="min-card-icon">
+                <div className="rp-feature-icon blue">
                   <MdAutoAwesome />
                 </div>
-                <h3 className="min-card-title">AI Computer Vision Severity</h3>
-                <p className="min-card-desc">
-                  Analyzes uploaded flood imagery using deep learning to score water severity from 1.0 to 10.0, 
-                  identifying structural risk and rooftop evacuation urgency automatically.
+                <h3 className="rp-feature-title">AI Water Level Triage</h3>
+                <p className="rp-feature-desc">
+                  Computer vision estimates flood depth and structural hazard from uploaded photos to prioritize urgent evacuations first.
                 </p>
-              </div>
-              <div className="card-footer-simple">
-                <span>Autonomous visual triage & classification</span>
               </div>
             </div>
 
-            {/* Card 3: Cryptographic PIN */}
-            <div className="min-bento-card min-span-4">
+            <div className="rp-feature-card">
               <div>
-                <div className="min-card-icon">
+                <div className="rp-feature-icon green">
                   <MdVpnKey />
                 </div>
-                <h3 className="min-card-title">Cryptographic 6-Digit Handshake</h3>
-                <p className="min-card-desc">
-                  Eliminates missing disaster supplies. When donors dispatch items, a unique 6-digit PIN is locked to that donation. 
-                  Receiving NGOs must physically enter this PIN to verify delivery into inventory.
+                <h3 className="rp-feature-title">6-Digit Delivery PIN</h3>
+                <p className="rp-feature-desc">
+                  Donors hold a secret 6-digit PIN. Relief consignments can only be marked delivered when the receiving camp enters this code.
                 </p>
-              </div>
-              <div className="card-footer-simple">
-                <span>100% chain-of-custody proof</span>
               </div>
             </div>
 
-            {/* Card 4: Real-time GIS Heatmap */}
-            <div className="min-bento-card min-span-8">
+            <div className="rp-feature-card">
               <div>
-                <div className="min-card-icon">
+                <div className="rp-feature-icon purple">
                   <MdMap />
                 </div>
-                <h3 className="min-card-title">Live GIS Spatial Cluster Heatmap</h3>
-                <p className="min-card-desc">
-                  Aggregates incoming distress reports into color-coded flood clusters. NGO rescue squads and government triage teams 
-                  inspect density hotspots before deploying boats, avoiding duplicate sweeps and isolated pockets.
+                <h3 className="rp-feature-title">Live GIS Flood Map</h3>
+                <p className="rp-feature-desc">
+                  Aggregates distress signals into density clusters, directing rescue boats to critical zones without duplicate sweeps.
                 </p>
               </div>
-              <div className="card-footer-action">
-                <span className="card-footer-note">Real-time Leaflet GIS clustering engine</span>
-                <Link to="/login" className="min-btn min-btn-outline card-link-sm">
-                  Explore Incident Map <MdArrowForward />
-                </Link>
-              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ─── 6. WORKFLOWS SECTION ─── */}
-      <section className="min-roles-section" id="workflow">
-        <div className="min-container">
-          <div className="min-section-header">
-            <div className="min-section-kicker">DISPATCH DIRECTORY</div>
-            <h2 className="min-section-title">Structured Roles Across the Relief Network</h2>
-            <p className="min-section-desc">
-              Select your role to view the exact step-by-step dispatch workflow.
+      {/* ─── 5. STEP-BY-STEP WORKFLOW ─── */}
+      <section className="rp-workflow-section" id="workflow">
+        <div className="rp-container">
+          <div className="rp-section-header">
+            <div className="rp-section-kicker">How It Works</div>
+            <h2 className="rp-section-title">From emergency report to verified handoff.</h2>
+            <p className="rp-section-desc">
+              A transparent, closed-loop coordination chain connecting victims, responders, and donors.
             </p>
           </div>
 
-          <div className="min-segmented-control">
-            <button
-              className={`min-segment-btn ${activeRoleTab === 'VICTIM' ? 'active' : ''}`}
-              onClick={() => setActiveRoleTab('VICTIM')}
-            >
-              Stranded Citizens
-            </button>
-            <button
-              className={`min-segment-btn ${activeRoleTab === 'DONOR' ? 'active' : ''}`}
-              onClick={() => setActiveRoleTab('DONOR')}
-            >
-              Relief Donors
-            </button>
-            <button
-              className={`min-segment-btn ${activeRoleTab === 'NGO' ? 'active' : ''}`}
-              onClick={() => setActiveRoleTab('NGO')}
-            >
-              Certified NGOs
-            </button>
-          </div>
-
-          <div className="min-role-window">
-            <div>
-              {activeRoleTab === 'VICTIM' && (
-                <>
-                  <div className="min-step-row">
-                    <div className="min-step-num">1</div>
-                    <div className="min-step-body">
-                      <h4>Trigger 1-Tap Geolocation Beacon</h4>
-                      <p>Open the app and grant location permission. Your precision GPS coordinates are auto-filled in seconds.</p>
-                    </div>
-                  </div>
-                  <div className="min-step-row">
-                    <div className="min-step-num">2</div>
-                    <div className="min-step-body">
-                      <h4>Capture Photo for AI Severity Scoring</h4>
-                      <p>Snap a camera frame of the flood depth. The AI evaluates severity (1-10) and flags structural hazard.</p>
-                    </div>
-                  </div>
-                  <div className="min-step-row">
-                    <div className="min-step-num">3</div>
-                    <div className="min-step-body">
-                      <h4>Direct Broadcast to Rescue Squads</h4>
-                      <p>Your signal immediately turns into a live distress pin on the regional disaster heatmap for ground rescue crews.</p>
-                    </div>
-                  </div>
-                  <Link to="/register?role=VICTIM" className="min-btn min-btn-danger" style={{ marginTop: '0.75rem' }}>
-                    Report Emergency SOS <MdArrowForward />
-                  </Link>
-                </>
-              )}
-
-              {activeRoleTab === 'DONOR' && (
-                <>
-                  <div className="min-step-row">
-                    <div className="min-step-num">1</div>
-                    <div className="min-step-body">
-                      <h4>Browse Verified Shortages by Flood Sector</h4>
-                      <p>View verified NGO requests sorted by flood hotspot proximity. Choose items currently needed on the ground.</p>
-                    </div>
-                  </div>
-                  <div className="min-step-row">
-                    <div className="min-step-num">2</div>
-                    <div className="min-step-body">
-                      <h4>Attach Courier Tracking & Receive Security PIN</h4>
-                      <p>Pledge item quantities and input carrier tracking ID (or Self Drop-off). A private 6-digit verification PIN is issued.</p>
-                    </div>
-                  </div>
-                  <div className="min-step-row">
-                    <div className="min-step-num">3</div>
-                    <div className="min-step-body">
-                      <h4>Verified Delivery Confirmation</h4>
-                      <p>When the shipment reaches the NGO relief camp, the team enters your PIN to verify physical receipt.</p>
-                    </div>
-                  </div>
-                  <Link to="/register?role=DONOR" className="min-btn min-btn-black" style={{ marginTop: '0.75rem' }}>
-                    Join as Relief Donor <MdArrowForward />
-                  </Link>
-                </>
-              )}
-
-              {activeRoleTab === 'NGO' && (
-                <>
-                  <div className="min-step-row">
-                    <div className="min-step-num">1</div>
-                    <div className="min-step-body">
-                      <h4>Inspect Incident Heatmap Sectors</h4>
-                      <p>Analyze distress severity clusters on the live GIS map to identify sectors requiring urgent supply mobilization.</p>
-                    </div>
-                  </div>
-                  <div className="min-step-row">
-                    <div className="min-step-num">2</div>
-                    <div className="min-step-body">
-                      <h4>Issue Targeted Resource Requests</h4>
-                      <p>Request specific relief quantities (food, medical kits, blankets) with designated regional drop-off hub addresses.</p>
-                    </div>
-                  </div>
-                  <div className="min-step-row">
-                    <div className="min-step-num">3</div>
-                    <div className="min-step-body">
-                      <h4>Validate Inbound Physical Shipments</h4>
-                      <p>Receive incoming courier boxes and input donor verification PINs to confirm delivery into relief inventory.</p>
-                    </div>
-                  </div>
-                  <Link to="/register?role=NGO" className="min-btn min-btn-black" style={{ marginTop: '0.75rem' }}>
-                    Register NGO Portal <MdArrowForward />
-                  </Link>
-                </>
-              )}
-            </div>
-
-            {/* Delivery Accountability Box */}
-            <div className="architecture-specs-box">
-              <div className="specs-title">HOW DELIVERY ACCOUNTABILITY WORKS</div>
-              <div className="specs-stack">
-                <div className="spec-card">
-                  <div className="spec-head">
-                    <span>6-Digit Handshake PIN</span>
-                    <span className="spec-status green">VERIFIED</span>
-                  </div>
-                  <p className="spec-text">
-                    Relief donations cannot be marked delivered until the receiving camp physically enters the donor's 6-digit PIN.
-                  </p>
-                </div>
-
-                <div className="spec-card">
-                  <div className="spec-head">
-                    <span>Direct GPS Location</span>
-                    <span className="spec-status blue">PRECISE</span>
-                  </div>
-                  <p className="spec-text">
-                    Pinpoint location attached to distress reports allows boat squads and relief volunteers to reach isolated families faster.
-                  </p>
-                </div>
-
-                <div className="spec-card">
-                  <div className="spec-head">
-                    <span>AI Flood Photo Scoring</span>
-                    <span className="spec-status purple">ASSESSED</span>
-                  </div>
-                  <p className="spec-text">
-                    Evaluates uploaded flood photos to estimate water severity and urgency, helping NGOs prioritize critical rescues.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ─── 7. PROTOCOL COMPARISON ─── */}
-      <section className="min-comparison-section" id="comparison">
-        <div className="min-container">
-          <div className="min-section-header">
-            <div className="min-section-kicker">PROTOCOL INTEGRITY</div>
-            <h2 className="min-section-title">Why Traditional Charity Fails in Crises</h2>
-            <p className="min-section-desc">
-              A direct comparison between legacy uncoordinated relief efforts and the ResQFlow verified protocol.
-            </p>
-          </div>
-
-          <div className="min-comp-grid">
-            <div className="min-comp-card">
-              <h3 className="min-comp-title" style={{ color: '#dc2626' }}>
-                <MdClose /> Legacy Uncoordinated Relief
-              </h3>
-              <ul className="min-comp-list">
-                <li className="min-comp-item">
-                  <MdClose className="comp-icon red" />
-                  <span><strong>Blind Donating:</strong> Citizens send items without knowing if the local camp already has hundreds of them.</span>
-                </li>
-                <li className="min-comp-item">
-                  <MdClose className="comp-icon red" />
-                  <span><strong>High Supply Leakage:</strong> Goods pile up in unmonitored warehouses with zero chain of custody or proof of receipt.</span>
-                </li>
-                <li className="min-comp-item">
-                  <MdClose className="comp-icon red" />
-                  <span><strong>Phone Gridlock:</strong> Emergency phone lines become overwhelmed, leaving stranded victims unable to send GPS coordinates.</span>
-                </li>
-              </ul>
-            </div>
-
-            <div className="min-comp-card highlight">
-              <h3 className="min-comp-title" style={{ color: '#16a34a' }}>
-                <MdCheck /> ResQFlow Verified Protocol
-              </h3>
-              <ul className="min-comp-list">
-                <li className="min-comp-item">
-                  <MdCheck className="comp-icon green" />
-                  <span><strong>Targeted Shortage Matching:</strong> NGOs request exact supply quantities tied directly to verified flood sectors.</span>
-                </li>
-                <li className="min-comp-item">
-                  <MdCheck className="comp-icon green" />
-                  <span><strong>6-Digit Handshake PIN:</strong> Delivery status cannot be marked complete without physical code verification.</span>
-                </li>
-                <li className="min-comp-item">
-                  <MdCheck className="comp-icon green" />
-                  <span><strong>Autonomous GIS Heatmap:</strong> Distress beacons automatically populate the live tactical map in under two seconds.</span>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ─── 8. CALL TO ACTION ─── */}
-      <section className="min-cta-section">
-        <div className="min-container">
-          <div className="min-cta-box">
-            <h2 className="min-cta-title">Mobilize Relief When Seconds Matter.</h2>
-            <p className="min-cta-desc">
-              Join disaster responders, registered relief NGOs, and proactive donors coordinating 
-              flood emergency logistics with 100% verified delivery accountability.
-            </p>
-            <div className="min-cta-actions">
-              <Link to="/register?role=VICTIM" className="min-btn min-btn-danger min-btn-lg">
-                <MdDirectionsRun /> Report Emergency SOS
-              </Link>
-              <Link to="/register?role=DONOR" className="min-btn min-btn-outline min-btn-lg" style={{ background: '#ffffff', color: '#09090b' }}>
-                <MdVolunteerActivism /> Join as Relief Donor
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ─── 9. ARCHITECTURAL FOOTER ─── */}
-      <footer className="min-footer">
-        <div className="min-container">
-          <div className="min-footer-grid">
-            <div className="min-footer-col">
-              <div className="footer-brand-row">
-                <div className="min-brand-icon" style={{ width: '26px', height: '26px', fontSize: '0.9rem' }}>
-                  <MdShield />
-                </div>
-                <span className="footer-brand-title">ResQFlow</span>
-              </div>
-              <p className="footer-tagline">
-                Emergency flood rescue & relief logistics network. Real-time GIS incident clustering, 
-                computer-vision damage triage, and verified delivery handoffs.
+          <div className="rp-steps-grid">
+            <div className="rp-step-card">
+              <div className="rp-step-number">01</div>
+              <h3 className="rp-step-title">SOS Signal Reported</h3>
+              <p className="rp-step-desc">
+                Citizen submits location and optional photo. Coordinates immediately appear on the live relief map.
               </p>
             </div>
 
-            <div className="min-footer-col">
+            <div className="rp-step-card">
+              <div className="rp-step-number">02</div>
+              <h3 className="rp-step-title">AI Severity Assessment</h3>
+              <p className="rp-step-desc">
+                Uploaded flood imagery is analyzed to score water depth and flag rooftop evacuations or structural risks.
+              </p>
+            </div>
+
+            <div className="rp-step-card">
+              <div className="rp-step-number">03</div>
+              <h3 className="rp-step-title">NGO Deploys Rescue</h3>
+              <p className="rp-step-desc">
+                Ground relief teams and boat squads inspect live cluster hotspots and dispatch directly to stranded families.
+              </p>
+            </div>
+
+            <div className="rp-step-card">
+              <div className="rp-step-number">04</div>
+              <h3 className="rp-step-title">PIN Delivery Verification</h3>
+              <p className="rp-step-desc">
+                Donors dispatch supplies with courier tracking. Receiving camps enter the 6-digit PIN upon physical arrival.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── 6. ROLE BREAKDOWN ─── */}
+      <section className="rp-roles-section" id="roles">
+        <div className="rp-container">
+          <div className="rp-section-header">
+            <div className="rp-section-kicker">User Roles</div>
+            <h2 className="rp-section-title">Designed for every stakeholder in the crisis.</h2>
+            <p className="rp-section-desc">
+              Dedicated workflows for stranded citizens, on-ground relief NGOs, and supportive donors.
+            </p>
+          </div>
+
+          <div className="rp-roles-grid">
+            {/* Role: Victims */}
+            <div className="rp-role-card">
+              <div>
+                <span className="rp-role-badge victim">Stranded Citizens</span>
+                <h3 className="rp-role-title">Get rescued faster</h3>
+                <p className="rp-role-desc">
+                  Report your exact location in one tap with automatic GPS detection and direct emergency helpline integration.
+                </p>
+                <ul className="rp-role-features">
+                  <li><MdCheck className="rp-check-icon" /> 1-tap GPS location reporting</li>
+                  <li><MdCheck className="rp-check-icon" /> AI photo water level scoring</li>
+                  <li><MdCheck className="rp-check-icon" /> Track your report's rescue status</li>
+                  <li><MdCheck className="rp-check-icon" /> Direct dial to Police (112) & Ambulance (108)</li>
+                </ul>
+              </div>
+              <Link to="/register?role=VICTIM" className="rp-btn rp-btn-danger">
+                Report Emergency SOS <MdArrowForward />
+              </Link>
+            </div>
+
+            {/* Role: Donors */}
+            <div className="rp-role-card">
+              <div>
+                <span className="rp-role-badge donor">Relief Donors</span>
+                <h3 className="rp-role-title">Zero-loss donations</h3>
+                <p className="rp-role-desc">
+                  Pledge items requested by verified relief camps and track courier packages with 6-digit delivery confirmation.
+                </p>
+                <ul className="rp-role-features">
+                  <li><MdCheck className="rp-check-icon" /> Browse real shortage requests by sector</li>
+                  <li><MdCheck className="rp-check-icon" /> Attach courier tracking (DTDC, BlueDart)</li>
+                  <li><MdCheck className="rp-check-icon" /> Secret 6-digit PIN confirms arrival</li>
+                  <li><MdCheck className="rp-check-icon" /> Guaranteed direct receipt into camp inventory</li>
+                </ul>
+              </div>
+              <Link to="/register?role=DONOR" className="rp-btn rp-btn-primary">
+                Join as Relief Donor <MdArrowForward />
+              </Link>
+            </div>
+
+            {/* Role: NGOs */}
+            <div className="rp-role-card">
+              <div>
+                <span className="rp-role-badge ngo">Relief NGOs</span>
+                <h3 className="rp-role-title">Coordinate rescue teams</h3>
+                <p className="rp-role-desc">
+                  Inspect the live GIS cluster map, request needed supplies, and accept inbound consignments via PIN validation.
+                </p>
+                <ul className="rp-role-features">
+                  <li><MdCheck className="rp-check-icon" /> Real-time geographic flood heatmap</li>
+                  <li><MdCheck className="rp-check-icon" /> Post specific supply shortages</li>
+                  <li><MdCheck className="rp-check-icon" /> Validate incoming parcels with PIN entry</li>
+                  <li><MdCheck className="rp-check-icon" /> Avoid duplicate rescue boat operations</li>
+                </ul>
+              </div>
+              <Link to="/register?role=NGO" className="rp-btn rp-btn-outline">
+                Register Relief NGO <MdArrowForward />
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── 7. EMERGENCY HELPLINE CALLOUT ─── */}
+      <section className="rp-helpline-section" id="helplines">
+        <div className="rp-container">
+          <div className="rp-helpline-card">
+            <div>
+              <h3 className="rp-helpline-title">In immediate danger or trapped?</h3>
+              <p className="rp-helpline-desc">
+                Call national emergency rescue services immediately if water is rapidly rising.
+              </p>
+            </div>
+            <div className="rp-helpline-buttons">
+              <a href="tel:112" className="rp-call-btn">
+                <MdPhone /> Police & Rescue (112)
+              </a>
+              <a href="tel:108" className="rp-call-btn">
+                <MdPhone /> Ambulance Service (108)
+              </a>
+              <a href="tel:1078" className="rp-call-btn">
+                <MdPhone /> Disaster Helpline (1078)
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── 8. CLEAN MODERN FOOTER ─── */}
+      <footer className="rp-footer">
+        <div className="rp-container">
+          <div className="rp-footer-grid">
+            <div className="rp-footer-col">
+              <span className="rp-brand-text" style={{ display: 'block', marginBottom: '0.75rem' }}>ResQFlow</span>
+              <p style={{ color: '#71717a', fontSize: '0.845rem', lineHeight: 1.6, maxWidth: '320px' }}>
+                Open flood disaster response platform. Real-time rescue mapping, AI damage assessment, and verified 6-digit supply delivery.
+              </p>
+            </div>
+
+            <div className="rp-footer-col">
               <h4>Stranded Citizens</h4>
               <ul>
-                <li><Link to="/register?role=VICTIM">Submit SOS Signal</Link></li>
+                <li><Link to="/register?role=VICTIM">Submit Emergency SOS</Link></li>
                 <li><Link to="/login">Citizen Login</Link></li>
                 <li><a href="tel:112">National Police & Rescue (112)</a></li>
-                <li><a href="tel:108">Emergency Ambulance (108)</a></li>
+                <li><a href="tel:108">Ambulance Service (108)</a></li>
               </ul>
             </div>
 
-            <div className="min-footer-col">
+            <div className="rp-footer-col">
               <h4>Relief Donors</h4>
               <ul>
-                <li><Link to="/register?role=DONOR">Register as Donor</Link></li>
+                <li><Link to="/register?role=DONOR">Pledge Relief Supplies</Link></li>
                 <li><Link to="/login">Donor Portal Login</Link></li>
-                <li><a href="#capabilities">Verification Protocol</a></li>
-                <li><a href="#workflow">Courier Tracking Guide</a></li>
+                <li><a href="#features">6-Digit PIN Security</a></li>
               </ul>
             </div>
 
-            <div className="min-footer-col">
-              <h4>Ground Responders</h4>
+            <div className="rp-footer-col">
+              <h4>Relief NGOs</h4>
               <ul>
                 <li><Link to="/register?role=NGO">Register Relief NGO</Link></li>
                 <li><Link to="/login">NGO Incident Command</Link></li>
-                <li><Link to="/login">Admin Security Console</Link></li>
-                <li><a href="#telemetry-console">GIS Heatmap Telemetry</a></li>
+                <li><Link to="/login">Flood Heatmap Portal</Link></li>
               </ul>
             </div>
           </div>
 
-          <div className="min-footer-bottom">
+          <div className="rp-footer-bottom">
             <div>
-              © {new Date().getFullYear()} ResQFlow • Emergency Flood Relief Coordination.
+              © {new Date().getFullYear()} ResQFlow • Disaster Response & Relief Coordination.
             </div>
-            <div className="footer-badges">
-              <span>Rapid Emergency Dispatch</span>
-              <span className="dot-sep">•</span>
-              <span>Verified Delivery Handshake</span>
-              <span className="dot-sep">•</span>
-              <span>Open Humanitarian Network</span>
+            <div>
+              Open Humanitarian Coordination
             </div>
           </div>
         </div>
