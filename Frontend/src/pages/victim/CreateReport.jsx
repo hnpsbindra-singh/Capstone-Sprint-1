@@ -26,7 +26,7 @@ import { useLanguage } from '../../context/LanguageContext';
 // ==============================================================================
 // FEATURE TOGGLE: Set to false to disable gallery and enforce live camera only
 // ==============================================================================
-const ALLOW_GALLERY_UPLOAD = true;
+const ALLOW_GALLERY_UPLOAD = false;
 
 const CreateReport = () => {
   const navigate = useNavigate();
