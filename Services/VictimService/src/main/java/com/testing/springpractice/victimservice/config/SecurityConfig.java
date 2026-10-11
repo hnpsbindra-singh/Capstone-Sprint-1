@@ -55,6 +55,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/victim/internal/**").permitAll()
                         .requestMatchers("/api/victim/**").hasAnyRole("VICTIM", "ADMIN")
                         .requestMatchers("/api/donor/**").hasRole("DONOR")
+                        .requestMatchers("/error").permitAll()
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .logout(log -> log.disable())

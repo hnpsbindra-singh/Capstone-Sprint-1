@@ -194,18 +194,75 @@ const CreateReport = () => {
     startCamera(facingMode);
   };
 
+  // Helper to optimize and normalize large/AI-generated images before sending to backend
+  const optimizeImageFile = (file) => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const maxDim = 1600;
+          let width = img.width;
+          let height = img.height;
+          if (width > maxDim || height > maxDim) {
+            if (width > height) {
+              height = Math.round((height * maxDim) / width);
+              width = maxDim;
+            } else {
+              width = Math.round((width * maxDim) / height);
+              height = maxDim;
+            }
+          }
+
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+
+          canvas.toBlob(
+            (blob) => {
+              if (blob) {
+                const safeName = `flood_evidence_${Date.now()}.jpg`;
+                const optimizedFile = new File([blob], safeName, { type: 'image/jpeg' });
+                resolve({ file: optimizedFile, previewUrl: URL.createObjectURL(blob) });
+              } else {
+                resolve({ file, previewUrl: URL.createObjectURL(file) });
+              }
+            },
+            'image/jpeg',
+            0.88
+          );
+        };
+        img.onerror = () => resolve({ file, previewUrl: URL.createObjectURL(file) });
+        img.src = e.target.result;
+      };
+      reader.onerror = () => resolve({ file, previewUrl: URL.createObjectURL(file) });
+      reader.readAsDataURL(file);
+    });
+  };
+
   // Upload/Select photo from gallery for testing
-  const handleGalleryFileSelect = (e) => {
+  const handleGalleryFileSelect = async (e) => {
     const file = e.target.files[0];
     if (file) {
       if (!file.type.startsWith('image/')) {
         toast.error('Please select a valid image file.');
         return;
       }
-      setImageFile(file);
-      setPreviewUrl(URL.createObjectURL(file));
-      stopCamera();
-      toast.success('Test image selected from gallery!');
+      toast.loading('Processing and optimizing image...', { id: 'image-opt' });
+      try {
+        const { file: optimizedFile, previewUrl: newPreview } = await optimizeImageFile(file);
+        setImageFile(optimizedFile);
+        setPreviewUrl(newPreview);
+        stopCamera();
+        toast.success('Image ready for analysis!', { id: 'image-opt' });
+      } catch (err) {
+        setImageFile(file);
+        setPreviewUrl(URL.createObjectURL(file));
+        stopCamera();
+        toast.dismiss('image-opt');
+      }
     }
   };
 

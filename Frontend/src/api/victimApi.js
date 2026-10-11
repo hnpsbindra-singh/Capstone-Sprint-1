@@ -24,7 +24,8 @@ export const createFloodReport = async (reportData, file) => {
 
   // Spring Boot @RequestPart MultipartFile file expects a file named "file"
   if (file) {
-    formData.append('file', file);
+    const safeFilename = `flood_capture_${Date.now()}.jpg`;
+    formData.append('file', file, safeFilename);
   } else {
     // If no file uploaded, create a empty dummy file blob so @RequestPart MultipartFile file doesn't fail
     formData.append('file', new Blob([], { type: 'image/jpeg' }), 'empty.jpg');
