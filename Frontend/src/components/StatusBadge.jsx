@@ -1,93 +1,89 @@
 import React from 'react';
 
-const getStatusStyle = (status) => {
+const getStatusConfig = (status) => {
   const s = (status || '').toUpperCase().trim();
   switch (s) {
+    case 'CRITICAL':
+    case 'EMERGENCY':
+    case 'CATASTROPHIC':
+      return {
+        label: s,
+        color: '#dc2626',
+        bg: '#fee2e2',
+        border: '#fca5a5',
+        hasPulse: true,
+      };
+    case 'HIGH':
+    case 'SEVERE':
+      return {
+        label: s,
+        color: '#ea580c',
+        bg: '#ffedd5',
+        border: '#fdba74',
+        hasPulse: true,
+      };
     case 'PENDING':
     case 'OPEN':
+    case 'AWAITING':
       return {
-        color: '#d97706',
-        backgroundColor: 'rgba(217, 119, 6, 0.12)',
-        borderColor: 'rgba(217, 119, 6, 0.3)',
-        pulseClass: ''
+        label: s,
+        color: '#b45309',
+        bg: '#fef3c7',
+        border: '#fde68a',
+        hasPulse: false,
       };
     case 'ACCEPTED':
     case 'IN_PROGRESS':
     case 'IN PROGRESS':
     case 'INPROGRESS':
-      return {
-        color: '#0284c7',
-        backgroundColor: 'rgba(2, 132, 199, 0.12)',
-        borderColor: 'rgba(2, 132, 199, 0.3)',
-        pulseClass: ''
-      };
     case 'DISPATCHED':
     case 'SHIPPED':
     case 'IN_TRANSIT':
       return {
-        color: '#7c3aed',
-        backgroundColor: 'rgba(124, 58, 237, 0.12)',
-        borderColor: 'rgba(124, 58, 237, 0.3)',
-        pulseClass: ''
+        label: s.replace(/_/g, ' '),
+        color: '#0369a1',
+        bg: '#e0f2fe',
+        border: '#bae6fd',
+        hasPulse: false,
       };
     case 'DELIVERED':
     case 'COMPLETED':
+    case 'VERIFIED':
       return {
-        color: '#059669',
-        backgroundColor: 'rgba(5, 150, 105, 0.12)',
-        borderColor: 'rgba(5, 150, 105, 0.3)',
-        pulseClass: ''
-      };
-    case 'HIGH':
-    case 'SEVERE':
-      return {
-        color: '#ea580c',
-        backgroundColor: 'rgba(234, 88, 12, 0.12)',
-        borderColor: 'rgba(234, 88, 12, 0.3)',
-        pulseClass: 'badge-pulse-high'
-      };
-    case 'CRITICAL':
-    case 'EMERGENCY':
-    case 'CATASTROPHIC':
-      return {
-        color: '#e11d48',
-        backgroundColor: 'rgba(225, 29, 72, 0.12)',
-        borderColor: 'rgba(225, 29, 72, 0.3)',
-        pulseClass: 'badge-pulse-critical'
+        label: s,
+        color: '#15803d',
+        bg: '#dcfce7',
+        border: '#bbf7d0',
+        hasPulse: false,
       };
     default:
       return {
-        color: '#0284c7',
-        backgroundColor: 'rgba(2, 132, 199, 0.1)',
-        borderColor: 'rgba(2, 132, 199, 0.25)',
-        pulseClass: ''
+        label: s || 'REPORTED',
+        color: '#3f3f46',
+        bg: '#f4f4f5',
+        border: '#e4e4e7',
+        hasPulse: false,
       };
   }
 };
 
-const StatusBadge = ({ status }) => {
-  const statusColors = getStatusStyle(status);
-  
-  const badgeStyle = {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '4px 12px',
-    borderRadius: '20px',
-    fontSize: '11px',
-    fontWeight: 700,
-    backgroundColor: statusColors.backgroundColor,
-    color: statusColors.color,
-    border: `1px solid ${statusColors.borderColor}`,
-    letterSpacing: '0.5px',
-    whiteSpace: 'nowrap',
-    textTransform: 'uppercase',
-    fontFamily: "'Plus Jakarta Sans', sans-serif"
-  };
+const StatusBadge = ({ status, className = '' }) => {
+  const config = getStatusConfig(status);
 
   return (
-    <span className={statusColors.pulseClass} style={badgeStyle}>
-      {status ? String(status).replace('_', ' ') : 'REPORTED'}
+    <span
+      className={`status-pill ${config.hasPulse ? 'status-pill-pulse' : ''} ${className}`}
+      style={{
+        color: config.color,
+        backgroundColor: config.bg,
+        borderColor: config.border,
+      }}
+    >
+      <span
+        className="status-pill-dot"
+        style={{ backgroundColor: config.color }}
+      />
+      <span className="status-pill-text">{config.label}</span>
     </span>
   );
 };

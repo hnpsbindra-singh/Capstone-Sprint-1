@@ -1,9 +1,12 @@
 import React, { useState, useContext } from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, Link } from 'react-router-dom';
 import { 
   MdMenu, 
   MdClose, 
-  MdLogout 
+  MdLogout,
+  MdShield,
+  MdLanguage,
+  MdTranslate
 } from 'react-icons/md';
 import { AuthContext, useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -37,34 +40,10 @@ const getNavItems = (t) => ({
 });
 
 const ROLE_THEMES = {
-  VICTIM: {
-    label: 'VICTIM',
-    avatarGradient: '#09090b',
-    badgeBg: '#f4f4f5',
-    badgeBorder: '#e4e4e7',
-    badgeText: '#09090b'
-  },
-  DONOR: {
-    label: 'DONOR',
-    avatarGradient: '#09090b',
-    badgeBg: '#f4f4f5',
-    badgeBorder: '#e4e4e7',
-    badgeText: '#09090b'
-  },
-  NGO: {
-    label: 'NGO',
-    avatarGradient: '#09090b',
-    badgeBg: '#f4f4f5',
-    badgeBorder: '#e4e4e7',
-    badgeText: '#09090b'
-  },
-  ADMIN: {
-    label: 'ADMIN',
-    avatarGradient: '#09090b',
-    badgeBg: '#f4f4f5',
-    badgeBorder: '#e4e4e7',
-    badgeText: '#09090b'
-  }
+  VICTIM: { label: 'VICTIM', color: '#dc2626', bg: '#fee2e2' },
+  DONOR: { label: 'DONOR', color: '#0284c7', bg: '#e0f2fe' },
+  NGO: { label: 'NGO', color: '#16a34a', bg: '#dcfce7' },
+  ADMIN: { label: 'ADMIN', color: '#7c3aed', bg: '#f3e8ff' }
 };
 
 const getInitials = (name, role) => {
@@ -81,7 +60,7 @@ const getInitials = (name, role) => {
 
 const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { t } = useLanguage();
+  const { t, lang, changeLanguage } = useLanguage();
 
   let auth = {};
   try {
@@ -98,7 +77,6 @@ const Navbar = () => {
   const rawRole = (auth.role || auth.user?.role || 'VICTIM').toUpperCase();
   const roleTheme = ROLE_THEMES[rawRole] || ROLE_THEMES.VICTIM;
 
-  // Resolve username cleanly; never show "Commander"
   const rawUsername = (
     auth.username || 
     auth.user?.username || 
@@ -115,392 +93,396 @@ const Navbar = () => {
   const navItemsMap = getNavItems(t);
   const navLinks = navItemsMap[rawRole] || navItemsMap.VICTIM;
 
-  const toggleMobileMenu = () => {
-    setMobileOpen(prev => !prev);
-  };
-
   return (
     <>
-      {/* Big Tech Custom Navbar Styles */}
       <style>{`
-        .resq-navbar-header {
+        .app-navbar-header {
           position: sticky;
           top: 0;
           z-index: 1000;
           width: 100%;
-          background: rgba(255, 255, 255, 0.82);
-          backdrop-filter: blur(24px) saturate(180%);
-          -webkit-backdrop-filter: blur(24px) saturate(180%);
-          border-bottom: 1px solid rgba(226, 232, 240, 0.85);
-          box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.03), 0 4px 12px -2px rgba(15, 23, 42, 0.02);
-          transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Inter", sans-serif;
+          background: rgba(255, 255, 255, 0.94);
+          backdrop-filter: blur(16px);
+          -webkit-backdrop-filter: blur(16px);
+          border-bottom: 1px solid #e4e4e7;
+          box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+          font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
         }
 
-        .resq-navbar-container {
-          max-width: 1360px;
+        .app-navbar-container {
+          max-width: 1380px;
           margin: 0 auto;
-          height: 66px;
-          padding: 0 24px;
+          height: 64px;
+          padding: 0 20px;
           display: flex;
           align-items: center;
           justify-content: space-between;
           gap: 16px;
         }
 
-        /* Brand Styling */
-        .resq-brand-link {
+        .app-brand-link {
           display: flex;
           align-items: center;
+          gap: 10px;
           text-decoration: none;
-          user-select: none;
-          flex-shrink: 0;
-          transition: opacity 0.2s ease;
+          color: #09090b;
         }
 
-        .resq-brand-link:hover {
-          opacity: 0.85;
+        .app-brand-logo-box {
+          width: 32px;
+          height: 32px;
+          border-radius: 6px;
+          background: #09090b;
+          color: #ffffff;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 1.15rem;
         }
 
-        .resq-brand-name {
-          font-size: 20px;
+        .app-brand-text {
+          font-size: 1.15rem;
           font-weight: 800;
           letter-spacing: -0.04em;
           color: #09090b;
           line-height: 1;
         }
 
-        .resq-brand-name .flow-accent {
-          color: #09090b;
+        .app-brand-badge {
+          font-family: 'JetBrains Mono', monospace;
+          font-size: 0.625rem;
+          font-weight: 700;
+          color: #71717a;
+          letter-spacing: 0.06em;
+          margin-left: 4px;
         }
 
-        /* Center Segmented Pill Navigation */
-        .resq-nav-pill-group {
+        /* Segmented Nav Group */
+        .app-nav-group {
           background: #f4f4f5;
           border: 1px solid #e4e4e7;
-          padding: 3px;
           border-radius: 9999px;
+          padding: 3px;
           display: flex;
           align-items: center;
           gap: 2px;
         }
 
-        .resq-nav-pill-item {
+        .app-nav-item {
           text-decoration: none;
-          font-size: 13px;
-          font-weight: 500;
-          padding: 5px 13px;
+          font-size: 0.8125rem;
+          font-weight: 600;
+          padding: 6px 14px;
           border-radius: 9999px;
           color: #52525b;
-          transition: all 0.15s ease;
+          transition: all 160ms cubic-bezier(0.16, 1, 0.3, 1);
           white-space: nowrap;
-          border: 1px solid transparent;
         }
 
-        .resq-nav-pill-item:hover {
+        .app-nav-item:hover {
           color: #09090b;
           background: #ffffff;
         }
 
-        .resq-nav-pill-item.active {
+        .app-nav-item.active {
           color: #ffffff;
           background: #09090b;
-          font-weight: 600;
+          font-weight: 700;
         }
 
-        /* User Capsule */
-        .resq-user-capsule {
-          background: rgba(248, 250, 252, 0.85);
-          border: 1px solid rgba(226, 232, 240, 0.85);
+        /* Right Actions */
+        .app-right-actions {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+
+        /* Language Switcher */
+        .app-lang-switcher {
+          display: flex;
+          align-items: center;
+          background: #f4f4f5;
+          border: 1px solid #e4e4e7;
+          border-radius: 6px;
+          padding: 2px;
+        }
+
+        .app-lang-btn {
+          background: transparent;
+          border: none;
+          font-family: 'JetBrains Mono', monospace;
+          font-size: 0.6875rem;
+          font-weight: 700;
+          color: #71717a;
+          padding: 3px 7px;
+          border-radius: 4px;
+          cursor: pointer;
+          transition: all 150ms ease;
+        }
+
+        .app-lang-btn.active {
+          background: #09090b;
+          color: #ffffff;
+        }
+
+        /* User Profile Pill */
+        .app-user-pill {
+          background: #fafafa;
+          border: 1px solid #e4e4e7;
           border-radius: 9999px;
-          padding: 4px 6px 4px 5px;
+          padding: 3px 8px 3px 4px;
           display: flex;
           align-items: center;
           gap: 8px;
-          transition: box-shadow 0.2s ease;
         }
 
-        .resq-user-capsule:hover {
-          box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
-        }
-
-        .resq-user-avatar {
-          width: 30px;
-          height: 30px;
+        .app-user-avatar {
+          width: 28px;
+          height: 28px;
           border-radius: 50%;
+          background: #09090b;
+          color: #ffffff;
+          font-family: 'JetBrains Mono', monospace;
+          font-size: 0.6875rem;
+          font-weight: 800;
           display: flex;
           align-items: center;
           justify-content: center;
-          color: #ffffff;
-          font-size: 11.5px;
-          font-weight: 700;
-          letter-spacing: 0.02em;
-          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
           flex-shrink: 0;
         }
 
-        .resq-user-name {
-          font-size: 13px;
-          font-weight: 600;
-          color: #1e293b;
-          max-width: 140px;
+        .app-user-name {
+          font-size: 0.8125rem;
+          font-weight: 700;
+          color: #09090b;
+          max-width: 130px;
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
         }
 
-        .resq-role-badge {
-          font-size: 10px;
-          font-weight: 700;
-          padding: 2px 7px;
-          border-radius: 9999px;
+        .app-role-badge {
+          font-family: 'JetBrains Mono', monospace;
+          font-size: 0.625rem;
+          font-weight: 800;
+          padding: 2px 6px;
+          border-radius: 4px;
           letter-spacing: 0.04em;
-          white-space: nowrap;
         }
 
-        .resq-capsule-divider {
-          width: 1px;
-          height: 16px;
-          background: #cbd5e1;
-        }
-
-        .resq-logout-btn {
+        .app-logout-btn {
           display: inline-flex;
           align-items: center;
-          gap: 5px;
-          padding: 5px 10px;
-          border-radius: 9999px;
+          gap: 4px;
+          padding: 5px 8px;
+          border-radius: 6px;
           background: transparent;
           border: none;
-          color: #64748b;
-          font-size: 12.5px;
-          font-weight: 600;
+          color: #71717a;
+          font-size: 0.75rem;
+          font-weight: 700;
           cursor: pointer;
-          transition: all 0.2s ease;
-          white-space: nowrap;
+          transition: all 160ms ease;
         }
 
-        .resq-logout-btn:hover {
-          background: rgba(239, 68, 68, 0.08);
+        .app-logout-btn:hover {
           color: #dc2626;
+          background: #fee2e2;
         }
 
-        .resq-mobile-btn {
-          width: 38px;
-          height: 38px;
-          border-radius: 10px;
-          background: #f8fafc;
-          border: 1px solid #e2e8f0;
-          color: #0f172a;
-          display: flex;
+        .app-mobile-trigger {
+          display: none;
+          width: 36px;
+          height: 36px;
+          border-radius: 6px;
+          background: #fafafa;
+          border: 1px solid #e4e4e7;
+          color: #09090b;
           align-items: center;
           justify-content: center;
           cursor: pointer;
-          transition: all 0.2s ease;
         }
 
-        .resq-mobile-btn:hover {
-          background: #f1f5f9;
+        @media (max-width: 960px) {
+          .app-nav-group { display: none; }
+          .app-mobile-trigger { display: flex; }
         }
 
-        /* Mobile Dropdown Card */
-        .resq-mobile-card {
-          margin: 0 16px 16px 16px;
-          background: rgba(255, 255, 255, 0.98);
-          backdrop-filter: blur(20px);
-          -webkit-backdrop-filter: blur(20px);
-          border: 1px solid rgba(226, 232, 240, 0.9);
-          border-radius: 18px;
-          box-shadow: 0 16px 36px -4px rgba(15, 23, 42, 0.12);
-          padding: 16px;
+        /* Mobile Drawer */
+        .app-mobile-drawer {
+          position: fixed;
+          top: 65px;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(9, 9, 11, 0.4);
+          backdrop-filter: blur(8px);
+          z-index: 999;
           display: flex;
           flex-direction: column;
-          gap: 8px;
-          animation: resqSlideDown 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+          padding: 1rem;
         }
 
-        @keyframes resqSlideDown {
-          from { opacity: 0; transform: translateY(-8px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-
-        .resq-mobile-nav-link {
-          text-decoration: none;
-          font-size: 14px;
-          font-weight: 500;
-          padding: 10px 14px;
+        .app-drawer-card {
+          background: #ffffff;
+          border: 1px solid #e4e4e7;
           border-radius: 12px;
-          color: #334155;
-          background: #f8fafc;
-          border: 1px solid #f1f5f9;
-          transition: all 0.18s ease;
+          padding: 1.25rem;
+          box-shadow: 0 16px 36px -4px rgba(0,0,0,0.15);
+          display: flex;
+          flex-direction: column;
+          gap: 0.75rem;
+        }
+
+        .app-drawer-nav-item {
           display: flex;
           align-items: center;
           justify-content: space-between;
+          padding: 0.75rem 1rem;
+          border-radius: 8px;
+          background: #fafafa;
+          border: 1px solid #e4e4e7;
+          text-decoration: none;
+          color: #09090b;
+          font-size: 0.875rem;
+          font-weight: 600;
         }
 
-        .resq-mobile-nav-link.active {
-          background: #0f172a;
+        .app-drawer-nav-item.active {
+          background: #09090b;
           color: #ffffff;
-          font-weight: 600;
-          border-color: #0f172a;
+          border-color: #09090b;
         }
       `}</style>
 
-      <nav className="resq-navbar-header">
-        <div className="resq-navbar-container">
-          {/* 1. Brand Mark */}
-          <NavLink to="/" className="resq-brand-link">
-            <span className="resq-brand-name">
-              ResQ<span className="flow-accent">Flow</span>
-            </span>
-          </NavLink>
+      <nav className="app-navbar-header">
+        <div className="app-navbar-container">
+          {/* Brand Mark */}
+          <Link to="/" className="app-brand-link">
+            <div className="app-brand-logo-box">
+              <MdShield />
+            </div>
+            <div style={{ display: 'flex', alignItems: 'baseline' }}>
+              <span className="app-brand-text">ResQFlow</span>
+              <span className="app-brand-badge">// {roleTheme.label}</span>
+            </div>
+          </Link>
 
-          {/* 2. Desktop Segmented Nav Capsule */}
-          <div className="desktop-menu resq-nav-pill-group">
+          {/* Center Navigation Group */}
+          <div className="app-nav-group">
             {navLinks.map((item) => (
               <NavLink
-                key={item.path || 'dashboard'}
+                key={item.path}
                 to={item.path}
                 end={['/victim', '/donor', '/ngo', '/admin'].includes(item.path)}
-                className={({ isActive }) => `resq-nav-pill-item ${isActive ? 'active' : ''}`}
+                className={({ isActive }) => `app-nav-item ${isActive ? 'active' : ''}`}
               >
                 {item.label}
               </NavLink>
             ))}
           </div>
 
-          {/* 3. Desktop User Capsule */}
-          <div className="desktop-user">
-            <div className="resq-user-capsule">
-              {/* Dynamic Gradient Avatar with Initials */}
-              <div 
-                className="resq-user-avatar" 
-                style={{ background: roleTheme.avatarGradient }}
-                title={username || roleTheme.label}
+          {/* Right Action Matrix */}
+          <div className="app-right-actions">
+            {/* Language Toggle */}
+            <div className="app-lang-switcher" title="Select Interface Language">
+              <button
+                type="button"
+                className={`app-lang-btn ${lang === 'EN' ? 'active' : ''}`}
+                onClick={() => changeLanguage('EN')}
               >
-                {initials}
-              </div>
-
-              {/* User Identity */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                {username ? (
-                  <span className="resq-user-name" title={username}>{username}</span>
-                ) : null}
-                <span 
-                  className="resq-role-badge"
-                  style={{
-                    backgroundColor: roleTheme.badgeBg,
-                    border: `1px solid ${roleTheme.badgeBorder}`,
-                    color: roleTheme.badgeText
-                  }}
-                >
-                  {roleTheme.label}
-                </span>
-              </div>
-
-              <div className="resq-capsule-divider" />
-
-              {/* Minimal Sign Out Button */}
-              <button onClick={logout} className="resq-logout-btn" title="Sign out of ResQFlow">
-                <MdLogout size={15} />
-                <span>{t('logout') || 'Sign Out'}</span>
+                EN
+              </button>
+              <button
+                type="button"
+                className={`app-lang-btn ${lang === 'HI' ? 'active' : ''}`}
+                onClick={() => changeLanguage('HI')}
+              >
+                HI
               </button>
             </div>
-          </div>
 
-          {/* 4. Mobile Hamburger Trigger */}
-          <div className="mobile-hamburger-btn" style={{ display: 'flex', alignItems: 'center' }}>
+            {/* User Capsule */}
+            <div className="app-user-pill">
+              <div className="app-user-avatar">
+                {initials}
+              </div>
+              {username ? (
+                <span className="app-user-name" title={username}>{username}</span>
+              ) : null}
+              <span
+                className="app-role-badge"
+                style={{ color: roleTheme.color, backgroundColor: roleTheme.bg }}
+              >
+                {roleTheme.label}
+              </span>
+              <button
+                onClick={logout}
+                className="app-logout-btn"
+                title="Sign out of ResQFlow"
+              >
+                <MdLogout size={14} />
+              </button>
+            </div>
+
+            {/* Mobile Hamburger Trigger */}
             <button
               type="button"
-              onClick={toggleMobileMenu}
-              className="resq-mobile-btn"
-              aria-label="Toggle navigation menu"
+              onClick={() => setMobileOpen(prev => !prev)}
+              className="app-mobile-trigger"
+              aria-label="Toggle navigation"
             >
-              {mobileOpen ? <MdClose size={22} color="#0284c7" /> : <MdMenu size={22} color="#0f172a" />}
+              {mobileOpen ? <MdClose size={20} /> : <MdMenu size={20} />}
             </button>
           </div>
         </div>
 
-        {/* 5. Mobile Drawer */}
+        {/* Mobile Full-Screen Sheet */}
         {mobileOpen && (
-          <div className="resq-mobile-card">
-            {/* Mobile User Header */}
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              padding: '10px 12px',
-              backgroundColor: '#f8fafc',
-              borderRadius: '12px',
-              border: '1px solid #e2e8f0'
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <div 
-                  className="resq-user-avatar" 
-                  style={{ background: roleTheme.avatarGradient, width: '32px', height: '32px' }}
-                >
-                  {initials}
-                </div>
-                <div>
-                  <div style={{ fontSize: '13.5px', fontWeight: 700, color: '#0f172a', lineHeight: 1.2 }}>
-                    {username || `${roleTheme.label} User`}
-                  </div>
-                  <div style={{ fontSize: '11px', color: '#64748b' }}>
-                    Active Session
-                  </div>
-                </div>
+          <div className="app-mobile-drawer" onClick={() => setMobileOpen(false)}>
+            <div className="app-drawer-card" onClick={(e) => e.stopPropagation()}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.25rem' }}>
+                <span style={{ fontSize: '0.75rem', fontFamily: 'JetBrains Mono', color: '#71717a' }}>
+                  ACTIVE SESSION // {roleTheme.label}
+                </span>
+                <span style={{ fontSize: '0.8125rem', fontWeight: 700 }}>{username || 'OPERATOR'}</span>
               </div>
-              <span 
-                className="resq-role-badge"
-                style={{
-                  backgroundColor: roleTheme.badgeBg,
-                  border: `1px solid ${roleTheme.badgeBorder}`,
-                  color: roleTheme.badgeText
-                }}
-              >
-                {roleTheme.label}
-              </span>
-            </div>
 
-            {/* Mobile Nav Links */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', margin: '4px 0' }}>
               {navLinks.map((item) => (
                 <NavLink
-                  key={item.path || 'dashboard'}
+                  key={item.path}
                   to={item.path}
                   end={['/victim', '/donor', '/ngo', '/admin'].includes(item.path)}
                   onClick={() => setMobileOpen(false)}
-                  className={({ isActive }) => `resq-mobile-nav-link ${isActive ? 'active' : ''}`}
+                  className={({ isActive }) => `app-drawer-nav-item ${isActive ? 'active' : ''}`}
                 >
                   <span>{item.label}</span>
-                  <span style={{ fontSize: '11px', opacity: 0.6 }}>→</span>
+                  <span>→</span>
                 </NavLink>
               ))}
-            </div>
 
-            {/* Mobile Sign Out */}
-            <button 
-              onClick={() => { setMobileOpen(false); logout(); }} 
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '6px',
-                padding: '12px',
-                borderRadius: '12px',
-                backgroundColor: 'rgba(239, 68, 68, 0.08)',
-                color: '#dc2626',
-                border: '1px solid rgba(239, 68, 68, 0.2)',
-                fontSize: '13.5px',
-                fontWeight: 700,
-                cursor: 'pointer',
-                marginTop: '4px'
-              }}
-            >
-              <MdLogout size={16} />
-              <span>{t('logout') || 'Sign Out'}</span>
-            </button>
+              <button
+                onClick={() => { setMobileOpen(false); logout(); }}
+                style={{
+                  padding: '0.75rem',
+                  borderRadius: '8px',
+                  background: '#fee2e2',
+                  color: '#dc2626',
+                  border: '1px solid #fca5a5',
+                  fontWeight: 700,
+                  fontSize: '0.875rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '6px',
+                  cursor: 'pointer',
+                  marginTop: '0.5rem'
+                }}
+              >
+                <MdLogout size={16} />
+                <span>{t('logout') || 'Sign Out'}</span>
+              </button>
+            </div>
           </div>
         )}
       </nav>

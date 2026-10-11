@@ -105,25 +105,25 @@ const DonorDashboard = () => {
               icon={MdVolunteerActivism}
               label="Total Donations"
               value={totalDonations}
-              color="#3b82f6"
+              color="#09090b"
             />
             <StatsCard
               icon={MdInventory}
-              label="Pending"
+              label="Pending Pledges"
               value={pendingCount}
-              color="#f59e0b"
+              color="#d97706"
             />
             <StatsCard
               icon={MdLocalShipping}
-              label="Accepted"
+              label="In Transit"
               value={acceptedCount}
-              color="#06b6d4"
+              color="#0284c7"
             />
             <StatsCard
               icon={MdVolunteerActivism}
-              label="Delivered"
+              label="Verified Delivered"
               value={deliveredCount}
-              color="#22c55e"
+              color="#16a34a"
             />
           </div>
 

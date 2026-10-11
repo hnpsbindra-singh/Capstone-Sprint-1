@@ -41,6 +41,9 @@ import AllDonations from './pages/admin/AllDonations';
 // Heatmap page wrapper (shared across roles)
 import HeatmapPage from './pages/shared/HeatmapPage';
 
+// 404 Not Found Page
+import NotFound from './pages/NotFound';
+
 function DashboardLayout() {
   return (
     <>
@@ -82,6 +85,9 @@ function DashboardLayout() {
             <Route path="admin/donations" element={<AllDonations />} />
             <Route path="admin/heatmap" element={<HeatmapPage role="ADMIN" />} />
           </Route>
+
+          {/* Catch-all 404 Route */}
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
       <ScrollToTop />
@@ -123,6 +129,7 @@ function App() {
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/verify-otp" element={<VerifyOtpPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/404" element={<NotFound />} />
 
           {/* Protected Dashboard Routes */}
           <Route path="/*" element={<DashboardLayout />} />

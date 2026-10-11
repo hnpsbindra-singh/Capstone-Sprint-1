@@ -188,24 +188,25 @@ const VictimDashboard = () => {
 
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '0.75rem', borderTop: '1px solid var(--border-subtle)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Severity:</span>
+                      <span style={{ fontSize: '0.75rem', fontFamily: 'JetBrains Mono, monospace', color: 'var(--text-muted)' }}>SEVERITY:</span>
                       <span
                         style={{
-                          fontSize: '0.85rem',
-                          fontWeight: 700,
-                          padding: '2px 8px',
-                          borderRadius: '8px',
-                          backgroundColor: `${severityColor}20`,
+                          fontFamily: 'JetBrains Mono, monospace',
+                          fontSize: '0.8125rem',
+                          fontWeight: 800,
+                          padding: '2px 7px',
+                          borderRadius: '4px',
+                          backgroundColor: `${severityColor}15`,
                           color: severityColor,
                           border: `1px solid ${severityColor}40`
                         }}
                       >
-                        {severity.toFixed(1)}
+                        {severity.toFixed(1)} / 10
                       </span>
                     </div>
 
                     {report.createdAt && (
-                      <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                      <span style={{ fontSize: '0.75rem', fontFamily: 'JetBrains Mono, monospace', color: 'var(--text-muted)' }}>
                         {new Date(report.createdAt).toLocaleDateString()}
                       </span>
                     )}

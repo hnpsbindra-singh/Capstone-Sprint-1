@@ -105,25 +105,25 @@ const NgoDashboard = () => {
           icon={MdBusinessCenter} 
           label="Total Requests" 
           value={totalRequests} 
-          color="#3b82f6" 
+          color="#09090b" 
         />
         <StatsCard 
           icon={MdInventory} 
-          label="Open Requests" 
+          label="Open Shortages" 
           value={openRequests} 
-          color="#f59e0b" 
+          color="#d97706" 
         />
         <StatsCard 
           icon={MdCheckCircle} 
-          label="Completed" 
+          label="Fulfilled" 
           value={completedRequests} 
-          color="#22c55e" 
+          color="#16a34a" 
         />
         <StatsCard 
           icon={MdLocalShipping} 
-          label="Pending Donations" 
+          label="Inbound Shipments" 
           value={pendingDonations} 
-          color="#8b5cf6" 
+          color="#0284c7" 
         />
       </div>
 

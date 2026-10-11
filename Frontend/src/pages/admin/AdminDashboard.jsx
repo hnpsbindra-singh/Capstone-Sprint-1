@@ -86,25 +86,25 @@ const AdminDashboard = () => {
           icon={<MdWarning />}
           label="Total Flood Reports"
           value={reports.length}
-          color="#ef4444"
+          color="#dc2626"
         />
         <StatsCard
           icon={<MdBusinessCenter />}
           label="Total NGO Requests"
           value={ngoRequests.length}
-          color="#3b82f6"
+          color="#0284c7"
         />
         <StatsCard
           icon={<MdVolunteerActivism />}
           label="Total Donations"
           value={donations.length}
-          color="#10b981"
+          color="#16a34a"
         />
         <StatsCard
           icon={<MdMap />}
           label="Active Zones"
           value={heatmap.length}
-          color="#f59e0b"
+          color="#d97706"
         />
       </div>
 

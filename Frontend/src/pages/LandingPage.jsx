@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import './LandingPage.css';
@@ -17,14 +17,83 @@ import {
   MdCheck,
   MdLogin,
   MdVolunteerActivism,
+  MdSensors,
+  MdCameraAlt,
+  MdAutoAwesome,
   MdLayers,
+  MdRefresh
 } from 'react-icons/md';
+
+const SIMULATED_SECTORS = [
+  {
+    id: 'SEC-01',
+    name: 'Sector 01: Yamuna Basin, Delhi',
+    coords: '28.6712° N, 77.2341° E',
+    waterDepth: '5.4 ft',
+    severity: '8.7',
+    severityLevel: 'CRITICAL',
+    severityColor: '#dc2626',
+    aiDiagnosis: 'Ground floor submerged. Structural compromise risk. 4 elderly citizens on second-floor balcony.',
+    neededSupplies: '30x Inflatable Life Vests • 120x Water Purification Tablets',
+    carrier: 'DTDC Cargo Express',
+    trackingId: 'DT-948102',
+    pin: '482-910',
+    status: 'IN TRANSIT',
+    assignedNgo: 'Delhi Civil Defence Depot 4'
+  },
+  {
+    id: 'SEC-02',
+    name: 'Sector 02: Kaziranga Buffer, Assam',
+    coords: '26.5775° N, 93.1711° E',
+    waterDepth: '7.8 ft',
+    severity: '9.4',
+    severityLevel: 'CATASTROPHIC',
+    severityColor: '#dc2626',
+    aiDiagnosis: 'Embankment breached. Fast current +3.5 knots. Evacuation launch required immediately.',
+    neededSupplies: '15x Heavy-duty Inflatable Rafts • 80x High-Calorie Rations',
+    carrier: 'BlueDart Air Freight',
+    trackingId: 'BD-551029',
+    pin: '719-304',
+    status: 'VERIFIED DELIVERED',
+    assignedNgo: 'Assam Riverine Relief Force'
+  },
+  {
+    id: 'SEC-03',
+    name: 'Sector 03: Wayanad Slopes, Kerala',
+    coords: '11.6854° N, 76.1320° E',
+    waterDepth: '3.9 ft',
+    severity: '7.2',
+    severityLevel: 'HIGH',
+    severityColor: '#ea580c',
+    aiDiagnosis: 'Silt runoff cut road access. Community shelter isolated. Medical supplies depleted.',
+    neededSupplies: '200x Sterile First-Aid Kits • Baby Nutrition Formula',
+    carrier: 'Direct Volunteer Vehicle',
+    trackingId: 'VOL-882194',
+    pin: '502-831',
+    status: 'ACCEPTED BY DEPOT',
+    assignedNgo: 'Wayanad Community Relief Hub'
+  }
+];
 
 const LandingPage = () => {
   const { token, user } = useAuth();
   const navigate = useNavigate();
 
   const [activeRoleTab, setActiveRoleTab] = useState('VICTIM');
+  const [selectedSectorIndex, setSelectedSectorIndex] = useState(0);
+  const [liveUtc, setLiveUtc] = useState('');
+
+  const currentSector = SIMULATED_SECTORS[selectedSectorIndex];
+
+  useEffect(() => {
+    const updateTime = () => {
+      const now = new Date();
+      setLiveUtc(now.toUTCString().replace('GMT', 'UTC'));
+    };
+    updateTime();
+    const interval = setInterval(updateTime, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleDashboardRedirect = () => {
     if (user?.role) navigate(`/${user.role.toLowerCase()}`);
@@ -33,46 +102,53 @@ const LandingPage = () => {
 
   return (
     <div className="min-landing">
-      {/* ─── 1. TOP STATUS STRIP ─── */}
+      {/* ─── 1. TOP OPERATIONAL STATUS STRIP ─── */}
       <div className="min-top-strip">
         <div className="min-strip-inner">
           <div className="min-strip-indicator">
             <span className="min-live-dot" />
-            <span>Disaster Grid Active • 24/7 Incident Tracking</span>
+            <span className="min-strip-telemetry">
+              DISASTER TELEMETRY ACTIVE // 7 CLOUD NODES OPERATIONAL // {liveUtc || 'SYNCING...'}
+            </span>
           </div>
+
           <div className="min-strip-links">
-            <span style={{ fontSize: '0.75rem', color: 'var(--min-text-muted)' }}>Emergency Lines:</span>
-            <a href="tel:112" className="min-hotline-link">
+            <span className="min-strip-label">EMERGENCY DISPATCH:</span>
+            <a href="tel:112" className="min-hotline-link" title="Call National Police and Rescue">
               <span className="min-hotline-tag">POLICE / RESCUE</span> 112
             </a>
-            <a href="tel:108" className="min-hotline-link">
+            <a href="tel:108" className="min-hotline-link" title="Call Emergency Ambulance">
               <span className="min-hotline-tag">AMBULANCE</span> 108
             </a>
           </div>
         </div>
       </div>
 
-      {/* ─── 2. NAVBAR ─── */}
+      {/* ─── 2. ARCHITECTURAL NAVBAR ─── */}
       <header className="min-navbar">
         <div className="min-container min-nav-container">
           <Link to="/" className="min-nav-brand">
             <div className="min-brand-icon">
               <MdShield />
             </div>
-            <span className="min-brand-title">FloodAid</span>
+            <div className="min-brand-text-group">
+              <span className="min-brand-title">ResQFlow</span>
+              <span className="min-brand-badge">DISPATCH GRID</span>
+            </div>
           </Link>
 
           <nav className="min-nav-menu">
             <a href="#overview" className="min-nav-link">Overview</a>
-            <a href="#preview" className="min-nav-link">Live Radar</a>
-            <a href="#capabilities" className="min-nav-link">Features</a>
-            <a href="#workflow" className="min-nav-link">Operations</a>
+            <a href="#telemetry-console" className="min-nav-link">Live Telemetry</a>
+            <a href="#capabilities" className="min-nav-link">Architecture</a>
+            <a href="#workflow" className="min-nav-link">Workflows</a>
+            <a href="#comparison" className="min-nav-link">Protocol Integrity</a>
           </nav>
 
           <div className="min-nav-ctas">
             {token ? (
               <button onClick={handleDashboardRedirect} className="min-btn min-btn-black">
-                <MdShield /> Dashboard
+                <MdShield /> Operations Dashboard
               </button>
             ) : (
               <>
@@ -88,21 +164,23 @@ const LandingPage = () => {
         </div>
       </header>
 
-      {/* ─── 3. MINIMAL HERO ─── */}
+      {/* ─── 3. SWISS EDITORIAL HERO ─── */}
       <section className="min-hero" id="overview">
         <div className="min-container">
           <div className="min-hero-kicker">
-            Emergency Response & Relief Network
+            <span>RESQFLOW EMERGENCY PROTOCOL v2.4</span>
+            <span className="hero-kicker-sep">/</span>
+            <span>HIGH-CONSEQUENCE DISASTER LOGISTICS</span>
           </div>
 
           <h1 className="min-hero-title">
-            Decentralized flood response.<br />
-            Distress signal to verified delivery.
+            Decentralized flood response. <br />
+            Distress beacon to verified delivery.
           </h1>
 
           <p className="min-hero-subtitle">
-            A minimalist coordination network connecting stranded citizens, verified ground NGOs, 
-            and relief donors on a real-time GIS map — secured with 6-digit physical delivery verification.
+            An open disaster logistics grid uniting stranded citizens, autonomous computer vision severity scoring, 
+            and registered relief NGOs on a real-time GIS tactical map — protected by physical 6-digit delivery verification.
           </p>
 
           <div className="min-hero-actions">
@@ -117,90 +195,139 @@ const LandingPage = () => {
             </Link>
           </div>
 
+          {/* Operational Guarantees Bar */}
           <div className="min-hero-guarantees">
             <div className="min-guarantee-item">
-              <MdCheckCircle style={{ color: 'var(--min-accent-emerald)' }} />
-              <span>100% Physical PIN Verification</span>
+              <MdCheckCircle className="guarantee-icon" />
+              <span>100% Physical 6-Digit Handshake PIN</span>
             </div>
             <div className="min-guarantee-item">
-              <MdCheckCircle style={{ color: 'var(--min-accent-emerald)' }} />
-              <span>&lt; 2s Broadcast Latency</span>
+              <MdCheckCircle className="guarantee-icon" />
+              <span>&lt; 2s WebRTC Beacon Broadcast</span>
             </div>
             <div className="min-guarantee-item">
-              <MdCheckCircle style={{ color: 'var(--min-accent-emerald)' }} />
-              <span>Direct Courier & Hub Drop-off</span>
+              <MdCheckCircle className="guarantee-icon" />
+              <span>Direct Courier Consignment Tracking</span>
             </div>
           </div>
 
-          {/* ─── 4. PRODUCT SHOWCASE CARD ─── */}
-          <div className="min-showcase-box" id="preview">
+          {/* ─── 4. INTERACTIVE LIVE TELEMETRY CONSOLE ─── */}
+          <div className="min-showcase-box" id="telemetry-console">
+            {/* Top Toolbar */}
             <div className="min-showcase-bar">
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <div className="showcase-bar-left">
                 <span className="min-live-dot" />
-                <span>Sector 4 Incident Telemetry</span>
+                <span className="bar-title">MISSION SIMULATOR // ACTIVE DISPATCH FEED</span>
               </div>
-              <span style={{ fontFamily: 'monospace', color: 'var(--min-text-muted)' }}>
-                GPS: 28.7041° N, 77.1025° E
-              </span>
+
+              {/* Sector Switcher Tabs */}
+              <div className="sector-switcher">
+                {SIMULATED_SECTORS.map((sec, idx) => (
+                  <button
+                    key={sec.id}
+                    onClick={() => setSelectedSectorIndex(idx)}
+                    className={`sector-tab-btn ${selectedSectorIndex === idx ? 'active' : ''}`}
+                  >
+                    {sec.id}
+                  </button>
+                ))}
+              </div>
             </div>
 
+            {/* Main Interactive Grid */}
             <div className="min-showcase-grid">
-              {/* Left Tactical Map Preview */}
+              {/* Left Column: Tactical Spatial Telemetry */}
               <div className="min-preview-map">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div style={{ fontWeight: 700, fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <MdLocationOn style={{ color: '#0284c7' }} /> Sector 4 Flood Hotspot
+                <div className="sector-header-row">
+                  <div>
+                    <div className="sector-name">{currentSector.name}</div>
+                    <div className="sector-coords">
+                      <MdLocationOn style={{ color: '#0284c7' }} />
+                      <span>{currentSector.coords}</span>
+                    </div>
                   </div>
-                  <span style={{ fontSize: '0.725rem', fontWeight: 700, background: '#fee2e2', color: '#991b1b', padding: '2px 8px', borderRadius: '4px' }}>
-                    Severity 8.4 / 10 • High Risk
+                  <span 
+                    className="sector-severity-pill"
+                    style={{
+                      backgroundColor: `${currentSector.severityColor}15`,
+                      color: currentSector.severityColor,
+                      borderColor: `${currentSector.severityColor}40`
+                    }}
+                  >
+                    SEVERITY {currentSector.severity} / 10 • {currentSector.severityLevel}
                   </span>
                 </div>
 
+                {/* Simulated Incident Telemetry Card */}
                 <div className="min-preview-hotspot">
-                  <div style={{ fontWeight: 700, fontSize: '0.875rem' }}>Active Distress Cluster</div>
-                  <div style={{ fontSize: '0.8rem', color: 'var(--min-text-secondary)', marginTop: '2px' }}>
-                    14 Distress Reports • Water Level +4.2 ft
+                  <div className="hotspot-kicker">
+                    <MdAutoAwesome style={{ color: '#0284c7' }} />
+                    <span>AI COMPUTER VISION ANALYSIS</span>
                   </div>
+
+                  <div className="hotspot-metric-row">
+                    <div className="hotspot-metric">
+                      <span className="metric-num">{currentSector.waterDepth}</span>
+                      <span className="metric-tag">ESTIMATED DEPTH</span>
+                    </div>
+                    <div className="hotspot-metric">
+                      <span className="metric-num">HIGH</span>
+                      <span className="metric-tag">DEBRIS RISK</span>
+                    </div>
+                    <div className="hotspot-metric">
+                      <span className="metric-num">WGS84</span>
+                      <span className="metric-tag">GPS LOCK</span>
+                    </div>
+                  </div>
+
+                  <p className="hotspot-diagnosis">{currentSector.aiDiagnosis}</p>
                 </div>
 
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--min-text-muted)' }}>
-                  <span>Assigned: Regional Depot A</span>
-                  <span>Cluster Status: Priority 1</span>
+                <div className="sector-footer-meta">
+                  <span>Assigned Unit: <strong>{currentSector.assignedNgo}</strong></span>
+                  <span className="click-hint">Click sector tabs above to inspect alternative zones</span>
                 </div>
               </div>
 
-              {/* Right Pipeline Feed */}
+              {/* Right Column: Custody Chain & Cryptographic Handoff */}
               <div className="min-preview-pipeline">
-                <div style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--min-text-muted)', letterSpacing: '0.05em' }}>
-                  Chain of Custody Feed
+                <div className="pipeline-header">
+                  <span>CHAIN OF CUSTODY TELEMETRY</span>
+                  <span className="pipeline-state-tag">{currentSector.status}</span>
                 </div>
 
+                {/* Step 1: Beacon */}
                 <div className="min-pipeline-step">
                   <div className="min-step-head">
-                    <span style={{ color: '#0284c7' }}>1. Signal Logged</span>
-                    <span style={{ color: 'var(--min-text-muted)' }}>14:22</span>
+                    <span className="step-tag-blue">1. DISTRESS BEACON LOGGED</span>
+                    <span className="step-time">LIVE</span>
                   </div>
-                  <div style={{ fontWeight: 600, fontSize: '0.85rem' }}>Family of 5 stranded on rooftop</div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--min-text-muted)' }}>Need: 5x Life jackets & drinking water</div>
+                  <div className="step-content-title">Citizen GPS & Depth Uploaded</div>
+                  <div className="step-content-sub">Shortage: {currentSector.neededSupplies}</div>
                 </div>
 
+                {/* Step 2: Courier */}
                 <div className="min-pipeline-step">
                   <div className="min-step-head">
-                    <span style={{ color: '#7c3aed' }}>2. Courier Dispatched</span>
-                    <span style={{ color: 'var(--min-text-muted)' }}>In Transit</span>
+                    <span className="step-tag-purple">2. CONSIGNMENT DISPATCHED</span>
+                    <span className="step-time">TRANSIT</span>
                   </div>
-                  <div style={{ fontWeight: 600, fontSize: '0.85rem' }}>50x Inflatable Life Rafts</div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--min-text-muted)' }}>BlueDart Cargo • Tracking #BD-89234821</div>
+                  <div className="step-content-title">{currentSector.carrier}</div>
+                  <div className="step-content-sub">Waybill / Consignment ID: {currentSector.trackingId}</div>
                 </div>
 
-                <div className="min-pipeline-step" style={{ background: '#f0fdf4', borderColor: '#bbf7d0' }}>
+                {/* Step 3: Physical PIN Verification */}
+                <div className="min-pipeline-step step-complete">
                   <div className="min-step-head">
-                    <span style={{ color: '#16a34a' }}>3. Verified Delivered</span>
-                    <span style={{ color: '#16a34a', fontWeight: 800 }}>Complete</span>
+                    <span className="step-tag-green">3. PHYSICAL HANDSHAKE PIN</span>
+                    <span className="step-tag-verified">SECURE</span>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '4px' }}>
-                    <span style={{ fontSize: '0.75rem', color: '#166534' }}>Handoff Security PIN:</span>
-                    <span style={{ fontFamily: 'monospace', fontWeight: 800, color: '#15803d', letterSpacing: '2px' }}>849201</span>
+                  <div className="pin-handoff-row">
+                    <span className="pin-label">RECIPIENT DEPOT VERIFICATION PIN:</span>
+                    <span className="pin-value">{currentSector.pin}</span>
+                  </div>
+                  <div className="pin-subtext">
+                    Consignment database status cannot be marked complete without physical PIN validation.
                   </div>
                 </div>
               </div>
@@ -209,20 +336,20 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* ─── 5. BENTO GRID ─── */}
+      {/* ─── 5. ARCHITECTURAL BENTO GRID ─── */}
       <section className="min-bento-section" id="capabilities">
         <div className="min-container">
           <div className="min-section-header">
-            <div className="min-section-kicker">Core System Modules</div>
-            <h2 className="min-section-title">Built for Mission-Critical Incident Response</h2>
+            <div className="min-section-kicker">ENGINEERED ARCHITECTURE</div>
+            <h2 className="min-section-title">Mission-Critical Incident Coordination</h2>
             <p className="min-section-desc">
-              Every microservice is architected to eliminate supply leakage and route relief 
-              directly where flood danger is acute.
+              Every component is built to eliminate supply stockpiling, prevent missing parcels, 
+              and direct rescue teams straight to acute flood zones.
             </p>
           </div>
 
           <div className="min-bento-grid">
-            {/* Card 1 */}
+            {/* Card 1: 1-Tap Geolocation */}
             <div className="min-bento-card min-span-8">
               <div>
                 <div className="min-card-icon">
@@ -230,78 +357,69 @@ const LandingPage = () => {
                 </div>
                 <h3 className="min-card-title">1-Tap Precision Geolocation Beacon</h3>
                 <p className="min-card-desc">
-                  Victims in rising waters capture precision GPS coordinates in 1 tap without typing addresses 
-                  or installing apps. Captures water depth severity, dependent family counts, and medical priority flags 
-                  to triage critical rescues first.
+                  Stranded citizens in rising water transmit precision WGS84 coordinates instantly with 1 tap. 
+                  No address typing, no manual forms. Captures live camera frames, current water level, and dependent counts 
+                  to prioritize vulnerable families first.
                 </p>
               </div>
-              <div style={{ marginTop: '2rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid var(--min-border)', paddingTop: '1.25rem' }}>
-                <span style={{ fontSize: '0.8125rem', color: 'var(--min-text-muted)' }}>
-                  Operates over degraded mobile connectivity
-                </span>
-                <Link to="/register?role=VICTIM" className="min-btn min-btn-outline" style={{ fontSize: '0.8125rem' }}>
+              <div className="card-footer-action">
+                <span className="card-footer-note">Operates seamlessly over low-bandwidth mobile networks</span>
+                <Link to="/register?role=VICTIM" className="min-btn min-btn-outline card-link-sm">
                   Report Emergency <MdArrowForward />
                 </Link>
               </div>
             </div>
 
-            {/* Card 2 */}
+            {/* Card 2: AI Computer Vision */}
             <div className="min-bento-card min-span-4">
               <div>
                 <div className="min-card-icon">
-                  <MdMap />
+                  <MdAutoAwesome />
                 </div>
-                <h3 className="min-card-title">Real-Time GIS Heatmap</h3>
+                <h3 className="min-card-title">AI Computer Vision Severity</h3>
                 <p className="min-card-desc">
-                  Autonomous spatial clustering aggregates individual reports into color-coded flood risk zones (1 to 10 scale). 
-                  NGOs inspect distress density prior to launching boats.
+                  Analyzes uploaded flood imagery using deep learning to score water severity from 1.0 to 10.0, 
+                  identifying structural risk and rooftop evacuation urgency automatically.
                 </p>
               </div>
-              <div style={{ marginTop: '2rem', borderTop: '1px solid var(--min-border)', paddingTop: '1.25rem' }}>
-                <span style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--min-accent-blue)' }}>
-                  Live incident density & radius calculation
-                </span>
+              <div className="card-footer-simple">
+                <span>Autonomous visual triage & classification</span>
               </div>
             </div>
 
-            {/* Card 3 */}
+            {/* Card 3: Cryptographic PIN */}
             <div className="min-bento-card min-span-4">
               <div>
                 <div className="min-card-icon">
                   <MdVpnKey />
                 </div>
-                <h3 className="min-card-title">Cryptographic Delivery PIN</h3>
+                <h3 className="min-card-title">Cryptographic 6-Digit Handshake</h3>
                 <p className="min-card-desc">
-                  Eliminates missing relief shipments. When a donor dispatches goods, a private 6-digit PIN is generated. 
-                  The receiving NGO must enter this code upon physical receipt to verify arrival.
+                  Eliminates missing disaster supplies. When donors dispatch items, a unique 6-digit PIN is locked to that donation. 
+                  Receiving NGOs must physically enter this PIN to verify delivery into inventory.
                 </p>
               </div>
-              <div style={{ marginTop: '2rem', borderTop: '1px solid var(--min-border)', paddingTop: '1.25rem' }}>
-                <span style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--min-text-primary)' }}>
-                  100% Chain-of-custody verification
-                </span>
+              <div className="card-footer-simple">
+                <span>100% chain-of-custody proof</span>
               </div>
             </div>
 
-            {/* Card 4 */}
+            {/* Card 4: Real-time GIS Heatmap */}
             <div className="min-bento-card min-span-8">
               <div>
                 <div className="min-card-icon">
-                  <MdLocalShipping />
+                  <MdMap />
                 </div>
-                <h3 className="min-card-title">Direct P2P Supply Chain & Hub Drop-off</h3>
+                <h3 className="min-card-title">Live GIS Spatial Cluster Heatmap</h3>
                 <p className="min-card-desc">
-                  NGOs publish verified item shortages linked directly to active flood zones. Donors pledge exact supplies 
-                  (life jackets, water purification, blankets) and dispatch via courier (BlueDart, DTDC, FedEx) or personal drop-off 
-                  with consignment tracking.
+                  Aggregates incoming distress reports into color-coded flood clusters. NGO rescue squads and government triage teams 
+                  inspect density hotspots before deploying boats, avoiding duplicate sweeps and isolated pockets.
                 </p>
               </div>
-              <div style={{ marginTop: '2rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid var(--min-border)', paddingTop: '1.25rem' }}>
-                <span style={{ fontSize: '0.8125rem', color: 'var(--min-text-muted)' }}>
-                  Zero centralized warehouse bottlenecks or supply loss
-                </span>
-                <Link to="/register?role=DONOR" className="min-btn min-btn-outline" style={{ fontSize: '0.8125rem' }}>
-                  Browse Shortages <MdArrowForward />
+              <div className="card-footer-action">
+                <span className="card-footer-note">Real-time Leaflet GIS clustering engine</span>
+                <Link to="/login" className="min-btn min-btn-outline card-link-sm">
+                  Explore Incident Map <MdArrowForward />
                 </Link>
               </div>
             </div>
@@ -313,8 +431,8 @@ const LandingPage = () => {
       <section className="min-roles-section" id="workflow">
         <div className="min-container">
           <div className="min-section-header">
-            <div className="min-section-kicker">Operational Workflows</div>
-            <h2 className="min-section-title">Designed for Fast Coordination Across All Roles</h2>
+            <div className="min-section-kicker">DISPATCH DIRECTORY</div>
+            <h2 className="min-section-title">Structured Roles Across the Relief Network</h2>
             <p className="min-section-desc">
               Select your role to view the exact step-by-step dispatch workflow.
             </p>
@@ -355,14 +473,14 @@ const LandingPage = () => {
                   <div className="min-step-row">
                     <div className="min-step-num">2</div>
                     <div className="min-step-body">
-                      <h4>Specify Severity & Stranded Count</h4>
-                      <p>Select current water level (Knee, Waist, Roof) and number of dependents needing evacuation or emergency food.</p>
+                      <h4>Capture Photo for AI Severity Scoring</h4>
+                      <p>Snap a camera frame of the flood depth. The AI evaluates severity (1-10) and flags structural hazard.</p>
                     </div>
                   </div>
                   <div className="min-step-row">
                     <div className="min-step-num">3</div>
                     <div className="min-step-body">
-                      <h4>Direct Integration into Rescue Dispatch</h4>
+                      <h4>Direct Broadcast to Rescue Squads</h4>
                       <p>Your signal immediately turns into a live distress pin on the regional disaster heatmap for ground rescue crews.</p>
                     </div>
                   </div>
@@ -377,7 +495,7 @@ const LandingPage = () => {
                   <div className="min-step-row">
                     <div className="min-step-num">1</div>
                     <div className="min-step-body">
-                      <h4>Browse Shortages by Flood Zone</h4>
+                      <h4>Browse Verified Shortages by Flood Sector</h4>
                       <p>View verified NGO requests sorted by flood hotspot proximity. Choose items currently needed on the ground.</p>
                     </div>
                   </div>
@@ -431,30 +549,38 @@ const LandingPage = () => {
               )}
             </div>
 
-            {/* Minimalist Telemetry Box */}
-            <div style={{ background: 'var(--min-bg-subtle)', border: '1px solid var(--min-border)', borderRadius: 'var(--min-radius-md)', padding: '1.5rem' }}>
-              <div style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--min-text-muted)', marginBottom: '0.85rem' }}>
-                System Architecture Spec
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                <div style={{ background: '#ffffff', border: '1px solid var(--min-border)', borderRadius: 'var(--min-radius-sm)', padding: '0.85rem' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', fontWeight: 700 }}>
-                    <span>Consignment Security</span>
-                    <span style={{ color: 'var(--min-accent-emerald)' }}>VALIDATED</span>
+            {/* Architecture Telemetry Box */}
+            <div className="architecture-specs-box">
+              <div className="specs-title">SYSTEM ARCHITECTURE SPECIFICATION</div>
+              <div className="specs-stack">
+                <div className="spec-card">
+                  <div className="spec-head">
+                    <span>Cryptographic Handshake</span>
+                    <span className="spec-status green">VERIFIED</span>
                   </div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--min-text-secondary)', marginTop: '4px' }}>
-                    Recipient NGO must physically match the donor's 6-digit OTP code before database status marks DELIVERED.
-                  </div>
+                  <p className="spec-text">
+                    Physical receipt is strictly protected: recipient NGO must match the donor's 6-digit PIN before the database marks DELIVERED.
+                  </p>
                 </div>
 
-                <div style={{ background: '#ffffff', border: '1px solid var(--min-border)', borderRadius: 'var(--min-radius-sm)', padding: '0.85rem' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', fontWeight: 700 }}>
+                <div className="spec-card">
+                  <div className="spec-head">
                     <span>Spatial Precision</span>
-                    <span style={{ color: 'var(--min-accent-blue)' }}>GPS RESOLVED</span>
+                    <span className="spec-status blue">WGS84 RESOLVED</span>
                   </div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--min-text-secondary)', marginTop: '4px' }}>
-                    WGS84 high-accuracy coordinates linked directly to distress records for precise boat navigation.
+                  <p className="spec-text">
+                    High-accuracy coordinates linked directly to distress records for precise boat navigation and drone drops.
+                  </p>
+                </div>
+
+                <div className="spec-card">
+                  <div className="spec-head">
+                    <span>Computer Vision Pipeline</span>
+                    <span className="spec-status purple">LIVE SCORING</span>
                   </div>
+                  <p className="spec-text">
+                    Deep neural net processes flood imagery to compute water depth, debris velocity, and hazard scores (1.0 to 10.0).
+                  </p>
                 </div>
               </div>
             </div>
@@ -462,14 +588,14 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* ─── 7. COMPARISON SECTION ─── */}
-      <section className="min-comparison-section">
+      {/* ─── 7. PROTOCOL COMPARISON ─── */}
+      <section className="min-comparison-section" id="comparison">
         <div className="min-container">
           <div className="min-section-header">
-            <div className="min-section-kicker">Integrity Protocol</div>
-            <h2 className="min-section-title">Why Legacy Disaster Charity Fails in Crises</h2>
+            <div className="min-section-kicker">PROTOCOL INTEGRITY</div>
+            <h2 className="min-section-title">Why Traditional Charity Fails in Crises</h2>
             <p className="min-section-desc">
-              A direct comparison between traditional uncoordinated charity drives and the FloodAid protocol.
+              A direct comparison between legacy uncoordinated relief efforts and the ResQFlow verified protocol.
             </p>
           </div>
 
@@ -480,36 +606,36 @@ const LandingPage = () => {
               </h3>
               <ul className="min-comp-list">
                 <li className="min-comp-item">
-                  <MdClose style={{ color: '#dc2626', flexShrink: 0, marginTop: '2px' }} />
-                  <span><strong>Untracked Donations:</strong> Citizens mail items without knowing whether the hub is full or has already received that item.</span>
+                  <MdClose className="comp-icon red" />
+                  <span><strong>Blind Donating:</strong> Citizens send items without knowing if the local camp already has hundreds of them.</span>
                 </li>
                 <li className="min-comp-item">
-                  <MdClose style={{ color: '#dc2626', flexShrink: 0, marginTop: '2px' }} />
-                  <span><strong>High Supply Leakage:</strong> Packages sit in warehouses unverified with zero chain of custody or proof of receipt.</span>
+                  <MdClose className="comp-icon red" />
+                  <span><strong>High Supply Leakage:</strong> Goods pile up in unmonitored warehouses with zero chain of custody or proof of receipt.</span>
                 </li>
                 <li className="min-comp-item">
-                  <MdClose style={{ color: '#dc2626', flexShrink: 0, marginTop: '2px' }} />
-                  <span><strong>Voice Hotline Gridlock:</strong> Emergency phone lines become jammed, leaving stranded families without a way to transmit GPS coordinates.</span>
+                  <MdClose className="comp-icon red" />
+                  <span><strong>Phone Gridlock:</strong> Emergency phone lines become overwhelmed, leaving stranded victims unable to send GPS coordinates.</span>
                 </li>
               </ul>
             </div>
 
             <div className="min-comp-card highlight">
               <h3 className="min-comp-title" style={{ color: '#16a34a' }}>
-                <MdCheck /> FloodAid Verified Protocol
+                <MdCheck /> ResQFlow Verified Protocol
               </h3>
               <ul className="min-comp-list">
                 <li className="min-comp-item">
-                  <MdCheck style={{ color: '#16a34a', flexShrink: 0, marginTop: '2px' }} />
-                  <span><strong>Geofenced Shortage Matching:</strong> NGOs request exact supply quantities tied directly to verified flood sectors.</span>
+                  <MdCheck className="comp-icon green" />
+                  <span><strong>Targeted Shortage Matching:</strong> NGOs request exact supply quantities tied directly to verified flood sectors.</span>
                 </li>
                 <li className="min-comp-item">
-                  <MdCheck style={{ color: '#16a34a', flexShrink: 0, marginTop: '2px' }} />
-                  <span><strong>6-Digit Cryptographic Handoff:</strong> Delivery status cannot be marked complete without physical security code verification.</span>
+                  <MdCheck className="comp-icon green" />
+                  <span><strong>6-Digit Handshake PIN:</strong> Delivery status cannot be marked complete without physical code verification.</span>
                 </li>
                 <li className="min-comp-item">
-                  <MdCheck style={{ color: '#16a34a', flexShrink: 0, marginTop: '2px' }} />
-                  <span><strong>Real-Time Cluster Heatmap:</strong> Distress beacons automatically populate the live GIS tactical map in under two seconds.</span>
+                  <MdCheck className="comp-icon green" />
+                  <span><strong>Autonomous GIS Heatmap:</strong> Distress beacons automatically populate the live tactical map in under two seconds.</span>
                 </li>
               </ul>
             </div>
@@ -523,12 +649,12 @@ const LandingPage = () => {
           <div className="min-cta-box">
             <h2 className="min-cta-title">Mobilize Relief When Seconds Matter.</h2>
             <p className="min-cta-desc">
-              Join emergency responders, certified relief NGOs, and active donors coordinating 
-              disaster logistics with 100% verified delivery accountability.
+              Join disaster responders, registered relief NGOs, and proactive donors coordinating 
+              flood emergency logistics with 100% verified delivery accountability.
             </p>
             <div className="min-cta-actions">
               <Link to="/register?role=VICTIM" className="min-btn min-btn-danger min-btn-lg">
-                <MdDirectionsRun /> Report SOS Emergency
+                <MdDirectionsRun /> Report Emergency SOS
               </Link>
               <Link to="/register?role=DONOR" className="min-btn min-btn-outline min-btn-lg" style={{ background: '#ffffff', color: '#09090b' }}>
                 <MdVolunteerActivism /> Join as Relief Donor
@@ -538,20 +664,20 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* ─── 9. MINIMAL FOOTER ─── */}
+      {/* ─── 9. ARCHITECTURAL FOOTER ─── */}
       <footer className="min-footer">
         <div className="min-container">
           <div className="min-footer-grid">
             <div className="min-footer-col">
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '0.65rem' }}>
+              <div className="footer-brand-row">
                 <div className="min-brand-icon" style={{ width: '26px', height: '26px', fontSize: '0.9rem' }}>
                   <MdShield />
                 </div>
-                <span style={{ fontSize: '1.1rem', fontWeight: 800, letterSpacing: '-0.03em' }}>FloodAid</span>
+                <span className="footer-brand-title">ResQFlow</span>
               </div>
-              <p style={{ color: 'var(--min-text-secondary)', fontSize: '0.85rem', maxWidth: '300px', lineHeight: 1.6 }}>
-                Decentralized disaster response platform. Real-time GIS incident clustering, donor logistics, 
-                and verified delivery handoffs.
+              <p className="footer-tagline">
+                Emergency flood rescue & relief logistics network. Real-time GIS incident clustering, 
+                computer-vision damage triage, and verified delivery handoffs.
               </p>
             </div>
 
@@ -581,17 +707,20 @@ const LandingPage = () => {
                 <li><Link to="/register?role=NGO">Register Relief NGO</Link></li>
                 <li><Link to="/login">NGO Incident Command</Link></li>
                 <li><Link to="/login">Admin Security Console</Link></li>
-                <li><a href="#preview">GIS Heatmap Telemetry</a></li>
+                <li><a href="#telemetry-console">GIS Heatmap Telemetry</a></li>
               </ul>
             </div>
           </div>
 
           <div className="min-footer-bottom">
             <div>
-              © {new Date().getFullYear()} FloodAid Disaster Management System.
+              © {new Date().getFullYear()} ResQFlow Disaster Management System.
             </div>
-            <div style={{ display: 'flex', gap: '1.25rem' }}>
-              <span>High-Availability Cloud Microservices</span>
+            <div className="footer-badges">
+              <span>7 High-Availability Cloud Microservices</span>
+              <span className="dot-sep">•</span>
+              <span>WGS84 GPS Precision</span>
+              <span className="dot-sep">•</span>
               <span>Secure JWT Architecture</span>
             </div>
           </div>
