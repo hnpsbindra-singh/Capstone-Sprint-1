@@ -80,12 +80,12 @@ class FloodScoreResponseDTO(BaseModel):
 
 
 # ---------------------------------------------------------------------------
-# Health Check Endpoints
+# Health Check Endpoints (Supports both GET and HEAD for UptimeRobot)
 # ---------------------------------------------------------------------------
-@app.get("/")
-@app.get("/health")
-@app.get("/api")
-@app.get("/api/health")
+@app.api_route("/", methods=["GET", "HEAD"])
+@app.api_route("/health", methods=["GET", "HEAD"])
+@app.api_route("/api", methods=["GET", "HEAD"])
+@app.api_route("/api/health", methods=["GET", "HEAD"])
 def health():
     return {
         "status": "UP",
@@ -120,8 +120,8 @@ def score_flood_image(request: FloodScoreRequestDTO):
     return FloodScoreResponseDTO(**result)
 
 
-# Catch-all GET fallback
-@app.get("/{catchall:path}")
+# Catch-all GET and HEAD fallback
+@app.api_route("/{catchall:path}", methods=["GET", "HEAD"])
 def catch_all_get(catchall: str, request: Request):
     return {
         "status": "UP",
