@@ -379,7 +379,7 @@ const CreateRequest = () => {
               {/* Interactive Flood Area Cards Grid */}
               {activeFloodZones.length > 0 ? (
                 <div>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '0.75rem', marginBottom: '1rem' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 250px), 1fr))', gap: '0.75rem', marginBottom: '1rem' }}>
                     {activeFloodZones.map((z, idx) => {
                       const isSelected = selectedZoneIndex === String(idx);
                       const sev = Number(z.averageSeverity || z.severityScore || 0);

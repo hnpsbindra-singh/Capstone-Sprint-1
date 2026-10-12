@@ -279,7 +279,7 @@ const BrowseRequests = () => {
             No verified flood emergency zones detected at this moment. Showing all general relief requests.
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '0.75rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 250px), 1fr))', gap: '0.75rem' }}>
             {floodZones.map((z, idx) => {
               const isSelected = activeZoneFilter &&
                 Math.abs(activeZoneFilter.latitude - z.latitude) < 0.001 &&

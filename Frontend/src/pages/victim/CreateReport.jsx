@@ -517,21 +517,20 @@ const CreateReport = () => {
 
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
             
-            {/* Live Camera Viewfinder & Testing Options */}
+            {/* Live Camera Viewfinder & Options */}
             <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.65rem', flexWrap: 'wrap', gap: '0.5rem' }}>
                 <label style={{ fontSize: '0.875rem', fontWeight: 800, color: 'var(--text-primary)' }}>
-                  Capture Live Scene <span style={{ color: '#dc2626' }}>*</span>
+                  Visual Incident Evidence <span style={{ color: '#dc2626' }}>*</span>
                 </label>
                 
-                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                  {/* Testing Gallery Upload Button */}
+                {ALLOW_GALLERY_UPLOAD && !previewUrl && (
                   <label
                     className="btn btn-secondary btn-sm"
-                    style={{ fontSize: '0.75rem', padding: '3px 8px', display: 'inline-flex', alignItems: 'center', gap: '4px', cursor: 'pointer', margin: 0, border: '1px dashed var(--accent-ocean)' }}
-                    title="Select an image from gallery/files for testing"
+                    style={{ fontSize: '0.75rem', padding: '4px 10px', display: 'inline-flex', alignItems: 'center', gap: '5px', cursor: 'pointer', margin: 0 }}
+                    title="Select an image from gallery/files"
                   >
-                    <MdPhotoLibrary style={{ color: 'var(--accent-ocean)' }} /> Choose from Gallery (Test)
+                    <MdPhotoLibrary style={{ color: 'var(--accent-ocean)' }} /> Choose from Files
                     <input 
                       type="file" 
                       accept="image/*" 
@@ -539,34 +538,22 @@ const CreateReport = () => {
                       style={{ display: 'none' }} 
                     />
                   </label>
-
-                  {cameraActive && !previewUrl && (
-                    <button
-                      type="button"
-                      onClick={toggleCamera}
-                      className="btn btn-secondary btn-sm"
-                      style={{ fontSize: '0.75rem', padding: '3px 8px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
-                      title="Switch between front and rear cameras"
-                    >
-                      <MdFlipCameraIos /> Flip
-                    </button>
-                  )}
-                </div>
+                )}
               </div>
 
               {/* Camera Viewfinder / Preview Container */}
               <div 
                 style={{ 
                   position: 'relative', 
-                  borderRadius: '12px', 
+                  borderRadius: '14px', 
                   overflow: 'hidden', 
-                  background: '#0f172a', 
-                  minHeight: '320px', 
+                  background: '#09090b', 
+                  minHeight: '280px', 
                   display: 'flex', 
                   flexDirection: 'column',
                   alignItems: 'center', 
                   justifyContent: 'center',
-                  border: '2px solid var(--border-color)'
+                  border: '1.5px solid var(--border-subtle)'
                 }}
               >
                 {/* State A: Preview of Captured Photo */}
@@ -575,90 +562,62 @@ const CreateReport = () => {
                     <img 
                       src={previewUrl} 
                       alt="Captured Flood Scene" 
-                      style={{ width: '100%', maxHeight: '340px', objectFit: 'cover', display: 'block' }}
+                      style={{ width: '100%', maxHeight: '360px', objectFit: 'cover', display: 'block' }}
                     />
-                    <div style={{ position: 'absolute', top: '0.75rem', right: '0.75rem', display: 'flex', gap: '0.5rem' }}>
-                      <label
-                        className="btn btn-secondary btn-sm"
-                        style={{ background: 'rgba(15, 23, 42, 0.85)', color: '#ffffff', backdropFilter: 'blur(6px)', border: '1px solid rgba(255,255,255,0.25)', display: 'inline-flex', alignItems: 'center', gap: '4px', cursor: 'pointer', margin: 0 }}
-                        title="Upload a different photo from gallery"
-                      >
-                        <MdPhotoLibrary /> Change Image
-                        <input 
-                          type="file" 
-                          accept="image/*" 
-                          onChange={handleGalleryFileSelect} 
-                          style={{ display: 'none' }} 
-                        />
-                      </label>
-                      <button 
-                        type="button"
-                        onClick={retakePhoto}
-                        className="btn btn-secondary btn-sm"
-                        style={{ background: 'rgba(15, 23, 42, 0.85)', color: '#ffffff', backdropFilter: 'blur(6px)', border: '1px solid rgba(255,255,255,0.25)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
-                      >
-                        <MdCameraAlt /> Retake Live
-                      </button>
-                    </div>
                     
-                    {/* Bottom-Left Verified Badge */}
-                    <div style={{ position: 'absolute', bottom: '0.75rem', left: '0.75rem', background: 'rgba(15, 23, 42, 0.85)', backdropFilter: 'blur(8px)', color: '#ffffff', padding: '4px 10px', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <MdCheckCircle style={{ color: '#10b981' }} /> Visual Evidence Ready
-                    </div>
-
-                    {/* Bottom-Right Location Overlay Badge */}
+                    {/* Bottom Metadata Ribbon (Single clean overlay across bottom) */}
                     <div 
                       style={{ 
                         position: 'absolute', 
-                        bottom: '0.75rem', 
-                        right: '0.75rem', 
-                        background: 'rgba(15, 23, 42, 0.88)', 
-                        backdropFilter: 'blur(8px)', 
-                        color: '#ffffff', 
-                        padding: '5px 10px', 
-                        borderRadius: '8px', 
-                        border: '1px solid rgba(255, 255, 255, 0.25)', 
+                        bottom: 0, 
+                        left: 0, 
+                        right: 0, 
+                        background: 'linear-gradient(to top, rgba(9, 9, 11, 0.92) 0%, rgba(9, 9, 11, 0.6) 70%, transparent 100%)', 
+                        padding: '1.25rem 0.85rem 0.75rem',
                         display: 'flex', 
-                        flexDirection: 'column', 
-                        alignItems: 'flex-end', 
-                        maxWidth: '240px',
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
-                        zIndex: 5
+                        flexDirection: 'column',
+                        gap: '4px',
+                        color: '#ffffff'
                       }}
                     >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.8rem', fontWeight: 800, color: '#38bdf8', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '220px' }}>
-                        <MdLocationOn style={{ flexShrink: 0, fontSize: '0.95rem' }} />
-                        <span>{addressLabel}</span>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap' }}>
+                        <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#34d399', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                          <MdCheckCircle /> Ready for Analysis
+                        </span>
+                        <span style={{ fontSize: '0.72rem', fontFamily: 'monospace', color: '#94a3b8' }}>
+                          {coords ? `${coords.lat.toFixed(4)}, ${coords.lng.toFixed(4)}` : 'Locating...'}
+                        </span>
                       </div>
-                      <div style={{ fontSize: '0.75rem', fontFamily: 'monospace', color: '#cbd5e1', marginTop: '1px' }}>
-                        {coords ? `GPS: ${coords.lat.toFixed(5)}, ${coords.lng.toFixed(5)}` : 'Locating...'}
+                      <div style={{ fontSize: '0.78rem', color: '#f1f5f9', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        <MdLocationOn style={{ display: 'inline', marginRight: '3px', verticalAlign: '-2px', color: '#38bdf8' }} />
+                        {addressLabel}
                       </div>
                     </div>
                   </div>
                 ) : cameraError ? (
                   /* State B: Camera Permission / Device Error */
-                  <div style={{ padding: '2.5rem 1.5rem', textAlign: 'center', color: '#e2e8f0' }}>
-                    <MdVideocam style={{ fontSize: '3rem', color: '#f87171', marginBottom: '0.75rem' }} />
-                    <div style={{ fontSize: '1rem', fontWeight: 800, marginBottom: '0.5rem', color: '#fca5a5' }}>
+                  <div style={{ padding: '2rem 1.25rem', textAlign: 'center', color: '#e2e8f0', width: '100%' }}>
+                    <MdVideocam style={{ fontSize: '2.75rem', color: '#f87171', marginBottom: '0.5rem' }} />
+                    <div style={{ fontSize: '1rem', fontWeight: 800, marginBottom: '0.35rem', color: '#fca5a5' }}>
                       Camera Access Required
                     </div>
-                    <p style={{ fontSize: '0.85rem', color: '#94a3b8', maxWidth: '360px', margin: '0 auto 1.25rem auto' }}>
+                    <p style={{ fontSize: '0.825rem', color: '#94a3b8', maxWidth: '340px', margin: '0 auto 1.25rem auto', lineHeight: 1.4 }}>
                       {cameraError}
                     </p>
-                    <div style={{ display: 'flex', justifyContent: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', justifyContent: 'center', gap: '0.65rem', flexWrap: 'wrap' }}>
                       <button
                         type="button"
                         onClick={() => startCamera(facingMode)}
                         className="btn btn-primary btn-sm"
                         style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
                       >
-                        <MdRefresh /> Retry Camera Access
+                        <MdRefresh /> Retry Camera
                       </button>
                       <label
                         className="btn btn-secondary btn-sm"
                         style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', cursor: 'pointer', margin: 0 }}
                       >
-                        <MdPhotoLibrary /> Pick Test Image from Gallery
+                        <MdPhotoLibrary /> Pick from Files
                         <input 
                           type="file" 
                           accept="image/*" 
@@ -676,70 +635,132 @@ const CreateReport = () => {
                       playsInline 
                       muted 
                       autoPlay 
-                      style={{ width: '100%', maxHeight: '340px', objectFit: 'cover', display: 'block', background: '#000' }}
+                      style={{ width: '100%', maxHeight: '360px', minHeight: '260px', objectFit: 'cover', display: 'block', background: '#000' }}
                     />
 
                     {/* Top Live Camera Badge */}
-                    <div style={{ position: 'absolute', top: '0.75rem', left: '0.75rem', background: 'rgba(220, 38, 38, 0.85)', backdropFilter: 'blur(6px)', color: '#ffffff', padding: '3px 8px', borderRadius: '6px', fontSize: '0.72rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '6px', letterSpacing: '0.04em' }}>
+                    <div style={{ position: 'absolute', top: '0.75rem', left: '0.75rem', background: 'rgba(220, 38, 38, 0.9)', backdropFilter: 'blur(6px)', color: '#ffffff', padding: '3px 8px', borderRadius: '5px', fontSize: '0.7rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '5px', letterSpacing: '0.04em' }}>
                       <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#ffffff', display: 'inline-block' }} />
-                      LIVE SENSOR
+                      LIVE CAMERA
                     </div>
 
-                    {/* Shutter Button & Gallery Overlay */}
-                    <div style={{ position: 'absolute', bottom: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', gap: '0.75rem' }}>
+                    {/* Camera Control Dock (Mobile Optimized Shutter) */}
+                    <div 
+                      style={{ 
+                        position: 'absolute', 
+                        bottom: '0.75rem', 
+                        left: 0, 
+                        right: 0, 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'space-around', 
+                        padding: '0 1.25rem' 
+                      }}
+                    >
+                      {/* Flip Camera */}
+                      <button
+                        type="button"
+                        onClick={toggleCamera}
+                        style={{ 
+                          width: '42px', 
+                          height: '42px', 
+                          borderRadius: '50%', 
+                          background: 'rgba(15, 23, 42, 0.75)', 
+                          backdropFilter: 'blur(8px)', 
+                          border: '1px solid rgba(255,255,255,0.25)', 
+                          color: '#ffffff', 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          justifyContent: 'center', 
+                          fontSize: '1.2rem',
+                          cursor: 'pointer' 
+                        }}
+                        title="Switch camera"
+                      >
+                        <MdFlipCameraIos />
+                      </button>
+
+                      {/* Main Big Shutter Trigger */}
                       <button
                         type="button"
                         onClick={capturePhoto}
-                        className="btn btn-primary"
                         style={{ 
-                          borderRadius: '99px', 
-                          padding: '10px 24px', 
-                          fontSize: '0.95rem', 
-                          fontWeight: 800, 
-                          display: 'inline-flex', 
+                          width: '64px', 
+                          height: '64px', 
+                          borderRadius: '50%', 
+                          background: '#ffffff', 
+                          border: '4px solid rgba(255, 255, 255, 0.4)', 
+                          boxShadow: '0 0 0 3px #09090b, 0 8px 24px rgba(0,0,0,0.4)', 
+                          display: 'flex', 
                           alignItems: 'center', 
-                          gap: '8px', 
-                          boxShadow: '0 4px 20px rgba(2, 132, 199, 0.5)',
-                          border: '2px solid rgba(255,255,255,0.4)'
+                          justifyContent: 'center', 
+                          color: '#09090b', 
+                          fontSize: '1.6rem',
+                          cursor: 'pointer',
+                          transition: 'transform 0.1s ease'
                         }}
+                        title="Capture Photo"
                       >
-                        <MdCameraAlt style={{ fontSize: '1.3rem' }} />
-                        Click to Capture Photo
+                        <MdCameraAlt />
                       </button>
 
-                      {ALLOW_GALLERY_UPLOAD && (
-                        <label
-                          className="btn btn-secondary"
-                          style={{ 
-                            borderRadius: '50%', 
-                            width: '44px', 
-                            height: '44px', 
-                            padding: 0, 
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            justifyContent: 'center', 
-                            background: 'rgba(15, 23, 42, 0.85)', 
-                            backdropFilter: 'blur(6px)', 
-                            color: '#ffffff', 
-                            border: '2px solid rgba(255,255,255,0.3)',
-                            cursor: 'pointer',
-                            margin: 0
-                          }}
-                          title="Upload image from gallery/files for testing"
-                        >
-                          <MdPhotoLibrary style={{ fontSize: '1.25rem' }} />
-                          <input 
-                            type="file" 
-                            accept="image/*" 
-                            onChange={handleGalleryFileSelect} 
-                            style={{ display: 'none' }} 
-                          />
-                        </label>
-                      )}
+                      {/* Gallery Upload Icon */}
+                      <label
+                        style={{ 
+                          width: '42px', 
+                          height: '42px', 
+                          borderRadius: '50%', 
+                          background: 'rgba(15, 23, 42, 0.75)', 
+                          backdropFilter: 'blur(8px)', 
+                          border: '1px solid rgba(255,255,255,0.25)', 
+                          color: '#ffffff', 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          justifyContent: 'center', 
+                          fontSize: '1.2rem',
+                          cursor: 'pointer',
+                          margin: 0
+                        }}
+                        title="Upload from gallery"
+                      >
+                        <MdPhotoLibrary />
+                        <input 
+                          type="file" 
+                          accept="image/*" 
+                          onChange={handleGalleryFileSelect} 
+                          style={{ display: 'none' }} 
+                        />
+                      </label>
                     </div>
                   </div>
                 )}
               </div>
+
+              {/* Dedicated Post-Capture Action Bar (Rendered cleanly beneath preview) */}
+              {previewUrl && (
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.65rem', marginTop: '0.75rem' }}>
+                  <button 
+                    type="button"
+                    onClick={retakePhoto}
+                    className="btn btn-secondary"
+                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '0.85rem', padding: '0.65rem' }}
+                  >
+                    <MdCameraAlt /> Retake Live Photo
+                  </button>
+                  <label
+                    className="btn btn-secondary"
+                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '0.85rem', padding: '0.65rem', cursor: 'pointer', margin: 0 }}
+                  >
+                    <MdPhotoLibrary /> Choose Different File
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      onChange={handleGalleryFileSelect} 
+                      style={{ display: 'none' }} 
+                    />
+                  </label>
+                </div>
+              )}
             </div>
 
             {/* Notice */}

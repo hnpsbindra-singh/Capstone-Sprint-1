@@ -308,44 +308,87 @@ const Navbar = () => {
           .app-mobile-trigger { display: flex; }
         }
 
+        @media (max-width: 640px) {
+          .app-navbar-container {
+            height: 56px;
+            padding: 0 12px;
+            gap: 8px;
+          }
+
+          .app-brand-text {
+            font-size: 1.05rem;
+          }
+
+          .app-brand-badge {
+            display: none;
+          }
+
+          .app-user-name,
+          .app-role-badge,
+          .app-logout-btn {
+            display: none;
+          }
+
+          .app-user-pill {
+            padding: 0;
+            background: transparent;
+            border: none;
+          }
+
+          .app-right-actions {
+            gap: 6px;
+          }
+
+          .app-lang-btn {
+            padding: 3px 5px;
+            font-size: 0.65rem;
+          }
+        }
+
         /* Mobile Drawer */
         .app-mobile-drawer {
           position: fixed;
-          top: 65px;
+          top: 56px;
           left: 0;
           right: 0;
           bottom: 0;
-          background: rgba(9, 9, 11, 0.4);
+          background: rgba(9, 9, 11, 0.45);
           backdrop-filter: blur(8px);
+          -webkit-backdrop-filter: blur(8px);
           z-index: 999;
           display: flex;
           flex-direction: column;
-          padding: 1rem;
+          padding: 0.875rem;
+          overflow-y: auto;
+          -webkit-overflow-scrolling: touch;
         }
 
         .app-drawer-card {
           background: #ffffff;
           border: 1px solid #e4e4e7;
-          border-radius: 12px;
+          border-radius: 14px;
           padding: 1.25rem;
-          box-shadow: 0 16px 36px -4px rgba(0,0,0,0.15);
+          box-shadow: 0 16px 36px -4px rgba(0,0,0,0.18);
           display: flex;
           flex-direction: column;
           gap: 0.75rem;
+          max-height: calc(100vh - 80px);
+          overflow-y: auto;
         }
 
         .app-drawer-nav-item {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          padding: 0.75rem 1rem;
+          padding: 0.85rem 1rem;
           border-radius: 8px;
           background: #fafafa;
           border: 1px solid #e4e4e7;
           text-decoration: none;
           color: #09090b;
-          font-size: 0.875rem;
+          font-size: 0.9rem;
           font-weight: 600;
+          min-height: 44px;
         }
 
         .app-drawer-nav-item.active {

@@ -651,6 +651,12 @@ a:hover {
   color: #ffffff;
 }
 
+@media (max-width: 640px) {
+  .ambient-hotline-tag {
+    display: none !important;
+  }
+}
+
 .ambient-back-btn {
   display: inline-flex;
   align-items: center;
@@ -4113,32 +4119,53 @@ input, textarea, select {
 /* ── 4. PAGE CONTAINER & TITLE ── */
 @media (max-width: 640px) {
   .page-container {
-    padding: 1rem 0.875rem !important;
+    padding: 1rem 0.85rem !important;
   }
 
   .page-title {
-    font-size: 1.4rem !important;
+    font-size: 1.35rem !important;
+    line-height: 1.25 !important;
+  }
+
+  .page-subtitle {
+    font-size: 0.825rem !important;
+    margin-top: 0.25rem !important;
   }
 
   .page-header {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 0.85rem !important;
     margin-bottom: 1.25rem !important;
   }
 
-  .glass-card {
-    padding: 1.125rem !important;
+  .page-header > div:last-child {
+    width: 100% !important;
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 0.5rem !important;
   }
-}
 
-/* ── 5. STAT / KPI GRIDS — Better mobile layout ── */
-@media (max-width: 640px) {
-  /* 4-col and 3-col grids: 2 columns on phone */
+  .page-header .btn {
+    flex: 1 1 auto !important;
+    justify-content: center !important;
+    padding: 0.65rem 1rem !important;
+  }
+
+  .glass-card {
+    padding: 1rem !important;
+    border-radius: 12px !important;
+  }
+
+  /* 4-col and 3-col grids: 2 columns on mobile */
   .grid-4 {
     grid-template-columns: repeat(2, 1fr) !important;
-    gap: 0.75rem !important;
+    gap: 0.65rem !important;
   }
 
   .grid-3 {
-    grid-template-columns: repeat(2, 1fr) !important;
+    grid-template-columns: 1fr !important;
     gap: 0.75rem !important;
   }
 
@@ -4146,40 +4173,136 @@ input, textarea, select {
     grid-template-columns: 1fr !important;
     gap: 0.75rem !important;
   }
+
+  /* Telemetry / Stat card sizing */
+  .telemetry-card,
+  .stat-card {
+    padding: 0.875rem !important;
+  }
+
+  .telemetry-value,
+  .stat-card-value {
+    font-size: 1.5rem !important;
+  }
+
+  .telemetry-label,
+  .stat-card-label {
+    font-size: 0.68rem !important;
+  }
+
+  /* Form inputs — 16px to prevent iOS Safari auto-zoom on focus */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="number"],
+  input[type="search"],
+  select,
+  textarea,
+  .form-input,
+  .form-textarea,
+  .form-select {
+    font-size: 16px !important;
+  }
+
+  /* Heatmap HUD mobile stack */
+  .heatmap-hud-header {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 0.75rem !important;
+    padding: 0.75rem !important;
+  }
+
+  .heatmap-hud-left {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 0.5rem !important;
+    width: 100% !important;
+  }
+
+  .heatmap-metrics-row {
+    width: 100% !important;
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0.4rem !important;
+  }
+
+  .hud-metric-pill {
+    justify-content: space-between !important;
+    padding: 0.35rem 0.5rem !important;
+    font-size: 0.7rem !important;
+  }
+
+  .heatmap-hud-actions {
+    width: 100% !important;
+    flex-direction: column !important;
+    gap: 0.5rem !important;
+  }
+
+  .hud-map-switcher-group {
+    width: 100% !important;
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 0.25rem !important;
+  }
+
+  .hud-map-btn {
+    justify-content: center !important;
+    padding: 0.4rem 0.25rem !important;
+  }
+
+  .map-btn-text {
+    font-size: 0.7rem !important;
+  }
+
+  .hud-action-btn {
+    width: 100% !important;
+    justify-content: center !important;
+  }
 }
 
-@media (max-width: 380px) {
-  /* Very small phones: all single column */
+@media (max-width: 420px) {
+  /* Very small phones (360px - 414px) */
   .grid-4,
   .grid-3,
   .grid-2 {
     grid-template-columns: 1fr !important;
   }
+
+  .page-container {
+    padding: 0.75rem 0.65rem !important;
+  }
+
+  .glass-card {
+    padding: 0.85rem !important;
+    border-radius: 12px !important;
+  }
+
+  .telemetry-value-row {
+    margin-bottom: 0.5rem !important;
+  }
 }
 
-/* ── 6. TABLES — Card view on mobile ── */
-@media (max-width: 640px) {
-  /* Make table scroll horizontally */
+/* ── 6. TABLES — Touch momentum scroll & card styles ── */
+@media (max-width: 768px) {
   .table-container {
     overflow-x: auto !important;
     -webkit-overflow-scrolling: touch;
-    border-radius: 12px;
+    border-radius: 10px;
+    margin-left: -0.25rem;
+    margin-right: -0.25rem;
+    width: calc(100% + 0.5rem);
   }
 
-  /* Hide non-critical columns on mobile using data attributes */
   .data-table .hide-mobile {
     display: none !important;
   }
 
-  /* Compact table cells */
   .data-table th,
   .data-table td {
-    padding: 0.625rem 0.75rem !important;
-    font-size: 0.8125rem !important;
-    white-space: nowrap;
+    padding: 0.65rem 0.75rem !important;
+    font-size: 0.8rem !important;
   }
 
-  /* Actions column — always visible */
   .data-table td:last-child,
   .data-table th:last-child {
     white-space: nowrap;
@@ -4834,6 +4957,25 @@ input, textarea, select {
   }
   .dir-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .radar-display-frame {
+    width: 260px !important;
+    height: 260px !important;
+  }
+  .not-found-title {
+    font-size: 1.75rem !important;
+    line-height: 1.2 !important;
+  }
+  .not-found-actions {
+    flex-direction: column !important;
+    gap: 0.5rem !important;
+  }
+  .not-found-actions .action-btn {
+    width: 100% !important;
+    justify-content: center !important;
   }
 }
 

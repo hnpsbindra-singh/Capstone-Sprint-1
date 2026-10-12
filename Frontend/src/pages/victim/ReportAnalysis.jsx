@@ -361,7 +361,7 @@ const ReportAnalysis = () => {
           <MdArrowBack /> Back to Reports
         </button>
 
-        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
           <button 
             className="btn btn-secondary btn-sm"
             onClick={handleShare}
@@ -430,7 +430,7 @@ const ReportAnalysis = () => {
       </div>
 
       {/* Main Analysis Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem', marginBottom: '1.5rem' }}>
+      <div className="grid-2" style={{ marginBottom: '1.5rem' }}>
         
         {/* Left Card: AI Severity Score Meter */}
         <div 
@@ -600,7 +600,7 @@ const ReportAnalysis = () => {
       </div>
 
       {/* Reasoning & Safety Action Plan */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem', marginBottom: '1.5rem' }}>
+      <div className="grid-2" style={{ marginBottom: '1.5rem' }}>
         
         {/* Dynamic Description & Reasoning */}
         <div className="glass-card">

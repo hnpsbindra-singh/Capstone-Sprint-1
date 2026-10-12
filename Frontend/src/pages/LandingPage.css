@@ -770,7 +770,7 @@
 }
 
 /* ─────────────────────────────────────────────────────────────
-   RESPONSIVENESS
+   RESPONSIVENESS (Mobile First Fluid Architecture)
    ───────────────────────────────────────────────────────────── */
 @media (max-width: 1024px) {
   .rp-grid-4,
@@ -790,20 +790,162 @@
 }
 
 @media (max-width: 768px) {
+  .rp-utility-inner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+  }
+
+  .rp-utility-helpline {
+    font-size: 0.72rem;
+    line-height: 1.4;
+  }
+
+  .rp-utility-links {
+    width: 100%;
+    justify-content: flex-start;
+    gap: 0.5rem;
+  }
+
+  .rp-nav-inner {
+    height: 56px;
+    padding: 0 1rem;
+  }
+
   .rp-nav-links {
     display: none;
   }
+
+  .rp-hero {
+    padding: 2.25rem 0 2rem;
+  }
+
+  .rp-hero-title {
+    font-size: clamp(1.85rem, 6.5vw, 2.75rem);
+    letter-spacing: -0.03em;
+    line-height: 1.15;
+  }
+
+  .rp-hero-subtitle {
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin-bottom: 1.75rem;
+  }
+
+  .rp-hero-actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.65rem;
+    margin-bottom: 2.25rem;
+  }
+
+  .rp-hero-actions .rp-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 0.85rem 1.25rem;
+    font-size: 0.9rem;
+  }
+
+  /* Product frame mobile enhancements */
+  .rp-product-frame {
+    border-radius: 12px;
+  }
+
+  .rp-frame-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.65rem;
+    padding: 0.65rem 0.85rem;
+  }
+
+  .rp-frame-tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+    padding-bottom: 2px;
+    scrollbar-width: none;
+  }
+  .rp-frame-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .rp-frame-tab-btn {
+    white-space: nowrap;
+    padding: 0.45rem 0.75rem;
+    font-size: 0.75rem;
+    flex-shrink: 0;
+  }
+
+  .rp-frame-status {
+    font-size: 0.68rem;
+    align-self: flex-start;
+  }
+
+  .rp-frame-body {
+    padding: 1rem;
+  }
+
+  .rp-sos-preview-grid,
+  .rp-heatmap-preview-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .rp-section {
+    padding: 3rem 0;
+  }
+
+  .rp-section-title {
+    font-size: 1.75rem;
+  }
+
   .rp-grid-4,
   .rp-steps-grid {
     grid-template-columns: 1fr;
+    gap: 1rem;
   }
+
+  .rp-step-card {
+    padding: 1.25rem;
+  }
+
+  .rp-role-card {
+    padding: 1.25rem;
+  }
+
   .rp-footer-grid {
     grid-template-columns: 1fr;
+    gap: 1.75rem;
   }
-  .rp-hero {
-    padding: 3rem 0 2.5rem;
+
+  .rp-footer-bottom {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
   }
+}
+
+@media (max-width: 480px) {
+  .rp-container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .rp-hero-badge {
+    font-size: 0.7rem;
+    padding: 3px 9px;
+  }
+
   .rp-frame-body {
-    padding: 1.25rem;
+    padding: 0.85rem;
+  }
+
+  .rp-sos-meta-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .rp-hotspot-item {
+    padding: 0.75rem;
   }
 }
