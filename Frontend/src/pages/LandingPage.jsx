@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import './LandingPage.css';
@@ -13,7 +14,9 @@ import {
   MdVpnKey,
   MdLocalShipping,
   MdCheck,
-  MdPhone
+  MdPhone,
+  MdMenu,
+  MdClose
 } from 'react-icons/md';
 
 const SECTOR_HOTSPOTS = [
@@ -52,10 +55,47 @@ const LandingPage = () => {
 
   const [activeFrameTab, setActiveFrameTab] = useState('sos'); // 'sos' | 'map' | 'pin'
   const [selectedHotspot, setSelectedHotspot] = useState(0);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  // Lock background scroll when mobile menu is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      const prev = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = prev;
+      };
+    }
+  }, [mobileMenuOpen]);
+
+  // Close mobile menu on Escape key or window resize to desktop
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') setMobileMenuOpen(false);
+    };
+    const handleResize = () => {
+      if (window.innerWidth > 768) setMobileMenuOpen(false);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
 
   const handleDashboardRedirect = () => {
     if (user?.role) navigate(`/${user.role.toLowerCase()}`);
     else navigate('/login');
+  };
+
+  const scrollToSection = (e, sectionId) => {
+    e.preventDefault();
+    setMobileMenuOpen(false);
+    const target = document.getElementById(sectionId);
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   };
 
   return (
@@ -82,11 +122,11 @@ const LandingPage = () => {
             <span className="rp-brand-tag">RELIEF</span>
           </Link>
 
-          <nav className="rp-nav-links">
-            <a href="#features" className="rp-nav-link">Features</a>
-            <a href="#workflow" className="rp-nav-link">How It Works</a>
-            <a href="#roles" className="rp-nav-link">Who It's For</a>
-            <a href="#helplines" className="rp-nav-link">Emergency Contacts</a>
+          <nav className="rp-nav-links" aria-label="Landing Page Navigation">
+            <a href="#features" className="rp-nav-link" onClick={(e) => scrollToSection(e, 'features')}>Features</a>
+            <a href="#workflow" className="rp-nav-link" onClick={(e) => scrollToSection(e, 'workflow')}>How It Works</a>
+            <a href="#roles" className="rp-nav-link" onClick={(e) => scrollToSection(e, 'roles')}>Who It's For</a>
+            <a href="#helplines" className="rp-nav-link" onClick={(e) => scrollToSection(e, 'helplines')}>Emergency Contacts</a>
           </nav>
 
           <div className="rp-nav-actions">
@@ -104,9 +144,126 @@ const LandingPage = () => {
                 </Link>
               </>
             )}
+
+            {/* Mobile Hamburger Button */}
+            <button
+              type="button"
+              className="rp-mobile-trigger"
+              onClick={() => setMobileMenuOpen(prev => !prev)}
+              aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+              aria-expanded={mobileMenuOpen}
+            >
+              {mobileMenuOpen ? <MdClose size={20} /> : <MdMenu size={20} />}
+            </button>
           </div>
         </div>
       </header>
+
+      {/* ─── PORTAL-MOUNTED LANDING MOBILE DRAWER ─── */}
+      {mobileMenuOpen && typeof document !== 'undefined' && createPortal(
+        <div 
+          className="rp-mobile-drawer-overlay"
+          onClick={() => setMobileMenuOpen(false)}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Landing Mobile Menu"
+        >
+          <div 
+            className="rp-mobile-drawer-sheet"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="rp-drawer-top">
+              <Link to="/" className="rp-brand" onClick={() => setMobileMenuOpen(false)}>
+                <span className="rp-brand-text">ResQFlow</span>
+                <span className="rp-brand-tag">RELIEF</span>
+              </Link>
+              <button
+                type="button"
+                className="app-drawer-close-btn"
+                onClick={() => setMobileMenuOpen(false)}
+                aria-label="Close menu"
+              >
+                <MdClose size={20} />
+              </button>
+            </div>
+
+            <nav className="rp-drawer-nav" aria-label="Mobile Navigation">
+              <a 
+                href="#features" 
+                className="rp-drawer-link"
+                onClick={(e) => scrollToSection(e, 'features')}
+              >
+                <span>Features</span>
+                <MdArrowForward size={16} style={{ opacity: 0.6 }} />
+              </a>
+              <a 
+                href="#workflow" 
+                className="rp-drawer-link"
+                onClick={(e) => scrollToSection(e, 'workflow')}
+              >
+                <span>How It Works</span>
+                <MdArrowForward size={16} style={{ opacity: 0.6 }} />
+              </a>
+              <a 
+                href="#roles" 
+                className="rp-drawer-link"
+                onClick={(e) => scrollToSection(e, 'roles')}
+              >
+                <span>Who It's For</span>
+                <MdArrowForward size={16} style={{ opacity: 0.6 }} />
+              </a>
+              <a 
+                href="#helplines" 
+                className="rp-drawer-link"
+                onClick={(e) => scrollToSection(e, 'helplines')}
+              >
+                <span>Emergency Contacts</span>
+                <MdArrowForward size={16} style={{ opacity: 0.6 }} />
+              </a>
+            </nav>
+
+            <div className="rp-drawer-helplines">
+              <a href="tel:112" className="rp-drawer-helpline-tag">
+                <MdPhone size={14} />
+                <span>POLICE 112</span>
+              </a>
+              <a href="tel:108" className="rp-drawer-helpline-tag">
+                <MdPhone size={14} />
+                <span>AMBULANCE 108</span>
+              </a>
+            </div>
+
+            <div className="rp-drawer-actions">
+              {token ? (
+                <button 
+                  onClick={() => { setMobileMenuOpen(false); handleDashboardRedirect(); }} 
+                  className="rp-btn rp-btn-primary"
+                >
+                  Go to Dashboard
+                </button>
+              ) : (
+                <>
+                  <Link 
+                    to="/register?role=VICTIM" 
+                    className="rp-btn rp-btn-danger"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Report Emergency (SOS)
+                  </Link>
+                  <Link 
+                    to="/login" 
+                    className="rp-btn rp-btn-outline"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Sign In to ResQFlow
+                  </Link>
+                </>
+              )}
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
 
       {/* ─── 3. PRODUCT-LED HERO SECTION ─── */}
       <section className="rp-hero">

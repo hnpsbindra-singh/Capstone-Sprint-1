@@ -1,12 +1,12 @@
-import React, { useState, useContext } from 'react';
-import { NavLink, Link } from 'react-router-dom';
+import React, { useState, useEffect, useContext } from 'react';
+import { createPortal } from 'react-dom';
+import { NavLink, Link, useLocation } from 'react-router-dom';
 import { 
   MdMenu, 
   MdClose, 
   MdLogout,
-  MdShield,
-  MdLanguage,
-  MdTranslate
+  MdArrowForward,
+  MdOpenInNew
 } from 'react-icons/md';
 import { AuthContext, useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -35,15 +35,17 @@ const getNavItems = (t) => ({
     { label: t('dashboard') || 'Dashboard', path: '/admin' },
     { label: t('floodReports') || 'Flood Reports', path: '/admin/flood-reports' },
     { label: t('manageVictims') || 'Manage Victims', path: '/admin/manage-victims' },
+    { label: t('ngoRequests') || 'NGO Requests', path: '/admin/ngo-requests' },
+    { label: t('allDonations') || 'All Donations', path: '/admin/donations' },
     { label: t('heatmap') || 'Heatmap', path: '/admin/heatmap' }
   ]
 });
 
 const ROLE_THEMES = {
-  VICTIM: { label: 'VICTIM', color: '#dc2626', bg: '#fee2e2' },
-  DONOR: { label: 'DONOR', color: '#0284c7', bg: '#e0f2fe' },
-  NGO: { label: 'NGO', color: '#16a34a', bg: '#dcfce7' },
-  ADMIN: { label: 'ADMIN', color: '#7c3aed', bg: '#f3e8ff' }
+  VICTIM: { label: 'VICTIM', color: '#dc2626', bg: '#fee2e2', border: '#fca5a5' },
+  DONOR: { label: 'DONOR', color: '#0284c7', bg: '#e0f2fe', border: '#bae6fd' },
+  NGO: { label: 'NGO', color: '#16a34a', bg: '#dcfce7', border: '#bbf7d0' },
+  ADMIN: { label: 'ADMIN', color: '#7c3aed', bg: '#f3e8ff', border: '#e9d5ff' }
 };
 
 const getInitials = (name, role) => {
@@ -60,6 +62,7 @@ const getInitials = (name, role) => {
 
 const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const location = useLocation();
   const { t, lang, changeLanguage } = useLanguage();
 
   let auth = {};
@@ -93,6 +96,38 @@ const Navbar = () => {
   const navItemsMap = getNavItems(t);
   const navLinks = navItemsMap[rawRole] || navItemsMap.VICTIM;
 
+  // Auto-close mobile drawer on route changes
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [location.pathname]);
+
+  // Lock background scroll when drawer is open
+  useEffect(() => {
+    if (mobileOpen) {
+      const prevOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = prevOverflow;
+      };
+    }
+  }, [mobileOpen]);
+
+  // Close drawer on Escape key or when window resizes to desktop
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') setMobileOpen(false);
+    };
+    const handleResize = () => {
+      if (window.innerWidth > 960) setMobileOpen(false);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+
   return (
     <>
       <style>{`
@@ -112,36 +147,25 @@ const Navbar = () => {
         .app-navbar-container {
           max-width: 1380px;
           margin: 0 auto;
-          height: 64px;
-          padding: 0 20px;
+          height: 60px;
+          padding: 0 16px;
           display: flex;
           align-items: center;
           justify-content: space-between;
-          gap: 16px;
+          gap: 12px;
         }
 
         .app-brand-link {
-          display: flex;
-          align-items: center;
-          gap: 10px;
+          display: inline-flex;
+          align-items: baseline;
+          gap: 8px;
           text-decoration: none;
           color: #09090b;
-        }
-
-        .app-brand-logo-box {
-          width: 32px;
-          height: 32px;
-          border-radius: 6px;
-          background: #09090b;
-          color: #ffffff;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 1.15rem;
+          flex-shrink: 0;
         }
 
         .app-brand-text {
-          font-size: 1.15rem;
+          font-size: 1.18rem;
           font-weight: 800;
           letter-spacing: -0.04em;
           color: #09090b;
@@ -151,13 +175,13 @@ const Navbar = () => {
         .app-brand-badge {
           font-family: 'JetBrains Mono', monospace;
           font-size: 0.625rem;
-          font-weight: 700;
-          color: #71717a;
-          letter-spacing: 0.06em;
-          margin-left: 4px;
+          font-weight: 800;
+          letter-spacing: 0.05em;
+          padding: 2px 6px;
+          border-radius: 4px;
         }
 
-        /* Segmented Nav Group */
+        /* Segmented Nav Group (Desktop) */
         .app-nav-group {
           background: #f4f4f5;
           border: 1px solid #e4e4e7;
@@ -172,10 +196,10 @@ const Navbar = () => {
           text-decoration: none;
           font-size: 0.8125rem;
           font-weight: 600;
-          padding: 6px 14px;
+          padding: 6px 13px;
           border-radius: 9999px;
           color: #52525b;
-          transition: all 160ms cubic-bezier(0.16, 1, 0.3, 1);
+          transition: all 150ms cubic-bezier(0.16, 1, 0.3, 1);
           white-space: nowrap;
         }
 
@@ -188,23 +212,26 @@ const Navbar = () => {
           color: #ffffff;
           background: #09090b;
           font-weight: 700;
+          box-shadow: 0 1px 2px rgba(0,0,0,0.08);
         }
 
         /* Right Actions */
         .app-right-actions {
           display: flex;
           align-items: center;
-          gap: 10px;
+          gap: 8px;
+          flex-shrink: 0;
         }
 
         /* Language Switcher */
         .app-lang-switcher {
-          display: flex;
+          display: inline-flex;
           align-items: center;
           background: #f4f4f5;
           border: 1px solid #e4e4e7;
           border-radius: 6px;
           padding: 2px;
+          gap: 2px;
         }
 
         .app-lang-btn {
@@ -217,7 +244,10 @@ const Navbar = () => {
           padding: 3px 7px;
           border-radius: 4px;
           cursor: pointer;
-          transition: all 150ms ease;
+          transition: all 120ms ease;
+          line-height: 1.2;
+          min-height: unset !important;
+          min-width: unset !important;
         }
 
         .app-lang-btn.active {
@@ -225,7 +255,7 @@ const Navbar = () => {
           color: #ffffff;
         }
 
-        /* User Profile Pill */
+        /* User Profile Capsule */
         .app-user-pill {
           background: #fafafa;
           border: 1px solid #e4e4e7;
@@ -255,7 +285,7 @@ const Navbar = () => {
           font-size: 0.8125rem;
           font-weight: 700;
           color: #09090b;
-          max-width: 130px;
+          max-width: 120px;
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
@@ -282,7 +312,9 @@ const Navbar = () => {
           font-size: 0.75rem;
           font-weight: 700;
           cursor: pointer;
-          transition: all 160ms ease;
+          transition: all 140ms ease;
+          min-height: unset !important;
+          min-width: unset !important;
         }
 
         .app-logout-btn:hover {
@@ -290,22 +322,46 @@ const Navbar = () => {
           background: #fee2e2;
         }
 
+        /* Mobile Trigger */
         .app-mobile-trigger {
           display: none;
-          width: 36px;
-          height: 36px;
-          border-radius: 6px;
+          width: 38px;
+          height: 38px;
+          border-radius: 8px;
           background: #fafafa;
           border: 1px solid #e4e4e7;
           color: #09090b;
           align-items: center;
           justify-content: center;
           cursor: pointer;
+          transition: all 140ms ease;
+          padding: 0;
+          min-height: 38px !important;
+          min-width: 38px !important;
         }
 
+        .app-mobile-trigger:active {
+          transform: scale(0.96);
+          background: #f4f4f5;
+        }
+
+        /* Responsive Breakpoints */
         @media (max-width: 960px) {
-          .app-nav-group { display: none; }
-          .app-mobile-trigger { display: flex; }
+          .app-nav-group {
+            display: none !important;
+          }
+          .app-mobile-trigger {
+            display: flex !important;
+          }
+          .app-user-name,
+          .app-logout-btn {
+            display: none !important;
+          }
+          .app-user-pill {
+            padding: 2px;
+            background: transparent;
+            border: none;
+          }
         }
 
         @media (max-width: 640px) {
@@ -316,98 +372,210 @@ const Navbar = () => {
           }
 
           .app-brand-text {
-            font-size: 1.05rem;
+            font-size: 1.08rem;
           }
 
-          .app-brand-badge {
-            display: none;
-          }
-
-          .app-user-name,
-          .app-role-badge,
-          .app-logout-btn {
-            display: none;
-          }
-
-          .app-user-pill {
-            padding: 0;
-            background: transparent;
-            border: none;
-          }
-
-          .app-right-actions {
-            gap: 6px;
-          }
-
-          .app-lang-btn {
-            padding: 3px 5px;
-            font-size: 0.65rem;
+          .app-role-badge {
+            display: none !important;
           }
         }
 
-        /* Mobile Drawer */
-        .app-mobile-drawer {
+        /* ─── PORTAL-RENDERED MOBILE DRAWER ─── */
+        .app-drawer-portal-overlay {
           position: fixed;
-          top: 56px;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background: rgba(9, 9, 11, 0.45);
+          inset: 0;
+          width: 100vw;
+          height: 100vh;
+          height: 100dvh;
+          background: rgba(9, 9, 11, 0.52);
           backdrop-filter: blur(8px);
           -webkit-backdrop-filter: blur(8px);
-          z-index: 999;
+          z-index: 999999;
           display: flex;
           flex-direction: column;
-          padding: 0.875rem;
+          justify-content: flex-start;
+          animation: appDrawerOverlayFade 180ms ease forwards;
+          font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        @keyframes appDrawerOverlayFade {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+
+        .app-drawer-portal-sheet {
+          background: #ffffff;
+          border-bottom: 1px solid #e4e4e7;
+          border-radius: 0 0 18px 18px;
+          box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.25);
+          padding: 1rem 1.15rem 1.5rem;
+          display: flex;
+          flex-direction: column;
+          gap: 0.85rem;
+          max-height: 88vh;
+          max-height: 88dvh;
           overflow-y: auto;
           -webkit-overflow-scrolling: touch;
+          animation: appDrawerSheetSlide 220ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
 
-        .app-drawer-card {
-          background: #ffffff;
+        @keyframes appDrawerSheetSlide {
+          from { transform: translateY(-16px); opacity: 0; }
+          to { transform: translateY(0); opacity: 1; }
+        }
+
+        .app-drawer-topbar {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding-bottom: 0.5rem;
+          border-bottom: 1px solid #f4f4f5;
+        }
+
+        .app-drawer-brand {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          text-decoration: none;
+          color: #09090b;
+        }
+
+        .app-drawer-close-btn {
+          width: 36px;
+          height: 36px;
+          border-radius: 8px;
           border: 1px solid #e4e4e7;
-          border-radius: 14px;
-          padding: 1.25rem;
-          box-shadow: 0 16px 36px -4px rgba(0,0,0,0.18);
+          background: #fafafa;
+          color: #09090b;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          transition: all 120ms ease;
+        }
+
+        .app-drawer-close-btn:active {
+          transform: scale(0.95);
+          background: #f4f4f5;
+        }
+
+        .app-drawer-session-card {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 0.75rem 0.85rem;
+          background: #f8fafc;
+          border: 1px solid #e2e8f0;
+          border-radius: 12px;
+          gap: 10px;
+        }
+
+        .app-drawer-session-user {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          min-width: 0;
+        }
+
+        .app-drawer-nav-list {
           display: flex;
           flex-direction: column;
-          gap: 0.75rem;
-          max-height: calc(100vh - 80px);
-          overflow-y: auto;
+          gap: 0.5rem;
         }
 
-        .app-drawer-nav-item {
+        .app-drawer-nav-link {
           display: flex;
           align-items: center;
           justify-content: space-between;
           padding: 0.85rem 1rem;
-          border-radius: 8px;
+          border-radius: 10px;
           background: #fafafa;
           border: 1px solid #e4e4e7;
           text-decoration: none;
           color: #09090b;
-          font-size: 0.9rem;
+          font-size: 0.92rem;
           font-weight: 600;
-          min-height: 44px;
+          min-height: 48px;
+          transition: all 140ms ease;
         }
 
-        .app-drawer-nav-item.active {
+        .app-drawer-nav-link.active {
           background: #09090b;
           color: #ffffff;
           border-color: #09090b;
+          font-weight: 700;
+        }
+
+        .app-drawer-nav-link:active {
+          transform: scale(0.98);
+        }
+
+        .app-drawer-footer {
+          display: flex;
+          flex-direction: column;
+          gap: 0.65rem;
+          margin-top: 0.25rem;
+        }
+
+        .app-drawer-signout-btn {
+          width: 100%;
+          min-height: 46px;
+          border-radius: 10px;
+          background: #fef2f2;
+          color: #dc2626;
+          border: 1px solid #fecaca;
+          font-weight: 700;
+          font-size: 0.875rem;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          cursor: pointer;
+          transition: all 140ms ease;
+        }
+
+        .app-drawer-signout-btn:active {
+          transform: scale(0.98);
+          background: #fee2e2;
+        }
+
+        .app-drawer-landing-link {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 6px;
+          font-size: 0.78rem;
+          font-weight: 600;
+          color: #71717a;
+          text-decoration: none;
+          padding: 6px;
+        }
+
+        .app-drawer-landing-link:hover {
+          color: #09090b;
         }
       `}</style>
 
-      <nav className="app-navbar-header">
+      {/* ─── DESKTOP & MOBILE TOP HEADER BAR ─── */}
+      <header className="app-navbar-header">
         <div className="app-navbar-container">
-          {/* Brand Mark */}
-          <Link to="/" className="app-brand-link">
+          {/* Brand Mark (links to role dashboard) */}
+          <Link 
+            to={`/${rawRole.toLowerCase()}`} 
+            className="app-brand-link"
+            title="Go to Dashboard"
+          >
             <span className="app-brand-text">ResQFlow</span>
-            <span className="app-brand-badge">{roleTheme.label}</span>
+            <span 
+              className="app-brand-badge"
+              style={{ color: roleTheme.color, backgroundColor: roleTheme.bg }}
+            >
+              {roleTheme.label}
+            </span>
           </Link>
 
-          {/* Center Navigation Group */}
-          <div className="app-nav-group">
+          {/* Center Navigation Group (Desktop $\ge$ 960px) */}
+          <nav className="app-nav-group" aria-label="Main Navigation">
             {navLinks.map((item) => (
               <NavLink
                 key={item.path}
@@ -418,16 +586,17 @@ const Navbar = () => {
                 {item.label}
               </NavLink>
             ))}
-          </div>
+          </nav>
 
           {/* Right Action Matrix */}
           <div className="app-right-actions">
-            {/* Language Toggle */}
+            {/* Language Switcher */}
             <div className="app-lang-switcher" title="Select Interface Language">
               <button
                 type="button"
                 className={`app-lang-btn ${lang === 'EN' ? 'active' : ''}`}
                 onClick={() => changeLanguage('EN')}
+                aria-label="Switch to English"
               >
                 EN
               </button>
@@ -435,6 +604,7 @@ const Navbar = () => {
                 type="button"
                 className={`app-lang-btn ${lang === 'HI' ? 'active' : ''}`}
                 onClick={() => changeLanguage('HI')}
+                aria-label="Switch to Hindi"
               >
                 HI
               </button>
@@ -442,7 +612,7 @@ const Navbar = () => {
 
             {/* User Capsule */}
             <div className="app-user-pill">
-              <div className="app-user-avatar">
+              <div className="app-user-avatar" title={username || roleTheme.label}>
                 {initials}
               </div>
               {username ? (
@@ -455,75 +625,154 @@ const Navbar = () => {
                 {roleTheme.label}
               </span>
               <button
+                type="button"
                 onClick={logout}
                 className="app-logout-btn"
                 title="Sign out of ResQFlow"
+                aria-label="Sign out"
               >
                 <MdLogout size={14} />
               </button>
             </div>
 
-            {/* Mobile Hamburger Trigger */}
+            {/* Mobile Hamburger Trigger (shown $\le$ 960px) */}
             <button
               type="button"
               onClick={() => setMobileOpen(prev => !prev)}
               className="app-mobile-trigger"
-              aria-label="Toggle navigation"
+              aria-label={mobileOpen ? "Close navigation" : "Open navigation"}
+              aria-expanded={mobileOpen}
             >
               {mobileOpen ? <MdClose size={20} /> : <MdMenu size={20} />}
             </button>
           </div>
         </div>
+      </header>
 
-        {/* Mobile Full-Screen Sheet */}
-        {mobileOpen && (
-          <div className="app-mobile-drawer" onClick={() => setMobileOpen(false)}>
-            <div className="app-drawer-card" onClick={(e) => e.stopPropagation()}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.25rem' }}>
-                <span style={{ fontSize: '0.75rem', fontFamily: 'JetBrains Mono', color: '#71717a' }}>
-                  ACTIVE SESSION // {roleTheme.label}
+      {/* ─── PORTAL-MOUNTED MOBILE DRAWER ─── */}
+      {mobileOpen && typeof document !== 'undefined' && createPortal(
+        <div 
+          className="app-drawer-portal-overlay" 
+          onClick={() => setMobileOpen(false)}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Mobile Navigation Drawer"
+        >
+          <div 
+            className="app-drawer-portal-sheet" 
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Drawer Top Header */}
+            <div className="app-drawer-topbar">
+              <Link 
+                to={`/${rawRole.toLowerCase()}`}
+                className="app-drawer-brand"
+                onClick={() => setMobileOpen(false)}
+              >
+                <span style={{ fontSize: '1.2rem', fontWeight: 800, letterSpacing: '-0.04em' }}>
+                  ResQFlow
                 </span>
-                <span style={{ fontSize: '0.8125rem', fontWeight: 700 }}>{username || 'OPERATOR'}</span>
+                <span 
+                  className="app-brand-badge"
+                  style={{ color: roleTheme.color, backgroundColor: roleTheme.bg }}
+                >
+                  {roleTheme.label}
+                </span>
+              </Link>
+
+              <button
+                type="button"
+                className="app-drawer-close-btn"
+                onClick={() => setMobileOpen(false)}
+                aria-label="Close menu"
+              >
+                <MdClose size={20} />
+              </button>
+            </div>
+
+            {/* Active User Session Details */}
+            <div className="app-drawer-session-card">
+              <div className="app-drawer-session-user">
+                <div className="app-user-avatar">
+                  {initials}
+                </div>
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ 
+                    fontSize: '0.85rem', 
+                    fontWeight: 700, 
+                    color: '#09090b', 
+                    whiteSpace: 'nowrap', 
+                    overflow: 'hidden', 
+                    textOverflow: 'ellipsis',
+                    maxWidth: '170px'
+                  }}>
+                    {username || `${roleTheme.label} Session`}
+                  </div>
+                  <div style={{ fontSize: '0.6875rem', fontFamily: 'JetBrains Mono', color: '#64748b' }}>
+                    ROLE // {roleTheme.label}
+                  </div>
+                </div>
               </div>
 
+              {/* Language Switcher in Drawer */}
+              <div className="app-lang-switcher">
+                <button
+                  type="button"
+                  className={`app-lang-btn ${lang === 'EN' ? 'active' : ''}`}
+                  onClick={() => changeLanguage('EN')}
+                >
+                  EN
+                </button>
+                <button
+                  type="button"
+                  className={`app-lang-btn ${lang === 'HI' ? 'active' : ''}`}
+                  onClick={() => changeLanguage('HI')}
+                >
+                  HI
+                </button>
+              </div>
+            </div>
+
+            {/* Mobile Navigation Links */}
+            <nav className="app-drawer-nav-list" aria-label="Mobile Navigation Links">
               {navLinks.map((item) => (
                 <NavLink
                   key={item.path}
                   to={item.path}
                   end={['/victim', '/donor', '/ngo', '/admin'].includes(item.path)}
                   onClick={() => setMobileOpen(false)}
-                  className={({ isActive }) => `app-drawer-nav-item ${isActive ? 'active' : ''}`}
+                  className={({ isActive }) => `app-drawer-nav-link ${isActive ? 'active' : ''}`}
                 >
                   <span>{item.label}</span>
-                  <span>→</span>
+                  <MdArrowForward size={16} style={{ opacity: 0.6 }} />
                 </NavLink>
               ))}
+            </nav>
 
+            {/* Actions & Sign Out */}
+            <div className="app-drawer-footer">
               <button
+                type="button"
                 onClick={() => { setMobileOpen(false); logout(); }}
-                style={{
-                  padding: '0.75rem',
-                  borderRadius: '8px',
-                  background: '#fee2e2',
-                  color: '#dc2626',
-                  border: '1px solid #fca5a5',
-                  fontWeight: 700,
-                  fontSize: '0.875rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '6px',
-                  cursor: 'pointer',
-                  marginTop: '0.5rem'
-                }}
+                className="app-drawer-signout-btn"
               >
-                <MdLogout size={16} />
+                <MdLogout size={17} />
                 <span>{t('logout') || 'Sign Out'}</span>
               </button>
+
+              <Link 
+                to="/" 
+                className="app-drawer-landing-link"
+                onClick={() => setMobileOpen(false)}
+              >
+                <span>ResQFlow Public Portal</span>
+                <MdOpenInNew size={13} />
+              </Link>
             </div>
           </div>
-        )}
-      </nav>
+        </div>,
+        document.body
+      )}
     </>
   );
 };

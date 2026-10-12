@@ -3867,16 +3867,19 @@ input, textarea, select {
   }
 }
 
-/* Improve tap target sizes on mobile (WCAG 2.5.5) */
+/* Improve tap target sizes on mobile (WCAG 2.5.5) while safeguarding compact controls */
 @media (pointer: coarse) {
-  button, a, [role="button"],
+  .btn, .rp-btn, .action-btn, .mobile-nav-link,
+  button:not(.app-lang-btn):not(.compact-btn):not(.tag-btn):not(.btn-icon-xs),
+  a.btn, a.rp-btn,
   input[type="checkbox"], input[type="radio"] {
     min-height: 44px;
     min-width: 44px;
   }
   
   /* Compact items in nav links on small screens */
-  .mobile-drawer a {
+  .mobile-drawer a,
+  .app-drawer-nav-item {
     min-height: 48px;
     display: flex;
     align-items: center;
