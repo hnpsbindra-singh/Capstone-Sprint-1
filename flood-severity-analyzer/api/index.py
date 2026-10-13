@@ -1,6 +1,6 @@
 """
 Vercel Serverless Entrypoint for ResQFlow AI Flood Severity Assessment.
-Routes traffic to Gemini 3.8 Flash Vision Analyzer.
+Routes traffic through cascading Groq Vision -> Gemini Vision Analyzer.
 Compliant with Vercel Python runtime (@vercel/python) and Spring Boot VictimService.
 """
 
@@ -18,15 +18,15 @@ src_dir = os.path.join(parent_dir, "src")
 if src_dir not in sys.path:
     sys.path.insert(0, src_dir)
 
-from gemini_analyzer import analyze_with_gemini, generate_severity_1_fallback
+from gemini_analyzer import analyze_flood_image, generate_severity_1_fallback
 
 # ---------------------------------------------------------------------------
 # App Initialization & CORS
 # ---------------------------------------------------------------------------
 app = FastAPI(
     title="ResQFlow AI Vision Serverless API",
-    description="Multimodal Gemini 3.8 Flash Vision flood analysis deployed serverless on Vercel",
-    version="1.0.0",
+    description="Multimodal Groq -> Gemini Vision flood analysis deployed serverless on Vercel",
+    version="2.0.0",
     docs_url="/docs",
     redoc_url="/redoc"
 )
@@ -90,7 +90,7 @@ def health():
     return {
         "status": "UP",
         "service": "ResQFlow-AI-Vision",
-        "engine": "Gemini 3.8 Flash Vision",
+        "engine": "Groq -> Gemini Vision Cascade",
         "deployment": "Vercel Serverless"
     }
 
@@ -110,10 +110,7 @@ def score_flood_image(request: FloodScoreRequestDTO):
             detail="Missing 'image_base64' payload in request.",
         )
 
-    result = analyze_with_gemini(request.image_base64)
-    if result is None:
-        result = generate_severity_1_fallback("Gemini 3.7 Flash analysis failed or unavailable")
-
+    result = analyze_flood_image(request.image_base64)
     return FloodScoreResponseDTO(**result)
 
 
@@ -123,7 +120,7 @@ def catch_all_get(catchall: str, request: Request):
     return {
         "status": "UP",
         "service": "ResQFlow-AI-Vision",
-        "engine": "Gemini 3.8 Flash Vision",
+        "engine": "Groq -> Gemini Vision Cascade",
         "deployment": "Vercel Serverless",
         "requested_path": f"/{catchall}",
         "url": str(request.url)

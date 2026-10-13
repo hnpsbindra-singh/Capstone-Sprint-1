@@ -1,0 +1,11 @@
+.venv
+__pycache__
+*.pyc
+.git
+.gitignore
+data
+outputs
+checkpoints
+checkpoints_v2
+.DS_Store
+tests

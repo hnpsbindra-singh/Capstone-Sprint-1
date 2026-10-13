@@ -1,7 +1,9 @@
 """
-Gemini Multimodal Vision Evaluator for Flood Severity Assessment.
-Prioritizes Gemini 3.8 Flash, with automatic resilient fallback to Gemini 3.6 Flash
-and local PyTorch model.
+AI Multimodal Vision Evaluator for Flood Severity Assessment.
+Architecture:
+  1. Primary: Groq Vision (qwen/qwen3.8-27b) - ultra-fast inference (< 1.5s), high accuracy
+  2. Secondary Fallback: Gemini Vision (gemini-3.8-flash)
+  3. Safety Baseline: Severity 1 baseline response (ensures zero 500 crashes)
 """
 
 import os
@@ -20,17 +22,18 @@ current_dir = Path(__file__).resolve().parent
 load_dotenv(current_dir.parent / ".env")
 load_dotenv(current_dir.parent.parent / ".env")
 
-logger = logging.getLogger("gemini_analyzer")
+logger = logging.getLogger("vision_analyzer")
 logging.basicConfig(level=logging.INFO)
 
-# Use Gemini 3.7 Flash as requested
+# Gemini configuration
+configured_gemini_model = os.getenv("GEMINI_MODEL", "gemini-3.8-flash").strip()
 GEMINI_MODELS = [
-    ("gemini-3.7-flash", "v1"),
-    ("gemini-3.7-flash", "v1beta"),
-    ("gemini-3.5-flash-lite", "v1"),
+    (configured_gemini_model, "v1"),
 ]
+GEMINI_API_TEMPLATE = "https://generativelanguage.googleapis.com/{version}/models/{model}:generateContent?key={key}"
 
-API_TEMPLATE = "https://generativelanguage.googleapis.com/{version}/models/{model}:generateContent?key={key}"
+# Groq configuration
+GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
 
 SYSTEM_PROMPT = """You are an expert disaster response and emergency search-and-rescue computer vision AI.
 Analyze the provided image and assess flood severity with extreme precision.
@@ -86,8 +89,12 @@ def get_gemini_api_key() -> Optional[str]:
     return os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
 
 
+def get_groq_api_key() -> Optional[str]:
+    return os.getenv("GROQ_API_KEY")
+
+
 def extract_json_object(raw_text: str) -> Optional[Dict[str, Any]]:
-    """Robustly extracts JSON object from Gemini response text."""
+    """Robustly extracts JSON object from LLM response text."""
     text = raw_text.strip()
     try:
         return json.loads(text)
@@ -113,10 +120,10 @@ def extract_json_object(raw_text: str) -> Optional[Dict[str, Any]]:
     return None
 
 
-def generate_severity_1_fallback(reason: str = "Gemini evaluation unavailable") -> Dict[str, Any]:
+def generate_severity_1_fallback(reason: str = "AI vision evaluation unavailable") -> Dict[str, Any]:
     """
-    Fallback response with severity 1 when Gemini 3.7 fails or API key fails.
-    Ensures Vercel API never crashes with HTTP 500 and records baseline severity 1.
+    Fallback response with severity 1 when AI services encounter outages.
+    Ensures the service never crashes with HTTP 500 and records baseline severity 1.
     """
     return {
         "severity_score": 1,
@@ -136,12 +143,76 @@ def generate_severity_1_fallback(reason: str = "Gemini evaluation unavailable") 
     }
 
 
-def analyze_with_gemini(image_base64: str, fallback_to_severity_1: bool = True) -> Optional[Dict[str, Any]]:
+def analyze_with_groq(image_base64: str) -> Optional[Dict[str, Any]]:
     """
-    Sends base64 image to Gemini 3.7 Flash multimodal API.
-    If Gemini 3.7 fails or API key fails:
-      - If fallback_to_severity_1 is True (default for serverless): returns severity 1 baseline.
-      - If fallback_to_severity_1 is False (for local/container API): returns None so PyTorch model can run.
+    Primary evaluator: Groq Vision (qwen/qwen3.8-27b).
+    Ultra-fast (< 1.5s latency), zero 503 capacity spikes.
+    """
+    api_key = get_groq_api_key()
+    if not api_key:
+        logger.warning("[Groq Vision] No GROQ_API_KEY configured")
+        return None
+
+    clean_b64 = image_base64
+    mime_type = "image/jpeg"
+    if "," in clean_b64:
+        header, clean_b64 = clean_b64.split(",", 1)
+        if "png" in header.lower():
+            mime_type = "image/png"
+        elif "webp" in header.lower():
+            mime_type = "image/webp"
+
+    data_url = f"data:{mime_type};base64,{clean_b64}"
+    model = os.getenv("GROQ_MODEL", "qwen/qwen3.8-27b")
+
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json",
+    }
+    payload = {
+        "model": model,
+        "messages": [
+            {
+                "role": "user",
+                "content": [
+                    {"type": "text", "text": SYSTEM_PROMPT},
+                    {"type": "image_url", "image_url": {"url": data_url}},
+                ],
+            }
+        ],
+        "temperature": 0.1,
+        "max_tokens": 600,
+    }
+
+    try:
+        resp = requests.post(GROQ_API_URL, headers=headers, json=payload, timeout=8)
+        if resp.status_code == 200:
+            data = resp.json()
+            content = data["choices"][0]["message"]["content"]
+            parsed = extract_json_object(content)
+            if parsed:
+                score = int(max(1, min(10, round(parsed.get("severity_score", 1)))))
+                parsed["severity_score"] = score
+                parsed["confidence"] = float(parsed.get("confidence", 0.95))
+                if not isinstance(parsed.get("recommendations"), list):
+                    parsed["recommendations"] = [str(parsed.get("recommendations", "Follow safety protocols."))]
+
+                logger.info(
+                    f"[Groq Vision ({model})] Assessed image successfully: "
+                    f"score={score}, level={parsed.get('severity_level')}, title={parsed.get('title')}"
+                )
+                return parsed
+        else:
+            logger.warning(f"[Groq Vision] Status {resp.status_code}: {resp.text[:150]}")
+    except Exception as e:
+        logger.warning(f"[Groq Vision] Error during call: {str(e)}")
+
+    return None
+
+
+def analyze_with_gemini(image_base64: str, fallback_to_severity_1: bool = False) -> Optional[Dict[str, Any]]:
+    """
+    Secondary fallback: Gemini 3.8 Flash Vision.
     """
     api_key = get_gemini_api_key()
     if not api_key:
@@ -178,9 +249,9 @@ def analyze_with_gemini(image_base64: str, fallback_to_severity_1: bool = True) 
     }
 
     for model_name, version in GEMINI_MODELS:
-        url = API_TEMPLATE.format(version=version, model=model_name, key=api_key)
+        url = GEMINI_API_TEMPLATE.format(version=version, model=model_name, key=api_key)
         try:
-            resp = requests.post(url, json=payload, timeout=12)
+            resp = requests.post(url, json=payload, timeout=6)
             if resp.status_code == 200:
                 data = resp.json()
                 parts = data.get("candidates", [{}])[0].get("content", {}).get("parts", [{}])
@@ -200,14 +271,38 @@ def analyze_with_gemini(image_base64: str, fallback_to_severity_1: bool = True) 
                         )
                         return parsed
             elif resp.status_code in [503, 429]:
-                logger.warning(f"[{model_name} {version}] Received {resp.status_code} (capacity spike/rate limit). Trying next endpoint...")
-                continue
+                logger.warning(f"[{model_name} {version}] Received {resp.status_code} (capacity spike/rate limit).")
             else:
                 logger.warning(f"[{model_name} {version}] Failed with status {resp.status_code}: {resp.text[:150]}")
         except Exception as e:
             logger.warning(f"[{model_name} {version}] Error during call: {str(e)}")
 
-    logger.warning("[Gemini Vision] Gemini 3.7 Flash unavailable or request failed.")
+    logger.warning("[Gemini Vision] Gemini unavailable or request failed.")
     if fallback_to_severity_1:
-        return generate_severity_1_fallback("Gemini 3.7 Flash unavailable or request failed")
+        return generate_severity_1_fallback("Gemini unavailable or request failed")
     return None
+
+
+def analyze_flood_image(image_base64: str) -> Dict[str, Any]:
+    """
+    Main Cascading Vision Pipeline:
+    1. Primary: Groq Vision (qwen/qwen3.8-27b)
+    2. Fallback: Gemini Vision (gemini-3.8-flash)
+    3. Final Baseline: Severity 1 safe default (never fails with HTTP 500)
+    """
+    # 1. Try Groq Vision first
+    groq_result = analyze_with_groq(image_base64)
+    if groq_result is not None:
+        return groq_result
+
+    logger.warning("[Vision Cascade] Groq unavailable. Falling back to Gemini...")
+
+    # 2. Try Gemini second
+    gemini_result = analyze_with_gemini(image_base64, fallback_to_severity_1=False)
+    if gemini_result is not None:
+        return gemini_result
+
+    logger.warning("[Vision Cascade] Gemini unavailable. Failing safely with Severity 1 baseline.")
+
+    # 3. Final safe baseline
+    return generate_severity_1_fallback("Vision AI services temporarily unavailable")
