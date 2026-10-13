@@ -112,7 +112,7 @@ def score_flood_image(request: FloodScoreRequestDTO):
 
     result = analyze_with_gemini(request.image_base64)
     if result is None:
-        result = generate_severity_1_fallback("Gemini 3.8 Flash analysis failed or unavailable")
+        result = generate_severity_1_fallback("Gemini 3.7 Flash analysis failed or unavailable")
 
     return FloodScoreResponseDTO(**result)
 

@@ -317,13 +317,13 @@ def score_flood_image(request: FloodScoreRequestDTO):
             detail=f"Invalid image payload: {str(ve)}",
         )
 
-    # 2. Try Gemini 3.8 Vision first
+    # 2. Try Gemini 3.7 Flash Vision first
     try:
-        gemini_result = analyze_with_gemini(request.image_base64)
+        gemini_result = analyze_with_gemini(request.image_base64, fallback_to_severity_1=False)
         if gemini_result is not None:
             return FloodScoreResponseDTO(**gemini_result)
     except Exception as ge:
-        print(f"[Gemini 3.8 Vision] Fallback due to exception: {ge}")
+        print(f"[Gemini 3.7 Flash Vision] Fallback to PyTorch due to exception: {ge}")
 
     # 3. Fallback to local PyTorch FloodSeverityNet Deep Learning model
     try:
@@ -371,10 +371,9 @@ def score_flood_image(request: FloodScoreRequestDTO):
         return response
 
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Inference failure: {str(e)}",
-        )
+        print(f"[PyTorch Inference Failure]: {str(e)}. Returning severity 1 fallback.")
+        from gemini_analyzer import generate_severity_1_fallback
+        return FloodScoreResponseDTO(**generate_severity_1_fallback(f"Inference fallback: {str(e)}"))
 
 
 if __name__ == "__main__":

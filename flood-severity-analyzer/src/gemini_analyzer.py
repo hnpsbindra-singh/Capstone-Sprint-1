@@ -23,9 +23,10 @@ load_dotenv(current_dir.parent.parent / ".env")
 logger = logging.getLogger("gemini_analyzer")
 logging.basicConfig(level=logging.INFO)
 
-# Only use Gemini 3.8 Flash as requested
+# Use Gemini 3.7 Flash as requested
 GEMINI_MODELS = [
     ("gemini-3.7-flash", "v1"),
+    ("gemini-3.7-flash", "v1beta"),
     ("gemini-3.5-flash-lite", "v1"),
 ]
 
@@ -114,7 +115,7 @@ def extract_json_object(raw_text: str) -> Optional[Dict[str, Any]]:
 
 def generate_severity_1_fallback(reason: str = "Gemini evaluation unavailable") -> Dict[str, Any]:
     """
-    Fallback response with severity 1 when Gemini 3.8 fails or API key fails.
+    Fallback response with severity 1 when Gemini 3.7 fails or API key fails.
     Ensures Vercel API never crashes with HTTP 500 and records baseline severity 1.
     """
     return {
@@ -135,15 +136,19 @@ def generate_severity_1_fallback(reason: str = "Gemini evaluation unavailable") 
     }
 
 
-def analyze_with_gemini(image_base64: str) -> Optional[Dict[str, Any]]:
+def analyze_with_gemini(image_base64: str, fallback_to_severity_1: bool = True) -> Optional[Dict[str, Any]]:
     """
-    Sends base64 image to Gemini 3.8 Flash multimodal API.
-    If Gemini 3.8 fails or API key fails, returns severity 1 fallback.
+    Sends base64 image to Gemini 3.7 Flash multimodal API.
+    If Gemini 3.7 fails or API key fails:
+      - If fallback_to_severity_1 is True (default for serverless): returns severity 1 baseline.
+      - If fallback_to_severity_1 is False (for local/container API): returns None so PyTorch model can run.
     """
     api_key = get_gemini_api_key()
     if not api_key:
-        logger.warning("[Gemini Vision] No GEMINI_API_KEY found, failing with severity 1")
-        return generate_severity_1_fallback("Missing or unconfigured GEMINI_API_KEY")
+        logger.warning("[Gemini Vision] No GEMINI_API_KEY found")
+        if fallback_to_severity_1:
+            return generate_severity_1_fallback("Missing or unconfigured GEMINI_API_KEY")
+        return None
 
     clean_b64 = image_base64
     mime_type = "image/jpeg"
@@ -202,5 +207,7 @@ def analyze_with_gemini(image_base64: str) -> Optional[Dict[str, Any]]:
         except Exception as e:
             logger.warning(f"[{model_name} {version}] Error during call: {str(e)}")
 
-    logger.warning("[Gemini Vision] Gemini 3.8 Flash unavailable or request failed. Failing with severity 1 as requested.")
-    return generate_severity_1_fallback("Gemini 3.8 Flash unavailable or request failed")
+    logger.warning("[Gemini Vision] Gemini 3.7 Flash unavailable or request failed.")
+    if fallback_to_severity_1:
+        return generate_severity_1_fallback("Gemini 3.7 Flash unavailable or request failed")
+    return None

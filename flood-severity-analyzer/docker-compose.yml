@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  flood-severity-analyzer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: resqflow-flood-analyzer
+    ports:
+      - "8000:8000"
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-AQ.Ab8RN6IlSI4Tl3qM4j-arW48KfE_sDPFHQp_f7DCW9X0ZSouKg}
+      - GEMINI_MODEL=gemini-3.7-flash
+      - PORT=8000
+    restart: unless-stopped
