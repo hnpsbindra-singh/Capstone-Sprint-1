@@ -18,7 +18,7 @@ src_dir = os.path.join(parent_dir, "src")
 if src_dir not in sys.path:
     sys.path.insert(0, src_dir)
 
-from gemini_analyzer import analyze_with_gemini
+from gemini_analyzer import analyze_with_gemini, generate_severity_1_fallback
 
 # ---------------------------------------------------------------------------
 # App Initialization & CORS
@@ -112,10 +112,7 @@ def score_flood_image(request: FloodScoreRequestDTO):
 
     result = analyze_with_gemini(request.image_base64)
     if result is None:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to evaluate image with Gemini Vision AI. Verify GEMINI_API_KEY.",
-        )
+        result = generate_severity_1_fallback("Gemini 3.8 Flash analysis failed or unavailable")
 
     return FloodScoreResponseDTO(**result)
 

@@ -23,13 +23,10 @@ load_dotenv(current_dir.parent.parent / ".env")
 logger = logging.getLogger("gemini_analyzer")
 logging.basicConfig(level=logging.INFO)
 
-# Prioritize responsive Gemini models with resilient fallback versions
+# Only use Gemini 3.8 Flash as requested
 GEMINI_MODELS = [
-    ("gemini-3.1-flash-lite", "v1"),
-    ("gemini-3.5-flash", "v1"),
-    ("gemini-3.6-flash", "v1beta"),
     ("gemini-3.8-flash", "v1"),
-    ("gemini-3.5-flash-lite", "v1"),
+    ("gemini-3.8-flash", "v1beta"),
 ]
 
 API_TEMPLATE = "https://generativelanguage.googleapis.com/{version}/models/{model}:generateContent?key={key}"
@@ -115,40 +112,38 @@ def extract_json_object(raw_text: str) -> Optional[Dict[str, Any]]:
     return None
 
 
-def generate_graceful_fallback() -> Dict[str, Any]:
+def generate_severity_1_fallback(reason: str = "Gemini evaluation unavailable") -> Dict[str, Any]:
     """
-    Resilient fallback assessment when external Gemini Vision API is experiencing
-    temporary 503 capacity spikes or rate limits.
-    Ensures Vercel serverless API never crashes with HTTP 500.
+    Fallback response with severity 1 when Gemini 3.8 fails or API key fails.
+    Ensures Vercel API never crashes with HTTP 500 and records baseline severity 1.
     """
     return {
-        "severity_score": 4,
-        "severity_level": "MODERATE",
-        "rescue_priority": "MEDIUM",
-        "confidence": 0.85,
-        "title": "Incident Image Logged (Emergency Response Active)",
-        "description": "Visual emergency report recorded. Field response units notified while automated visual verification queues.",
-        "what_is_in_image": "Emergency report image uploaded by citizen; queued for field responder verification.",
-        "estimated_depth": "0.3m - 0.6m (Field Assessment Active)",
-        "road_access": "PASSABLE_CAUTION",
+        "severity_score": 1,
+        "severity_level": "LOW",
+        "rescue_priority": "LOW",
+        "confidence": 0.90,
+        "title": "Flood Assessment Baseline (Severity 1)",
+        "description": f"{reason}. Recorded report with baseline severity score 1.",
+        "what_is_in_image": "Report image recorded under baseline severity 1.",
+        "estimated_depth": "0 cm (Baseline)",
+        "road_access": "CLEAR",
         "recommendations": [
-            "Monitor local emergency broadcasts and keep hotline numbers ready (112 / 108).",
-            "Move to higher ground if standing water levels begin rising.",
-            "Avoid navigating through moving water or submerged electrical infrastructure.",
-            "Stay in touch with neighborhood rescue volunteers."
+            "Monitor local alerts and municipal weather advisories.",
+            "Contact national emergency helpline 112 if immediate flood danger arises.",
+            "Stay in contact with local rescue authorities."
         ]
     }
 
 
 def analyze_with_gemini(image_base64: str) -> Optional[Dict[str, Any]]:
     """
-    Sends base64 image to Gemini multimodal API with automatic multi-model failover.
-    Returns parsed dictionary matching FloodScoreResponseDTO, or graceful fallback.
+    Sends base64 image to Gemini 3.8 Flash multimodal API.
+    If Gemini 3.8 fails or API key fails, returns severity 1 fallback.
     """
     api_key = get_gemini_api_key()
     if not api_key:
-        logger.info("[Gemini Vision] No GEMINI_API_KEY found, using resilient fallback assessment")
-        return generate_graceful_fallback()
+        logger.warning("[Gemini Vision] No GEMINI_API_KEY found, failing with severity 1")
+        return generate_severity_1_fallback("Missing or unconfigured GEMINI_API_KEY")
 
     clean_b64 = image_base64
     mime_type = "image/jpeg"
@@ -180,7 +175,7 @@ def analyze_with_gemini(image_base64: str) -> Optional[Dict[str, Any]]:
     for model_name, version in GEMINI_MODELS:
         url = API_TEMPLATE.format(version=version, model=model_name, key=api_key)
         try:
-            resp = requests.post(url, json=payload, timeout=8)
+            resp = requests.post(url, json=payload, timeout=12)
             if resp.status_code == 200:
                 data = resp.json()
                 parts = data.get("candidates", [{}])[0].get("content", {}).get("parts", [{}])
@@ -200,12 +195,12 @@ def analyze_with_gemini(image_base64: str) -> Optional[Dict[str, Any]]:
                         )
                         return parsed
             elif resp.status_code in [503, 429]:
-                logger.warning(f"[{model_name} {version}] Received {resp.status_code} (capacity spike/rate limit). Trying next candidate...")
+                logger.warning(f"[{model_name} {version}] Received {resp.status_code} (capacity spike/rate limit). Trying next endpoint...")
                 continue
             else:
                 logger.warning(f"[{model_name} {version}] Failed with status {resp.status_code}: {resp.text[:150]}")
         except Exception as e:
             logger.warning(f"[{model_name} {version}] Error during call: {str(e)}")
 
-    logger.warning("[Gemini Vision] All Gemini model candidates busy or unavailable. Using resilient standby assessment.")
-    return generate_graceful_fallback()
+    logger.warning("[Gemini Vision] Gemini 3.8 Flash unavailable or request failed. Failing with severity 1 as requested.")
+    return generate_severity_1_fallback("Gemini 3.8 Flash unavailable or request failed")
