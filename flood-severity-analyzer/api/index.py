@@ -80,12 +80,16 @@ class FloodScoreResponseDTO(BaseModel):
 
 
 # ---------------------------------------------------------------------------
-# Health Check Endpoints (Supports both GET and HEAD for UptimeRobot)
+# Health Check Endpoints (GET & HEAD)
 # ---------------------------------------------------------------------------
-@app.api_route("/", methods=["GET", "HEAD"])
-@app.api_route("/health", methods=["GET", "HEAD"])
-@app.api_route("/api", methods=["GET", "HEAD"])
-@app.api_route("/api/health", methods=["GET", "HEAD"])
+@app.get("/")
+@app.get("/health")
+@app.get("/api")
+@app.get("/api/health")
+@app.head("/")
+@app.head("/health")
+@app.head("/api")
+@app.head("/api/health")
 def health():
     return {
         "status": "UP",
@@ -96,10 +100,12 @@ def health():
 
 
 # ---------------------------------------------------------------------------
-# Score Image Endpoints (Multiple aliases to prevent any routing mismatch)
+# Score Image Endpoints (POST across all possible paths to prevent 405)
 # ---------------------------------------------------------------------------
 @app.post("/", response_model=FloodScoreResponseDTO)
 @app.post("/api", response_model=FloodScoreResponseDTO)
+@app.post("/health", response_model=FloodScoreResponseDTO)
+@app.post("/api/health", response_model=FloodScoreResponseDTO)
 @app.post("/api/v1/flood/score", response_model=FloodScoreResponseDTO)
 @app.post("/api/v1/score-base64", response_model=FloodScoreResponseDTO)
 @app.post("/api/v1/score", response_model=FloodScoreResponseDTO)
@@ -108,18 +114,23 @@ def health():
 @app.post("/score", response_model=FloodScoreResponseDTO)
 def score_flood_image(request: FloodScoreRequestDTO):
     if not request.image_base64 or not request.image_base64.strip():
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Missing 'image_base64' payload in request.",
-        )
+        return FloodScoreResponseDTO(**generate_severity_1_fallback("Empty or unattached report image"))
 
     result = analyze_flood_image(request.image_base64)
     return FloodScoreResponseDTO(**result)
 
 
-# Catch-all GET and HEAD fallback
-@app.api_route("/{catchall:path}", methods=["GET", "HEAD"])
-def catch_all_get(catchall: str, request: Request):
+# Catch-all fallback
+@app.api_route("/{catchall:path}", methods=["GET", "HEAD", "POST"])
+async def catch_all(catchall: str, request: Request):
+    if request.method == "POST":
+        try:
+            body = await request.json()
+            if isinstance(body, dict) and "image_base64" in body and body["image_base64"]:
+                result = analyze_flood_image(body["image_base64"])
+                return FloodScoreResponseDTO(**result)
+        except Exception:
+            pass
     return {
         "status": "UP",
         "service": "ResQFlow-AI-Vision",
