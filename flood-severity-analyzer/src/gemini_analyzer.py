@@ -2,18 +2,20 @@
 AI Multimodal Vision Evaluator for Flood Severity Assessment.
 Architecture:
   1. Primary: Groq Vision (qwen/qwen3.8-27b) - ultra-fast inference (< 1.5s), high accuracy
-  2. Secondary Fallback: Gemini Vision (gemini-3.8-flash)
+  2. Secondary Fallback: Gemini Vision (gemini-3-flash-preview / gemini-flash-latest)
   3. Safety Baseline: Severity 1 baseline response (ensures zero 500 crashes)
 """
 
 import os
 import re
+import io
 import json
 import base64
 import logging
 import time
 from typing import Optional, Dict, Any
 from pathlib import Path
+from PIL import Image
 import requests
 from dotenv import load_dotenv
 
@@ -25,64 +27,39 @@ load_dotenv(current_dir.parent.parent / ".env")
 logger = logging.getLogger("vision_analyzer")
 logging.basicConfig(level=logging.INFO)
 
-# Gemini configuration
-configured_gemini_model = os.getenv("GEMINI_MODEL", "gemini-3.8-flash").strip()
+# Gemini configuration (uses v1beta for modern flash models)
+configured_gemini_model = os.getenv("GEMINI_MODEL", "gemini-3-flash-preview").strip()
 GEMINI_MODELS = [
-    (configured_gemini_model, "v1"),
+    (configured_gemini_model, "v1beta"),
+    ("gemini-flash-latest", "v1beta"),
 ]
 GEMINI_API_TEMPLATE = "https://generativelanguage.googleapis.com/{version}/models/{model}:generateContent?key={key}"
 
 # Groq configuration
 GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
 
-SYSTEM_PROMPT = """You are an expert disaster response and emergency search-and-rescue computer vision AI.
-Analyze the provided image and assess flood severity with extreme precision.
+# Optimized concise system prompt (~140 tokens instead of ~600 tokens to prevent 8k TPM rate limits)
+SYSTEM_PROMPT = """Expert emergency disaster AI. Assess flood severity in the image.
+Classification rules:
+1. Dry scene / no water: severity_score: 1, severity_level: "LOW", rescue_priority: "LOW", estimated_depth: "0 cm (Dry Surface)", road_access: "CLEAR", title: "Normal Condition: No Flood Inundation Detected".
+2. Ankle-deep puddles (<20cm): severity_score: 2-3, severity_level: "LOW", rescue_priority: "LOW", road_access: "CLEAR" or "PASSABLE_CAUTION".
+3. Knee-deep water / submerged curbs (30-60cm): severity_score: 4-6, severity_level: "MODERATE", rescue_priority: "MEDIUM", road_access: "PASSABLE_CAUTION".
+4. Waist-deep / submerged vehicles (80-150cm): severity_score: 7-8, severity_level: "HIGH", rescue_priority: "HIGH", road_access: "IMPASSABLE".
+5. Rooftop / raging torrent / casualties (>1.5m): severity_score: 9-10, severity_level: "EXTREME", rescue_priority: "CRITICAL", road_access: "COMPLETELY_BLOCKED".
 
-CRITICAL ASSESSMENT GUIDELINES:
-1. NON-FLOOD / DRY ENVIRONMENT:
-   - If the image depicts a normal dry scene (e.g. university campus, dry building facade like Thapar University, dry streets, indoor rooms, clean pavement, sunny day without water accumulation):
-     - severity_score: 1
-     - severity_level: "LOW"
-     - rescue_priority: "LOW"
-     - estimated_depth: "0 cm (Dry Surface)"
-     - road_access: "CLEAR"
-     - title: "Normal Condition: No Flood Inundation Detected"
-
-2. CASUALTY / LIFE-THREATENING PERIL:
-   - If the image shows human casualties, submerged bodies, drowning victims, individuals stranded on rooftops amidst raging floodwaters, or severe structural collapse:
-     - severity_score: 10
-     - severity_level: "EXTREME"
-     - rescue_priority: "CRITICAL"
-     - estimated_depth: "> 1.5m (Torrential Flood / Life Hazard)"
-     - road_access: "COMPLETELY_BLOCKED"
-     - title: "CRITICAL EMERGENCY: Catastrophic Flood with Casualty / Life Hazard"
-
-3. MINOR FLOOD / PUDDLES:
-   - Ankle-deep surface water or curb puddles (< 20 cm) -> severity_score: 2-3, severity_level: "LOW", rescue_priority: "LOW", road_access: "CLEAR" or "PASSABLE_CAUTION".
-
-4. MODERATE INUNDATION:
-   - Knee-deep water covering street curbs, vehicle tires partially submerged (30-60 cm) -> severity_score: 4-6, severity_level: "MODERATE", rescue_priority: "MEDIUM", road_access: "PASSABLE_CAUTION" or "IMPASSABLE".
-
-5. SEVERE FLOOD:
-   - Waist-to-chest deep water, vehicles submerged up to hoods or floating, ground floor entryways flooded (80-150 cm) -> severity_score: 7-8, severity_level: "HIGH", rescue_priority: "HIGH", road_access: "IMPASSABLE".
-
-6. CATASTROPHIC INUNDATION:
-   - First-story level or rooftop water, swift torrential currents, widespread structural submergence (> 1.5 m) -> severity_score: 9-10, severity_level: "EXTREME", rescue_priority: "CRITICAL", road_access: "COMPLETELY_BLOCKED".
-
-Return ONLY a strict JSON object with EXACTLY these keys:
+Return strict JSON only:
 {
   "severity_score": <int 1-10>,
-  "severity_level": <"LOW" | "MODERATE" | "HIGH" | "EXTREME">,
-  "rescue_priority": <"LOW" | "MEDIUM" | "HIGH" | "CRITICAL">,
-  "confidence": <float 0.85 - 0.99>,
+  "severity_level": "LOW" | "MODERATE" | "HIGH" | "EXTREME",
+  "rescue_priority": "LOW" | "MEDIUM" | "HIGH" | "CRITICAL",
+  "confidence": <float 0.85-0.99>,
   "title": "<Concise incident headline>",
   "description": "<Detailed situational assessment>",
-  "what_is_in_image": "<Specific physical elements, water coverage, and objects observed in image>",
-  "estimated_depth": "<e.g. '0 cm (Dry Surface)', '0.3m - 0.5m (Knee Deep)', etc.>",
-  "road_access": "<'CLEAR' | 'PASSABLE_CAUTION' | 'IMPASSABLE' | 'COMPLETELY_BLOCKED'>",
-  "recommendations": ["<action 1>", "<action 2>", "<action 3>", "<action 4>"]
-}
-"""
+  "what_is_in_image": "<Observed elements and water levels>",
+  "estimated_depth": "<e.g. '0 cm (Dry Surface)', '0.4m (Knee Deep)'>",
+  "road_access": "CLEAR" | "PASSABLE_CAUTION" | "IMPASSABLE" | "COMPLETELY_BLOCKED",
+  "recommendations": ["<action 1>", "<action 2>", "<action 3>"]
+}"""
 
 
 def get_gemini_api_key() -> Optional[str]:
@@ -91,6 +68,32 @@ def get_gemini_api_key() -> Optional[str]:
 
 def get_groq_api_key() -> Optional[str]:
     return os.getenv("GROQ_API_KEY")
+
+
+def optimize_image_base64(raw_b64: str, max_size: int = 640) -> str:
+    """
+    Downscales image to max dimension 640px and compresses to JPEG (quality=82).
+    Saves ~75% token overhead to keep Groq well under the 8,000 TPM limit.
+    """
+    clean_b64 = raw_b64
+    if "," in clean_b64:
+        clean_b64 = clean_b64.split(",", 1)[1]
+    try:
+        raw_bytes = base64.b64decode(clean_b64)
+        img = Image.open(io.BytesIO(raw_bytes)).convert("RGB")
+        # Ensure dimensions are at least 32x32 for Groq
+        w, h = img.size
+        if w < 32 or h < 32:
+            img = img.resize((max(32, w), max(32, h)), Image.Resampling.NEAREST)
+        # Downscale if larger than max_size
+        if max(img.size) > max_size:
+            img.thumbnail((max_size, max_size), Image.Resampling.LANCZOS)
+        buf = io.BytesIO()
+        img.save(buf, format="JPEG", quality=82, optimize=True)
+        return base64.b64encode(buf.getvalue()).decode("utf-8")
+    except Exception as e:
+        logger.warning(f"Could not optimize image, using original: {e}")
+        return clean_b64
 
 
 def extract_json_object(raw_text: str) -> Optional[Dict[str, Any]]:
@@ -153,16 +156,8 @@ def analyze_with_groq(image_base64: str) -> Optional[Dict[str, Any]]:
         logger.warning("[Groq Vision] No GROQ_API_KEY configured")
         return None
 
-    clean_b64 = image_base64
-    mime_type = "image/jpeg"
-    if "," in clean_b64:
-        header, clean_b64 = clean_b64.split(",", 1)
-        if "png" in header.lower():
-            mime_type = "image/png"
-        elif "webp" in header.lower():
-            mime_type = "image/webp"
-
-    data_url = f"data:{mime_type};base64,{clean_b64}"
+    clean_b64 = optimize_image_base64(image_base64, max_size=640)
+    data_url = f"data:image/jpeg;base64,{clean_b64}"
     model = os.getenv("GROQ_MODEL", "qwen/qwen3.8-27b")
 
     headers = {
@@ -181,38 +176,55 @@ def analyze_with_groq(image_base64: str) -> Optional[Dict[str, Any]]:
             }
         ],
         "temperature": 0.1,
-        "max_tokens": 600,
+        "max_tokens": 500,
     }
 
-    try:
-        resp = requests.post(GROQ_API_URL, headers=headers, json=payload, timeout=8)
-        if resp.status_code == 200:
-            data = resp.json()
-            content = data["choices"][0]["message"]["content"]
-            parsed = extract_json_object(content)
-            if parsed:
-                score = int(max(1, min(10, round(parsed.get("severity_score", 1)))))
-                parsed["severity_score"] = score
-                parsed["confidence"] = float(parsed.get("confidence", 0.95))
-                if not isinstance(parsed.get("recommendations"), list):
-                    parsed["recommendations"] = [str(parsed.get("recommendations", "Follow safety protocols."))]
+    # Attempt up to 2 times (with a 1.5s backoff if 429 reset is very short)
+    for attempt in range(2):
+        try:
+            resp = requests.post(GROQ_API_URL, headers=headers, json=payload, timeout=8)
+            if resp.status_code == 200:
+                data = resp.json()
+                content = data["choices"][0]["message"]["content"]
+                parsed = extract_json_object(content)
+                if parsed:
+                    score = int(max(1, min(10, round(parsed.get("severity_score", 1)))))
+                    parsed["severity_score"] = score
+                    parsed["confidence"] = float(parsed.get("confidence", 0.95))
+                    if not isinstance(parsed.get("recommendations"), list):
+                        parsed["recommendations"] = [str(parsed.get("recommendations", "Follow safety protocols."))]
 
-                logger.info(
-                    f"[Groq Vision ({model})] Assessed image successfully: "
-                    f"score={score}, level={parsed.get('severity_level')}, title={parsed.get('title')}"
-                )
-                return parsed
-        else:
-            logger.warning(f"[Groq Vision] Status {resp.status_code}: {resp.text[:150]}")
-    except Exception as e:
-        logger.warning(f"[Groq Vision] Error during call: {str(e)}")
+                    logger.info(
+                        f"[Groq Vision ({model})] Assessed image successfully: "
+                        f"score={score}, level={parsed.get('severity_level')}, title={parsed.get('title')}"
+                    )
+                    return parsed
+            elif resp.status_code == 429:
+                reset_str = resp.headers.get("x-ratelimit-reset-tokens", "")
+                logger.warning(f"[Groq Vision] Rate limit 429 (reset in {reset_str}). Attempt {attempt + 1}/2")
+                # If reset is within 2.5s and this is first attempt, wait and retry
+                if attempt == 0 and ("ms" in reset_str or ("s" in reset_str and not "m" in reset_str)):
+                    try:
+                        secs = float(reset_str.replace("s", "").strip())
+                        if secs <= 2.5:
+                            time.sleep(secs + 0.3)
+                            continue
+                    except Exception:
+                        pass
+                break
+            else:
+                logger.warning(f"[Groq Vision] Status {resp.status_code}: {resp.text[:150]}")
+                break
+        except Exception as e:
+            logger.warning(f"[Groq Vision] Error during call: {str(e)}")
+            break
 
     return None
 
 
 def analyze_with_gemini(image_base64: str, fallback_to_severity_1: bool = False) -> Optional[Dict[str, Any]]:
     """
-    Secondary fallback: Gemini 3.8 Flash Vision.
+    Secondary fallback: Gemini Vision (gemini-3-flash-preview / gemini-flash-latest on v1beta).
     """
     api_key = get_gemini_api_key()
     if not api_key:
@@ -221,22 +233,14 @@ def analyze_with_gemini(image_base64: str, fallback_to_severity_1: bool = False)
             return generate_severity_1_fallback("Missing or unconfigured GEMINI_API_KEY")
         return None
 
-    clean_b64 = image_base64
-    mime_type = "image/jpeg"
-    if "," in clean_b64:
-        header, clean_b64 = clean_b64.split(",", 1)
-        if "png" in header.lower():
-            mime_type = "image/png"
-        elif "webp" in header.lower():
-            mime_type = "image/webp"
-
+    clean_b64 = optimize_image_base64(image_base64, max_size=640)
     payload = {
         "contents": [
             {
                 "parts": [
                     {
                         "inline_data": {
-                            "mime_type": mime_type,
+                            "mime_type": "image/jpeg",
                             "data": clean_b64,
                         }
                     },
@@ -245,13 +249,17 @@ def analyze_with_gemini(image_base64: str, fallback_to_severity_1: bool = False)
                     }
                 ]
             }
-        ]
+        ],
+        "generationConfig": {
+            "temperature": 0.1,
+            "maxOutputTokens": 500,
+        }
     }
 
     for model_name, version in GEMINI_MODELS:
         url = GEMINI_API_TEMPLATE.format(version=version, model=model_name, key=api_key)
         try:
-            resp = requests.post(url, json=payload, timeout=6)
+            resp = requests.post(url, json=payload, timeout=7)
             if resp.status_code == 200:
                 data = resp.json()
                 parts = data.get("candidates", [{}])[0].get("content", {}).get("parts", [{}])
@@ -286,8 +294,8 @@ def analyze_with_gemini(image_base64: str, fallback_to_severity_1: bool = False)
 def analyze_flood_image(image_base64: str) -> Dict[str, Any]:
     """
     Main Cascading Vision Pipeline:
-    1. Primary: Groq Vision (qwen/qwen3.8-27b)
-    2. Fallback: Gemini Vision (gemini-3.8-flash)
+    1. Primary: Groq Vision (qwen/qwen3.8-27b) with image downscaling + prompt compression
+    2. Fallback: Gemini Vision (gemini-3-flash-preview / gemini-flash-latest on v1beta)
     3. Final Baseline: Severity 1 safe default (never fails with HTTP 500)
     """
     # 1. Try Groq Vision first
