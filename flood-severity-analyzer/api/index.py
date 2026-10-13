@@ -98,8 +98,11 @@ def health():
 # ---------------------------------------------------------------------------
 # Score Image Endpoints (Multiple aliases to prevent any routing mismatch)
 # ---------------------------------------------------------------------------
+@app.post("/", response_model=FloodScoreResponseDTO)
+@app.post("/api", response_model=FloodScoreResponseDTO)
 @app.post("/api/v1/flood/score", response_model=FloodScoreResponseDTO)
 @app.post("/api/v1/score-base64", response_model=FloodScoreResponseDTO)
+@app.post("/api/v1/score", response_model=FloodScoreResponseDTO)
 @app.post("/flood/score", response_model=FloodScoreResponseDTO)
 @app.post("/score-base64", response_model=FloodScoreResponseDTO)
 @app.post("/score", response_model=FloodScoreResponseDTO)

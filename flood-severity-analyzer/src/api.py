@@ -155,6 +155,8 @@ def health_check():
     tags=["Flood Assessment"],
     summary="Analyze Flood Image (Spring Boot legacy alias)",
 )
+@app.post("/api/v1/score", response_model=FloodScoreResponseDTO, status_code=status.HTTP_200_OK)
+@app.post("/api", response_model=FloodScoreResponseDTO, status_code=status.HTTP_200_OK)
 @app.post("/score", response_model=FloodScoreResponseDTO, status_code=status.HTTP_200_OK)
 @app.post("/score-base64", response_model=FloodScoreResponseDTO, status_code=status.HTTP_200_OK)
 @app.post("/", response_model=FloodScoreResponseDTO, status_code=status.HTTP_200_OK)
