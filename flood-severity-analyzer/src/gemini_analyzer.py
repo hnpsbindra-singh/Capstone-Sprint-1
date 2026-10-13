@@ -25,8 +25,8 @@ logging.basicConfig(level=logging.INFO)
 
 # Only use Gemini 3.8 Flash as requested
 GEMINI_MODELS = [
-    ("gemini-3.8-flash", "v1"),
-    ("gemini-3.8-flash", "v1beta"),
+    ("gemini-3.7-flash", "v1"),
+    ("gemini-3.5-flash-lite", "v1"),
 ]
 
 API_TEMPLATE = "https://generativelanguage.googleapis.com/{version}/models/{model}:generateContent?key={key}"
