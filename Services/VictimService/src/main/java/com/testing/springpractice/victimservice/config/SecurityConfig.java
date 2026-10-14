@@ -16,6 +16,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.client.RestTemplate;
 
+import java.security.PublicKey;
 import java.util.List;
 
 @Configuration
@@ -24,6 +25,7 @@ public class SecurityConfig {
 
     @Autowired
     JwtAuthFilter jwtAuthFilter;
+
 
     @Bean
     public RestTemplate restTemplate(){
@@ -43,7 +45,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain chain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain chain(HttpSecurity http, RateLimiterConfig rateLimiterConfig) throws Exception {
         return http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
@@ -60,6 +62,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .logout(log -> log.disable())
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(new RateLimitingFilter(rateLimiterConfig), UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
 
