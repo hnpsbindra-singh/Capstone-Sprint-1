@@ -23,6 +23,7 @@ import {
 import { createFloodReport } from '../../api/victimApi';
 import { enqueueOfflineReport } from '../../utils/offlineQueue';
 import { useLanguage } from '../../context/LanguageContext';
+import AiScanningModal from '../../components/AiScanningModal';
 
 // ==============================================================================
 // FEATURE TOGGLE: Set to false to disable gallery and enforce live camera only
@@ -834,6 +835,14 @@ const CreateReport = () => {
 
         </div>
       )}
+
+      {/* High-Tech AI Scanning Radar Modal */}
+      <AiScanningModal
+        isOpen={submitting && (typeof navigator === 'undefined' || navigator.onLine)}
+        previewUrl={previewUrl}
+        coords={coords}
+        addressLabel={addressLabel}
+      />
 
     </div>
   );
