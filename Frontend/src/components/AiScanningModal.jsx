@@ -2,51 +2,50 @@ import React, { useState, useEffect } from 'react';
 import { 
   MdCheckCircle, 
   MdSecurity, 
-  MdRadar, 
   MdLocationOn, 
-  MdAutoAwesome, 
   MdWaterDrop, 
-  MdSensors 
+  MdDirectionsCar,
+  MdSensors,
+  MdSync
 } from 'react-icons/md';
 
 const SCAN_STEPS = [
   {
-    title: 'Acquiring Satellite GPS & Sensor Telemetry',
-    subtitle: 'Extracting location coordinates and device metadata',
+    title: 'Geospatial & Sensor Calibration',
+    subtitle: 'Validating satellite coordinates & optical capture timestamp',
     icon: MdLocationOn
   },
   {
-    title: 'Multimodal Vision & Turbidity Analysis',
-    subtitle: 'Neural segmentation of floodwater boundaries',
+    title: 'Hydrographic Surface Segmentation',
+    subtitle: 'Measuring floodwater boundaries & surface coverage area',
     icon: MdWaterDrop
   },
   {
-    title: 'Evaluating Submerged Road & Infrastructure Risk',
-    subtitle: 'Estimating depth levels and vehicular passability',
-    icon: MdSensors
+    title: 'Infrastructure & Transit Evaluation',
+    subtitle: 'Calculating water depth, vehicular passability & hazard level',
+    icon: MdDirectionsCar
   },
   {
-    title: 'Synthesizing First-Responder Triage Directives',
-    subtitle: 'Formatting incident report for emergency dispatch',
+    title: 'Synthesizing Emergency Directives',
+    subtitle: 'Generating structured incident briefing for first responders',
     icon: MdSecurity
   }
 ];
 
 const AiScanningModal = ({ isOpen, previewUrl, coords, addressLabel }) => {
   const [activeStep, setActiveStep] = useState(0);
-  const [progress, setProgress] = useState(15);
+  const [progress, setProgress] = useState(18);
 
   useEffect(() => {
     if (!isOpen) {
       setActiveStep(0);
-      setProgress(15);
+      setProgress(18);
       return;
     }
 
-    // Step progression during AI inference
-    const timer1 = setTimeout(() => { setActiveStep(1); setProgress(45); }, 650);
-    const timer2 = setTimeout(() => { setActiveStep(2); setProgress(75); }, 1450);
-    const timer3 = setTimeout(() => { setActiveStep(3); setProgress(94); }, 2250);
+    const timer1 = setTimeout(() => { setActiveStep(1); setProgress(48); }, 700);
+    const timer2 = setTimeout(() => { setActiveStep(2); setProgress(76); }, 1500);
+    const timer3 = setTimeout(() => { setActiveStep(3); setProgress(95); }, 2300);
 
     return () => {
       clearTimeout(timer1);
@@ -58,43 +57,43 @@ const AiScanningModal = ({ isOpen, previewUrl, coords, addressLabel }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="ai-scanner-overlay">
+    <div className="sos-modal-overlay">
       <style>{`
-        .ai-scanner-overlay {
+        .sos-modal-overlay {
           position: fixed;
           inset: 0;
           z-index: 99999;
-          background: rgba(8, 12, 22, 0.88);
-          backdrop-filter: blur(14px);
-          -webkit-backdrop-filter: blur(14px);
+          background: rgba(9, 9, 11, 0.76);
+          backdrop-filter: blur(18px);
+          -webkit-backdrop-filter: blur(18px);
           display: flex;
           align-items: center;
           justify-content: center;
-          padding: 1rem;
-          font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
-          animation: scannerFadeIn 0.25s ease-out;
+          padding: 1.25rem;
+          font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+          animation: modalFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        @keyframes scannerFadeIn {
+        @keyframes modalFadeIn {
           from { opacity: 0; transform: scale(0.98); }
           to { opacity: 1; transform: scale(1); }
         }
 
-        .ai-scanner-card {
+        .sos-modal-card {
           width: 100%;
-          max-width: 580px;
-          background: #0d1527;
-          border: 1px solid rgba(56, 189, 248, 0.35);
-          border-radius: 16px;
-          box-shadow: 0 0 50px rgba(14, 165, 233, 0.2), 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+          max-width: 520px;
+          background: #09090b;
+          border: 1px solid rgba(255, 255, 255, 0.12);
+          border-radius: 18px;
+          box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05);
           overflow: hidden;
-          color: #f8fafc;
+          color: #fafafa;
         }
 
-        .ai-scanner-header {
+        .sos-modal-header {
           padding: 1rem 1.25rem;
-          background: rgba(15, 23, 42, 0.85);
-          border-bottom: 1px solid rgba(56, 189, 248, 0.2);
+          background: rgba(24, 24, 27, 0.6);
+          border-bottom: 1px solid rgba(255, 255, 255, 0.08);
           display: flex;
           justify-content: space-between;
           align-items: center;
@@ -102,209 +101,172 @@ const AiScanningModal = ({ isOpen, previewUrl, coords, addressLabel }) => {
           gap: 0.5rem;
         }
 
-        .ai-pulse-badge {
+        .sos-status-pill {
           display: inline-flex;
           align-items: center;
-          gap: 0.5rem;
-          font-size: 0.75rem;
-          font-weight: 800;
-          letter-spacing: 0.08em;
+          gap: 0.45rem;
+          font-size: 0.72rem;
+          font-weight: 700;
+          letter-spacing: 0.06em;
           text-transform: uppercase;
-          color: #38bdf8;
-          background: rgba(14, 165, 233, 0.12);
-          padding: 0.3rem 0.65rem;
+          color: #0284c7;
+          background: rgba(2, 132, 199, 0.12);
+          padding: 0.25rem 0.6rem;
           border-radius: 9999px;
-          border: 1px solid rgba(56, 189, 248, 0.35);
+          border: 1px solid rgba(2, 132, 199, 0.3);
         }
 
-        .ai-pulse-dot {
-          width: 8px;
-          height: 8px;
-          background: #38bdf8;
+        .sos-status-dot {
+          width: 7px;
+          height: 7px;
+          background: #0284c7;
           border-radius: 50%;
-          animation: pulseScan 1.2s ease-in-out infinite alternate;
-          box-shadow: 0 0 8px #38bdf8;
+          animation: sosDotPulse 1.4s ease-in-out infinite alternate;
         }
 
-        @keyframes pulseScan {
-          0% { transform: scale(0.8); opacity: 0.6; }
-          100% { transform: scale(1.3); opacity: 1; }
+        @keyframes sosDotPulse {
+          0% { opacity: 0.5; transform: scale(0.85); }
+          100% { opacity: 1; transform: scale(1.15); }
         }
 
-        .ai-image-viewport {
+        .sos-coords-label {
+          font-family: 'JetBrains Mono', monospace;
+          font-size: 0.72rem;
+          color: #a1a1aa;
+          letter-spacing: -0.01em;
+        }
+
+        .sos-image-viewport {
           position: relative;
           width: 100%;
-          height: 220px;
-          background: #020617;
+          height: 200px;
+          background: #18181b;
           overflow: hidden;
           display: flex;
           align-items: center;
           justify-content: center;
         }
 
-        .ai-laser-line {
+        .sos-optical-sweep {
           position: absolute;
           left: 0;
           right: 0;
-          height: 3px;
-          background: linear-gradient(90deg, transparent 0%, #38bdf8 20%, #38bdf8 80%, transparent 100%);
-          box-shadow: 0 0 15px #38bdf8, 0 0 30px #0284c7;
+          height: 48px;
+          background: linear-gradient(180deg, transparent 0%, rgba(255, 255, 255, 0.18) 50%, transparent 100%);
           z-index: 10;
-          animation: sweepLaser 2s linear infinite alternate;
-        }
-
-        .ai-laser-glow {
-          position: absolute;
-          left: 0;
-          right: 0;
-          height: 45px;
-          background: linear-gradient(180deg, rgba(56, 189, 248, 0.25) 0%, transparent 100%);
-          z-index: 9;
-          animation: sweepLaser 2s linear infinite alternate;
-        }
-
-        @keyframes sweepLaser {
-          0% { top: 0%; }
-          100% { top: calc(100% - 3px); }
-        }
-
-        .ai-grid-overlay {
-          position: absolute;
-          inset: 0;
-          background-image: 
-            linear-gradient(rgba(56, 189, 248, 0.08) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(56, 189, 248, 0.08) 1px, transparent 1px);
-          background-size: 24px 24px;
           pointer-events: none;
-          z-index: 5;
+          animation: apertureSweep 2.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
         }
 
-        .ai-corner-reticle {
-          position: absolute;
-          width: 20px;
-          height: 20px;
-          border-color: #38bdf8;
-          border-style: solid;
-          z-index: 12;
-          pointer-events: none;
+        @keyframes apertureSweep {
+          0% { top: -48px; opacity: 0; }
+          15% { opacity: 1; }
+          85% { opacity: 1; }
+          100% { top: 100%; opacity: 0; }
         }
-        .ai-corner-tl { top: 12px; left: 12px; border-width: 3px 0 0 3px; }
-        .ai-corner-tr { top: 12px; right: 12px; border-width: 3px 3px 0 0; }
-        .ai-corner-bl { bottom: 12px; left: 12px; border-width: 0 0 3px 3px; }
-        .ai-corner-br { bottom: 12px; right: 12px; border-width: 0 3px 3px 0; }
 
-        .ai-telemetry-strip {
+        .sos-image-badge {
           position: absolute;
           bottom: 10px;
-          left: 16px;
-          right: 16px;
+          left: 12px;
           z-index: 15;
-          display: flex;
-          justify-content: space-between;
+          display: inline-flex;
           align-items: center;
-          background: rgba(15, 23, 42, 0.75);
-          backdrop-filter: blur(6px);
-          padding: 0.35rem 0.75rem;
+          gap: 0.35rem;
+          background: rgba(9, 9, 11, 0.82);
+          backdrop-filter: blur(8px);
+          padding: 0.25rem 0.6rem;
           border-radius: 6px;
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          font-size: 0.725rem;
-          font-family: monospace;
-          color: #94a3b8;
+          border: 1px solid rgba(255, 255, 255, 0.12);
+          font-size: 0.7rem;
+          font-weight: 500;
+          color: #e4e4e7;
         }
 
-        .ai-steps-container {
-          padding: 1.25rem 1.5rem;
+        .sos-steps-list {
+          padding: 1.25rem 1.35rem;
           display: flex;
           flex-direction: column;
           gap: 0.85rem;
         }
 
-        .ai-step-row {
+        .sos-step-item {
           display: flex;
           align-items: center;
           gap: 0.85rem;
-          transition: all 0.3s ease;
+          transition: opacity 0.25s ease;
         }
 
-        .ai-step-indicator {
-          width: 28px;
-          height: 28px;
+        .sos-step-badge {
+          width: 26px;
+          height: 26px;
           border-radius: 50%;
           display: flex;
           align-items: center;
           justify-content: center;
-          font-size: 0.9rem;
+          font-size: 0.85rem;
           flex-shrink: 0;
-          transition: all 0.3s ease;
+          transition: all 0.25s ease;
         }
 
-        .ai-progress-track {
+        .sos-progress-container {
+          padding: 0 1.35rem 1.25rem 1.35rem;
+        }
+
+        .sos-progress-track {
           width: 100%;
-          height: 6px;
-          background: rgba(51, 65, 85, 0.6);
+          height: 4px;
+          background: rgba(255, 255, 255, 0.08);
           border-radius: 9999px;
           overflow: hidden;
-          margin-top: 0.5rem;
+          margin-top: 0.4rem;
         }
 
-        .ai-progress-fill {
+        .sos-progress-fill {
           height: 100%;
-          background: linear-gradient(90deg, #0284c7 0%, #38bdf8 50%, #34d399 100%);
+          background: #16a34a;
           border-radius: 9999px;
           transition: width 0.4s ease;
         }
       `}</style>
 
-      <div className="ai-scanner-card">
-        {/* Header HUD */}
-        <div className="ai-scanner-header">
-          <div className="ai-pulse-badge">
-            <span className="ai-pulse-dot" />
-            <span>AI Radar Vision Pipeline</span>
+      <div className="sos-modal-card">
+        {/* Header HUD: Clean & Authoritative */}
+        <div className="sos-modal-header">
+          <div className="sos-status-pill">
+            <span className="sos-status-dot" />
+            <span>Incident Analysis in Progress</span>
           </div>
-          <span style={{ fontSize: '0.72rem', color: '#94a3b8', fontFamily: 'monospace' }}>
-            ENGINE: GEMINI 2.5 FLASH / GROQ
+          <span className="sos-coords-label">
+            {coords ? `${coords.lat.toFixed(4)}°N, ${coords.lng.toFixed(4)}°E` : 'GPS LOCKING...'}
           </span>
         </div>
 
-        {/* Viewport with Image & Cyber Laser Scan */}
-        <div className="ai-image-viewport">
-          <div className="ai-grid-overlay" />
-          <div className="ai-laser-line" />
-          <div className="ai-laser-glow" />
-
-          {/* Targeting Brackets */}
-          <div className="ai-corner-reticle ai-corner-tl" />
-          <div className="ai-corner-reticle ai-corner-tr" />
-          <div className="ai-corner-reticle ai-corner-bl" />
-          <div className="ai-corner-reticle ai-corner-br" />
+        {/* Viewport with Image & Optical Aperture Sweep */}
+        <div className="sos-image-viewport">
+          <div className="sos-optical-sweep" />
 
           {previewUrl ? (
             <img 
               src={previewUrl} 
-              alt="Analyzing Flood Capture" 
-              style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.85 }} 
+              alt="Flood Incident Frame" 
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
             />
           ) : (
-            <div style={{ color: '#38bdf8', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
-              <MdRadar size={42} style={{ animation: 'spin 3s linear infinite' }} />
-              <span style={{ fontSize: '0.75rem', letterSpacing: '0.05em' }}>PROCESSING SENSOR FEED...</span>
+            <div style={{ color: '#71717a', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
+              <MdSensors size={36} />
+              <span style={{ fontSize: '0.75rem', letterSpacing: '0.02em' }}>Validating Sensor Payload...</span>
             </div>
           )}
 
-          {/* Telemetry Footer */}
-          <div className="ai-telemetry-strip">
-            <span>
-              GPS: {coords ? `${coords.lat.toFixed(4)}°N, ${coords.lng.toFixed(4)}°E` : 'LOCKING...'}
-            </span>
-            <span style={{ color: '#38bdf8' }}>
-              {activeStep === 3 ? 'FINALIZING DISPATCH' : 'NEURAL INFERENCE IN PROGRESS'}
-            </span>
+          <div className="sos-image-badge">
+            <span style={{ color: '#16a34a', fontSize: '0.8rem' }}>●</span>
+            <span>Live Field Sensor Capture</span>
           </div>
         </div>
 
-        {/* Progress & Live Pipeline Steps */}
-        <div className="ai-steps-container">
+        {/* Minimalist Mission-Critical Stepper */}
+        <div className="sos-steps-list">
           {SCAN_STEPS.map((step, idx) => {
             const isDone = idx < activeStep;
             const isCurrent = idx === activeStep;
@@ -313,67 +275,66 @@ const AiScanningModal = ({ isOpen, previewUrl, coords, addressLabel }) => {
             return (
               <div 
                 key={idx} 
-                className="ai-step-row"
+                className="sos-step-item"
                 style={{ opacity: isPending ? 0.35 : 1 }}
               >
                 <div 
-                  className="ai-step-indicator"
+                  className="sos-step-badge"
                   style={{
                     background: isDone 
-                      ? '#059669' 
+                      ? '#16a34a' 
                       : isCurrent 
-                        ? 'rgba(14, 165, 233, 0.2)' 
-                        : 'rgba(51, 65, 85, 0.4)',
+                        ? 'rgba(2, 132, 199, 0.15)' 
+                        : 'rgba(255, 255, 255, 0.06)',
                     color: isDone 
                       ? '#ffffff' 
                       : isCurrent 
-                        ? '#38bdf8' 
-                        : '#64748b',
-                    border: isCurrent ? '1px solid #38bdf8' : 'none',
-                    boxShadow: isCurrent ? '0 0 10px rgba(56, 189, 248, 0.5)' : 'none'
+                        ? '#0284c7' 
+                        : '#71717a',
+                    border: isCurrent ? '1.5px solid #0284c7' : '1px solid transparent'
                   }}
                 >
                   {isDone ? (
-                    <MdCheckCircle size={18} />
+                    <MdCheckCircle size={16} />
                   ) : isCurrent ? (
-                    <MdAutoAwesome size={15} style={{ animation: 'pulseScan 0.8s alternate infinite' }} />
+                    <MdSync size={15} style={{ animation: 'spin 1.2s linear infinite' }} />
                   ) : (
-                    <span style={{ fontSize: '0.75rem', fontWeight: 700 }}>{idx + 1}</span>
+                    <span style={{ fontSize: '0.72rem', fontWeight: 600 }}>{idx + 1}</span>
                   )}
                 </div>
 
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: '0.875rem', fontWeight: 700, color: isCurrent ? '#38bdf8' : '#f1f5f9' }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: '0.825rem', fontWeight: 600, color: isCurrent ? '#f4f4f5' : isDone ? '#e4e4e7' : '#71717a' }}>
                     {step.title}
                   </div>
-                  <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>
+                  <div style={{ fontSize: '0.725rem', color: '#71717a', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
                     {step.subtitle}
                   </div>
                 </div>
 
                 {isCurrent && (
-                  <span style={{ fontSize: '0.7rem', color: '#38bdf8', fontWeight: 600, fontFamily: 'monospace' }}>
-                    PROCESSING...
+                  <span style={{ fontSize: '0.675rem', color: '#0284c7', fontWeight: 600, letterSpacing: '0.04em' }}>
+                    RUNNING
                   </span>
                 )}
                 {isDone && (
-                  <span style={{ fontSize: '0.7rem', color: '#10b981', fontWeight: 700, fontFamily: 'monospace' }}>
-                    DONE
+                  <span style={{ fontSize: '0.675rem', color: '#16a34a', fontWeight: 700, letterSpacing: '0.04em' }}>
+                    COMPLETE
                   </span>
                 )}
               </div>
             );
           })}
+        </div>
 
-          {/* Smooth Progress Bar */}
-          <div style={{ marginTop: '0.5rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.725rem', color: '#64748b', fontWeight: 600, fontFamily: 'monospace' }}>
-              <span>NEURAL PIPELINE COMPLETION</span>
-              <span style={{ color: '#38bdf8' }}>{progress}%</span>
-            </div>
-            <div className="ai-progress-track">
-              <div className="ai-progress-fill" style={{ width: `${progress}%` }} />
-            </div>
+        {/* Minimal Progress Bar */}
+        <div className="sos-progress-container">
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: '#71717a', fontWeight: 500 }}>
+            <span>Verification Progress</span>
+            <span style={{ color: '#e4e4e7', fontFamily: 'monospace' }}>{progress}%</span>
+          </div>
+          <div className="sos-progress-track">
+            <div className="sos-progress-fill" style={{ width: `${progress}%` }} />
           </div>
         </div>
 
