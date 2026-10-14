@@ -1,4 +1,5 @@
 import axios from 'axios';
+import toast from 'react-hot-toast';
 
 // Dynamically determine Gateway host based on how the frontend is accessed
 // If opened on localhost -> http://localhost:8080
@@ -34,15 +35,19 @@ API.interceptors.response.use(
         localStorage.clear();
         window.location.href = '/login';
       } else if (error.response.status === 429) {
-        const defaultMsg =
-          'Rate limit reached: Maximum 5 flood reports allowed per hour. Please wait before submitting again.';
-        const customMsg = error.response.data?.message || error.response.data?.error || defaultMsg;
+        const rateLimitMsg =
+          'Limit reached: Maximum 5 flood reports allowed per hour. Please wait before submitting again.';
+        toast.error(rateLimitMsg, {
+          id: 'submit-report',
+          duration: 7000,
+          icon: '⏳'
+        });
         if (!error.response.data || typeof error.response.data !== 'object') {
-          error.response.data = { message: customMsg };
-        } else if (!error.response.data.message) {
-          error.response.data.message = customMsg;
+          error.response.data = { message: rateLimitMsg };
+        } else {
+          error.response.data.message = rateLimitMsg;
         }
-        error.message = customMsg;
+        error.message = rateLimitMsg;
       }
     }
     return Promise.reject(error);
