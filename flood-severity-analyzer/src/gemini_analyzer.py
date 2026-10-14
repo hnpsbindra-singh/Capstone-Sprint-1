@@ -421,14 +421,15 @@ def analyze_with_openrouter(image_base64: str) -> Optional[Dict[str, Any]]:
                 }
             ],
             "temperature": 0.1,
-            "max_tokens": 350,
+            "max_tokens": 550,
         }
 
         try:
-            resp = requests.post(OPENROUTER_API_URL, headers=headers, json=payload, timeout=12)
+            resp = requests.post(OPENROUTER_API_URL, headers=headers, json=payload, timeout=14)
             if resp.status_code == 200:
                 data = resp.json()
-                content = data["choices"][0]["message"]["content"]
+                msg = data["choices"][0]["message"]
+                content = msg.get("content") or ""
                 parsed = extract_json_object(content)
                 if parsed:
                     score = int(max(1, min(10, round(parsed.get("severity_score", 1)))))
