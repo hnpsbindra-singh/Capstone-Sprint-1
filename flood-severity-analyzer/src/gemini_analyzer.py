@@ -1,9 +1,10 @@
 """
 AI Multimodal Vision Evaluator for Flood Severity Assessment.
 High-Reliability Multi-Tier Architecture:
-  1. Primary: Groq Vision (qwen/qwen3.8-27b) with multi-key rotation + backoff retry (< 1.2s)
-  2. Secondary Fallback: Gemini Vision (gemini-3-flash-preview on v1beta)
-  3. Tertiary Safety: Intelligent Image-Aware Heuristic Assessment (Never crashes, never outputs error notices)
+  1. Primary: OpenRouter Vision (google/gemini-2.5-flash / gemini-3.8-flash)
+  2. Secondary Fallback: Groq Vision (qwen/qwen3.8-27b) with multi-key rotation + backoff retry (< 1.2s)
+  3. Tertiary Fallback: Gemini Vision (gemini-3-flash-preview on v1beta)
+  4. Fail-Safe: Intelligent Image-Aware Heuristic Assessment (Never crashes, never outputs error notices)
 """
 
 import os
@@ -452,33 +453,33 @@ def analyze_with_openrouter(image_base64: str) -> Optional[Dict[str, Any]]:
 def analyze_flood_image(image_base64: str) -> Dict[str, Any]:
     """
     Main Cascading Vision Pipeline:
-    Configurable hierarchy:
-    - If AI_PRIMARY_PROVIDER == 'openrouter': OpenRouter -> Groq -> Gemini -> Smart Fallback
-    - Default: Groq -> OpenRouter -> Gemini -> Smart Fallback
-    - Fail-Safe: Intelligent Image-Aware Heuristic Assessment (Never crashes, never outputs error text)
+    1. Primary: OpenRouter Vision (google/gemini-2.5-flash / gemini-3.8-flash)
+    2. Secondary Fallback: Groq Vision (qwen/qwen3.8-27b) with key rotation + 480px compression
+    3. Tertiary Fallback: Gemini Vision (gemini-3-flash-preview on v1beta)
+    4. Fail-Safe: Intelligent Image-Aware Heuristic Assessment (Never crashes, never outputs error text)
     """
-    primary = os.getenv("AI_PRIMARY_PROVIDER", "groq").lower().strip()
+    primary = os.getenv("AI_PRIMARY_PROVIDER", "openrouter").lower().strip()
 
-    # If OpenRouter is chosen as primary provider
-    if primary == "openrouter" and get_openrouter_api_key():
+    # 1. Primary: OpenRouter Vision (if not explicitly set to groq)
+    if primary != "groq" and get_openrouter_api_key():
         openrouter_result = analyze_with_openrouter(image_base64)
         if openrouter_result is not None:
             return openrouter_result
-        logger.warning("[Vision Cascade] OpenRouter unavailable. Falling back to Groq...")
+        logger.warning("[Vision Cascade] OpenRouter unavailable. Falling back to Groq Vision...")
 
-    # 1. Try Groq Vision
+    # 2. Secondary: Groq Vision
     groq_result = analyze_with_groq(image_base64)
     if groq_result is not None:
         return groq_result
 
-    # 2. Try OpenRouter Vision (if not already tried)
-    if primary != "openrouter" and get_openrouter_api_key():
+    # If groq was primary and failed, try OpenRouter if available
+    if primary == "groq" and get_openrouter_api_key():
         logger.warning("[Vision Cascade] Groq unavailable. Falling back to OpenRouter Vision...")
         openrouter_result = analyze_with_openrouter(image_base64)
         if openrouter_result is not None:
             return openrouter_result
 
-    # 3. Try Gemini Vision third (if configured)
+    # 3. Tertiary: Gemini Vision third (if configured)
     if get_gemini_api_key():
         logger.warning("[Vision Cascade] Falling back to Gemini Vision...")
         gemini_result = analyze_with_gemini(image_base64)
