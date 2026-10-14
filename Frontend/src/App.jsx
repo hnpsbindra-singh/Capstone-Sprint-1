@@ -3,6 +3,7 @@ import { AuthProvider } from './context/AuthContext';
 import { LanguageProvider } from './context/LanguageContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Navbar from './components/Navbar';
+import OfflineBanner from './components/OfflineBanner';
 import ScrollToTop from './components/ScrollToTop';
 import InstallPrompt from './components/InstallPrompt';
 import { Toaster } from 'react-hot-toast';
@@ -48,6 +49,7 @@ function DashboardLayout() {
   return (
     <>
       <Navbar />
+      <OfflineBanner />
       <main className="dashboard-main">
         <Routes>
           {/* Victim Routes */}

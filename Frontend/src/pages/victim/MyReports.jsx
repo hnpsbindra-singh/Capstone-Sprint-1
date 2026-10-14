@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { MdDescription, MdAddCircle, MdRefresh, MdLocationOn, MdSearch, MdDownload, MdArrowUpward, MdArrowDownward, MdUnfoldMore, MdAccessTime, MdAnalytics } from 'react-icons/md';
-import { getMyReports } from '../../api/victimApi';
+import { MdDescription, MdAddCircle, MdRefresh, MdLocationOn, MdSearch, MdDownload, MdArrowUpward, MdArrowDownward, MdUnfoldMore, MdAccessTime, MdAnalytics, MdCloudUpload, MdWifiOff } from 'react-icons/md';
+import { getMyReports, createFloodReport } from '../../api/victimApi';
+import { getQueuedReports, syncQueuedReports } from '../../utils/offlineQueue';
 import StatusBadge from '../../components/StatusBadge';
 import { useLanguage } from '../../context/LanguageContext';
 
@@ -11,6 +12,8 @@ const PAGE_SIZE = 8;
 const MyReports = () => {
   const { t } = useLanguage();
   const [reports, setReports] = useState([]);
+  const [offlineReports, setOfflineReports] = useState([]);
+  const [syncingOffline, setSyncingOffline] = useState(false);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterSeverity, setFilterSeverity] = useState('ALL');
@@ -18,6 +21,38 @@ const MyReports = () => {
   const [sortDir, setSortDir] = useState('desc');
   const [page, setPage] = useState(1);
   const [lastFetched, setLastFetched] = useState(null);
+
+  const fetchOfflineReports = useCallback(async () => {
+    try {
+      const q = await getQueuedReports();
+      setOfflineReports(q);
+    } catch {
+      setOfflineReports([]);
+    }
+  }, []);
+
+  const handleSyncOffline = async () => {
+    if (!navigator.onLine || syncingOffline) return;
+    setSyncingOffline(true);
+    toast.loading('Transmitting offline disaster reports to Rescue Command...', { id: 'offline-sync' });
+    try {
+      const { synced, remaining } = await syncQueuedReports(createFloodReport);
+      await fetchOfflineReports();
+      await fetchMyReports();
+      if (synced > 0) {
+        toast.success(`Successfully dispatched ${synced} offline report(s)!`, { id: 'offline-sync' });
+      } else if (remaining > 0) {
+        toast('Rate limit active or pending. Will retry shortly.', { icon: '⏳', id: 'offline-sync' });
+      } else {
+        toast.dismiss('offline-sync');
+      }
+    } catch (err) {
+      console.error('Offline sync error:', err);
+      toast.error('Sync failed. Please try again.', { id: 'offline-sync' });
+    } finally {
+      setSyncingOffline(false);
+    }
+  };
 
   const fetchMyReports = useCallback(async () => {
     setLoading(true);
@@ -34,7 +69,24 @@ const MyReports = () => {
     }
   }, []);
 
-  useEffect(() => { fetchMyReports(); }, [fetchMyReports]);
+  useEffect(() => {
+    fetchMyReports();
+    fetchOfflineReports();
+
+    const handleQueueChange = () => {
+      fetchOfflineReports();
+    };
+
+    window.addEventListener('resqflow:offline-queue-changed', handleQueueChange);
+    window.addEventListener('resqflow:offline-synced', () => {
+      fetchOfflineReports();
+      fetchMyReports();
+    });
+
+    return () => {
+      window.removeEventListener('resqflow:offline-queue-changed', handleQueueChange);
+    };
+  }, [fetchMyReports, fetchOfflineReports]);
 
   const formatDate = (v) => {
     if (!v) return 'N/A';
@@ -152,6 +204,92 @@ const MyReports = () => {
           </Link>
         </div>
       </div>
+
+      {/* Offline Disaster Reports Emergency Card */}
+      {offlineReports.length > 0 && (
+        <div style={{
+          background: 'linear-gradient(135deg, rgba(234, 88, 12, 0.08) 0%, rgba(194, 65, 12, 0.04) 100%)',
+          border: '1px solid rgba(234, 88, 12, 0.35)',
+          borderRadius: '12px',
+          padding: '1.25rem',
+          marginBottom: '1.5rem',
+          boxShadow: '0 2px 8px rgba(234, 88, 12, 0.08)'
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <div style={{ background: '#ffedd5', color: '#c2410c', padding: '0.5rem', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <MdWifiOff size={22} />
+              </div>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '0.975rem', fontWeight: 700, color: '#c2410c' }}>
+                  Offline Disaster Queue ({offlineReports.length} Pending Incident{offlineReports.length > 1 ? 's' : ''})
+                </h3>
+                <p style={{ margin: '0.15rem 0 0 0', fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
+                  Captured during network outage. Safely cached locally with verified GPS coordinates and camera photos.
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              className="btn btn-primary btn-sm"
+              onClick={handleSyncOffline}
+              disabled={syncingOffline || !navigator.onLine}
+              style={{
+                background: '#ea580c',
+                borderColor: '#ea580c',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.375rem',
+                opacity: (!navigator.onLine || syncingOffline) ? 0.7 : 1
+              }}
+            >
+              <MdCloudUpload />
+              {syncingOffline ? 'Transmitting...' : (navigator.onLine ? 'Transmit to Rescue Command' : 'Awaiting Connection')}
+            </button>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '0.75rem', marginTop: '1rem' }}>
+            {offlineReports.map((item) => (
+              <div
+                key={item.id}
+                style={{
+                  background: 'var(--card-bg, #ffffff)',
+                  padding: '0.75rem',
+                  borderRadius: '8px',
+                  border: '1px solid var(--border-color, #e2e8f0)',
+                  display: 'flex',
+                  gap: '0.75rem',
+                  alignItems: 'center'
+                }}
+              >
+                {item.fileDataUrl ? (
+                  <img
+                    src={item.fileDataUrl}
+                    alt="Offline capture"
+                    style={{ width: '52px', height: '52px', objectFit: 'cover', borderRadius: '6px', flexShrink: 0 }}
+                  />
+                ) : (
+                  <div style={{ width: '52px', height: '52px', background: '#f1f5f9', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8', flexShrink: 0 }}>
+                    <MdLocationOn size={24} />
+                  </div>
+                )}
+                <div style={{ overflow: 'hidden', flex: 1 }}>
+                  <div style={{ fontSize: '0.8125rem', fontWeight: 600, textOverflow: 'ellipsis', whiteSpace: 'nowrap', overflow: 'hidden' }}>
+                    {item.addressLabel || 'Current GPS Location'}
+                  </div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                    {new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} · Lat {Number(item.coords?.lat).toFixed(4)}, Lng {Number(item.coords?.lng).toFixed(4)}
+                  </div>
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', marginTop: '0.2rem' }}>
+                    <span style={{ display: 'inline-block', width: '6px', height: '6px', borderRadius: '50%', background: '#ea580c' }}></span>
+                    <span style={{ fontSize: '0.6875rem', color: '#ea580c', fontWeight: 700, textTransform: 'uppercase' }}>Queued Offline</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {!loading && reports.length > 0 && (
         <div className="filter-toolbar">

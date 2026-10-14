@@ -21,6 +21,7 @@ import {
   MdPhotoLibrary
 } from 'react-icons/md';
 import { createFloodReport } from '../../api/victimApi';
+import { enqueueOfflineReport } from '../../utils/offlineQueue';
 import { useLanguage } from '../../context/LanguageContext';
 
 // ==============================================================================
@@ -281,12 +282,32 @@ const CreateReport = () => {
 
     setSubmitting(true);
 
-    try {
-      const payload = {
-        latitude: coords.lat,
-        longitude: coords.lng
-      };
+    const payload = {
+      latitude: coords.lat,
+      longitude: coords.lng
+    };
 
+    // 1. Proactive Offline Check: Save to emergency cache if disconnected
+    if (typeof navigator !== 'undefined' && !navigator.onLine) {
+      try {
+        toast.loading('Saving incident to Offline Emergency Cache...', { id: 'submit-report' });
+        await enqueueOfflineReport(payload, imageFile, { addressLabel });
+        toast.success(
+          'Offline Mode: Flood incident & live photo saved locally with GPS stamp! Will auto-dispatch when network reconnects.',
+          { id: 'submit-report', duration: 7000, icon: '📡' }
+        );
+        navigate('/victim/my-reports');
+      } catch (err) {
+        console.error('Failed to store offline report:', err);
+        toast.error('Could not save offline report locally. Please try again.', { id: 'submit-report' });
+      } finally {
+        setSubmitting(false);
+      }
+      return;
+    }
+
+    // 2. Online Submission with Network Drop Catch
+    try {
       toast.loading('AI Model analyzing flood hazard & generating report...', { id: 'submit-report' });
       const result = await createFloodReport(payload, imageFile);
 
@@ -326,6 +347,22 @@ const CreateReport = () => {
       });
     } catch (error) {
       console.error('Error submitting flood report:', error);
+
+      // Check if network failed mid-flight
+      if (!navigator.onLine || error.code === 'ERR_NETWORK' || !error.response) {
+        try {
+          await enqueueOfflineReport(payload, imageFile, { addressLabel });
+          toast.success(
+            'Connection lost mid-flight! Report preserved in offline queue. Auto-dispatch will trigger when back online.',
+            { id: 'submit-report', duration: 7000, icon: '📡' }
+          );
+          navigate('/victim/my-reports');
+          return;
+        } catch (queueErr) {
+          console.error('Failed to cache offline report after network drop:', queueErr);
+        }
+      }
+
       if (error.response?.status === 429) {
         const rateLimitMsg =
           error.response?.data?.message ||
