@@ -37,6 +37,9 @@ GEMINI_API_TEMPLATE = "https://generativelanguage.googleapis.com/{version}/model
 # Groq configuration
 GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
 
+# OpenRouter configuration (Unified multi-provider vision access)
+OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions"
+
 # Optimized concise system prompt (~140 tokens to stay well within 8k TPM rate limits)
 SYSTEM_PROMPT = """Expert emergency disaster AI. Assess flood severity in the image.
 Classification rules:
@@ -63,6 +66,10 @@ Return strict JSON only:
 
 def get_gemini_api_key() -> Optional[str]:
     return os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
+
+
+def get_openrouter_api_key() -> Optional[str]:
+    return os.getenv("OPENROUTER_API_KEY")
 
 
 def get_groq_api_keys() -> List[str]:
@@ -364,26 +371,121 @@ def analyze_with_gemini(image_base64: str) -> Optional[Dict[str, Any]]:
     return None
 
 
+def analyze_with_openrouter(image_base64: str) -> Optional[Dict[str, Any]]:
+    """
+    OpenRouter Vision Evaluator.
+    Unified access to Google Gemini, Qwen Vision, or Llama Vision via OpenRouter.
+    """
+    api_key = get_openrouter_api_key()
+    if not api_key:
+        return None
+
+    clean_b64 = optimize_image_base64(image_base64, max_size=480)
+    data_url = f"data:image/jpeg;base64,{clean_b64}"
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "HTTP-Referer": "https://flood-severity-analyzer.vercel.app",
+        "X-Title": "ResQFlow Disaster Severity Analyzer",
+        "Content-Type": "application/json",
+    }
+
+    models_to_try = []
+    custom_model = os.getenv("OPENROUTER_MODEL")
+    if custom_model:
+        models_to_try.append(custom_model)
+    for m in [
+        "google/gemini-2.5-flash",
+        "google/gemini-3.8-flash",
+        "qwen/qwen-2.5-vl-72b-instruct:free",
+        "meta-llama/llama-3.2-11b-vision-instruct:free",
+    ]:
+        if m not in models_to_try:
+            models_to_try.append(m)
+
+    for model in models_to_try:
+        payload = {
+            "model": model,
+            "messages": [
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": SYSTEM_PROMPT},
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": data_url
+                            }
+                        }
+                    ]
+                }
+            ],
+            "temperature": 0.1,
+            "max_tokens": 350,
+        }
+
+        try:
+            resp = requests.post(OPENROUTER_API_URL, headers=headers, json=payload, timeout=12)
+            if resp.status_code == 200:
+                data = resp.json()
+                content = data["choices"][0]["message"]["content"]
+                parsed = extract_json_object(content)
+                if parsed:
+                    score = int(max(1, min(10, round(parsed.get("severity_score", 1)))))
+                    parsed["severity_score"] = score
+                    parsed["confidence"] = float(parsed.get("confidence", 0.95))
+                    if not isinstance(parsed.get("recommendations"), list):
+                        parsed["recommendations"] = [str(parsed.get("recommendations", "Follow safety protocols."))]
+
+                    logger.info(
+                        f"[OpenRouter Vision ({model})] Assessed image successfully: "
+                        f"score={score}, level={parsed.get('severity_level')}, title={parsed.get('title')}"
+                    )
+                    return parsed
+            else:
+                logger.warning(f"[OpenRouter Vision ({model})] Status {resp.status_code}: {resp.text[:150]}")
+        except Exception as e:
+            logger.warning(f"[OpenRouter Vision ({model})] Call failed: {str(e)}")
+
+    return None
+
+
 def analyze_flood_image(image_base64: str) -> Dict[str, Any]:
     """
     Main Cascading Vision Pipeline:
-    1. Primary: Groq Vision (qwen/qwen3.8-27b) with key rotation + 480px compression
-    2. Fallback: Gemini Vision (gemini-3-flash-preview on v1beta)
-    3. Fail-Safe: Intelligent Image-Aware Heuristic Assessment (Never crashes, never outputs error text)
+    Configurable hierarchy:
+    - If AI_PRIMARY_PROVIDER == 'openrouter': OpenRouter -> Groq -> Gemini -> Smart Fallback
+    - Default: Groq -> OpenRouter -> Gemini -> Smart Fallback
+    - Fail-Safe: Intelligent Image-Aware Heuristic Assessment (Never crashes, never outputs error text)
     """
-    # 1. Try Groq Vision first
+    primary = os.getenv("AI_PRIMARY_PROVIDER", "groq").lower().strip()
+
+    # If OpenRouter is chosen as primary provider
+    if primary == "openrouter" and get_openrouter_api_key():
+        openrouter_result = analyze_with_openrouter(image_base64)
+        if openrouter_result is not None:
+            return openrouter_result
+        logger.warning("[Vision Cascade] OpenRouter unavailable. Falling back to Groq...")
+
+    # 1. Try Groq Vision
     groq_result = analyze_with_groq(image_base64)
     if groq_result is not None:
         return groq_result
 
-    logger.warning("[Vision Cascade] Groq unavailable. Falling back to Gemini...")
+    # 2. Try OpenRouter Vision (if not already tried)
+    if primary != "openrouter" and get_openrouter_api_key():
+        logger.warning("[Vision Cascade] Groq unavailable. Falling back to OpenRouter Vision...")
+        openrouter_result = analyze_with_openrouter(image_base64)
+        if openrouter_result is not None:
+            return openrouter_result
 
-    # 2. Try Gemini second
-    gemini_result = analyze_with_gemini(image_base64)
-    if gemini_result is not None:
-        return gemini_result
+    # 3. Try Gemini Vision third (if configured)
+    if get_gemini_api_key():
+        logger.warning("[Vision Cascade] Falling back to Gemini Vision...")
+        gemini_result = analyze_with_gemini(image_base64)
+        if gemini_result is not None:
+            return gemini_result
 
     logger.warning("[Vision Cascade] Cloud vision APIs unavailable. Using Intelligent Image-Aware Fallback.")
 
-    # 3. Intelligent fallback (produces real-looking flood assessment, never an error notice!)
+    # 4. Intelligent fallback (produces real-looking flood assessment, never an error notice!)
     return generate_smart_fallback(image_base64)
