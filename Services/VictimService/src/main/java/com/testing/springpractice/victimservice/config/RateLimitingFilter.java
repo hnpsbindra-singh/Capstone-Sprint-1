@@ -43,7 +43,9 @@ public class RateLimitingFilter extends OncePerRequestFilter {
         if (!rateLimiterConfig.rateLimiter(email)){
             response.setStatus(429);
             response.setContentType("application/json");
+            response.setCharacterEncoding("UTF-8");
             response.setHeader("Retry-After", "60");
+            response.getWriter().write("{\"status\":429,\"error\":\"Too Many Requests\",\"message\":\"Rate limit reached: You can submit up to 5 flood reports per hour. Please wait before submitting another report.\"}");
             return;
         }
         filterChain.doFilter(request, response);

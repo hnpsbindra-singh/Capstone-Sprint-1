@@ -326,13 +326,24 @@ const CreateReport = () => {
       });
     } catch (error) {
       console.error('Error submitting flood report:', error);
-      const errMsg =
-        error.response?.data?.message ||
-        error.response?.data?.error ||
-        (typeof error.response?.data === 'string' ? error.response?.data : null) ||
-        error.message ||
-        'Failed to submit flood report. Please try again.';
-      toast.error(errMsg, { id: 'submit-report', duration: 5000 });
+      if (error.response?.status === 429) {
+        const rateLimitMsg =
+          error.response?.data?.message ||
+          'Rate limit reached: You can submit up to 5 flood reports per hour. Please wait before submitting another report.';
+        toast.error(rateLimitMsg, {
+          id: 'submit-report',
+          duration: 7000,
+          icon: '⏳'
+        });
+      } else {
+        const errMsg =
+          error.response?.data?.message ||
+          error.response?.data?.error ||
+          (typeof error.response?.data === 'string' ? error.response?.data : null) ||
+          error.message ||
+          'Failed to submit flood report. Please try again.';
+        toast.error(errMsg, { id: 'submit-report', duration: 5000 });
+      }
     } finally {
       setSubmitting(false);
     }
