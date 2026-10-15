@@ -119,8 +119,6 @@ public class VictimService {
         floodReport.setCreatedAt(System.currentTimeMillis());
 
         FloodReport savedReport = floodReportRepository.save(floodReport);
-
-        // ONLY aggregate into RegionSeverity (heatmap & regional risk metrics) IF score > 2
         if (isConsidered) {
             double roundedLat = Math.round(report.getLatitude() * 100.0) / 100.0;
             double roundedLng = Math.round(report.getLongitude() * 100.0) / 100.0;
