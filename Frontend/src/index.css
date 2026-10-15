@@ -4405,7 +4405,7 @@ input, textarea, select {
   }
 }
 
-/* ── 11. HEATMAP — Full screen on mobile ── */
+/* ── 11. HEATMAP — Full screen & Responsive Drawer on mobile ── */
 @media (max-width: 640px) {
   .heatmap-command-container {
     border-radius: 0 !important;
@@ -4414,6 +4414,25 @@ input, textarea, select {
   /* Leaflet map full height */
   .leaflet-container {
     border-radius: 0 !important;
+  }
+
+  .heatmap-zone-drawer {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .heatmap-tactical-legend {
+    bottom: 12px !important;
+    right: 12px !important;
+    left: 12px !important;
+    padding: 0.5rem 0.75rem !important;
+    font-size: 0.7rem !important;
+  }
+
+  .heatmap-tactical-legend .legend-items {
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    gap: 0.4rem 0.75rem !important;
   }
 }
 
