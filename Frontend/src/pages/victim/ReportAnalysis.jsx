@@ -18,7 +18,9 @@ import {
   MdShare,
   MdPrint,
   MdAutoAwesome,
-  MdSearch
+  MdSearch,
+  MdClose,
+  MdFullscreen
 } from 'react-icons/md';
 import toast from 'react-hot-toast';
 import { useLanguage } from '../../context/LanguageContext';
@@ -225,6 +227,18 @@ const ReportAnalysis = () => {
   const [reportData, setReportData] = useState(null);
   const [imageSrc, setImageSrc] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [imageFit, setImageFit] = useState('contain'); // default is 'contain': 100% of image visible with zero cropping
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+
+  // Close lightbox on Escape key
+  useEffect(() => {
+    if (!isLightboxOpen) return;
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') setIsLightboxOpen(false);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isLightboxOpen]);
 
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
@@ -541,33 +555,168 @@ const ReportAnalysis = () => {
 
         {/* Right Card: Uploaded Incident Image & AI Vision Metadata */}
         <div className="glass-card" style={{ display: 'flex', flexDirection: 'column' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', flexWrap: 'wrap', gap: '0.5rem' }}>
             <span style={{ fontSize: '0.8rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-muted)' }}>
               Submitted Visual Evidence
             </span>
-            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>
-              AI Vision Inspector
-            </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              {imageSrc && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => setImageFit(prev => prev === 'contain' ? 'cover' : 'contain')}
+                    style={{
+                      background: 'rgba(255, 255, 255, 0.9)',
+                      border: '1px solid var(--border-subtle)',
+                      borderRadius: '6px',
+                      padding: '3px 8px',
+                      fontSize: '0.72rem',
+                      fontWeight: 700,
+                      color: 'var(--text-secondary)',
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px'
+                    }}
+                    title={imageFit === 'contain' ? "Switch to Fill (Cropped)" : "Switch to Fit (Uncropped full photo)"}
+                  >
+                    {imageFit === 'contain' ? 'Fit: Full (Uncropped)' : 'Fit: Cropped'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsLightboxOpen(true)}
+                    style={{
+                      background: 'var(--accent-ocean)',
+                      border: 'none',
+                      borderRadius: '6px',
+                      padding: '3px 8px',
+                      fontSize: '0.72rem',
+                      fontWeight: 700,
+                      color: '#ffffff',
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px'
+                    }}
+                    title="Open Fullscreen View"
+                  >
+                    <MdFullscreen style={{ fontSize: '0.95rem' }} /> Enlarge
+                  </button>
+                </>
+              )}
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>
+                AI Vision
+              </span>
+            </div>
           </div>
 
-          <div style={{ position: 'relative', borderRadius: 'var(--radius-md)', overflow: 'hidden', background: '#0f172a', maxHeight: '230px', minHeight: '180px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div 
+            onClick={() => imageSrc && setIsLightboxOpen(true)}
+            style={{ 
+              position: 'relative', 
+              borderRadius: 'var(--radius-md)', 
+              overflow: 'hidden', 
+              background: '#09090b', 
+              minHeight: '260px',
+              height: '340px',
+              maxHeight: '440px', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center',
+              cursor: imageSrc ? 'zoom-in' : 'default'
+            }}
+          >
             {imageSrc ? (
-              <img 
-                src={imageSrc} 
-                alt="Submitted Flood Scene" 
-                style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-              />
+              <>
+                {/* Ambient Blurred Backdrop for Portrait & Non-Standard Aspect Ratios */}
+                <div 
+                  style={{
+                    position: 'absolute',
+                    top: '-10%',
+                    left: '-10%',
+                    width: '120%',
+                    height: '120%',
+                    backgroundImage: `url(${imageSrc})`,
+                    backgroundPosition: 'center',
+                    backgroundSize: 'cover',
+                    filter: 'blur(20px) brightness(0.25)',
+                    transform: 'scale(1.1)',
+                    pointerEvents: 'none'
+                  }} 
+                />
+
+                {/* Foreground Sharp Image - Fully Uncropped in Portrait or Landscape */}
+                <img 
+                  src={imageSrc} 
+                  alt="Submitted Flood Scene" 
+                  style={{ 
+                    position: 'relative',
+                    zIndex: 2,
+                    maxWidth: '100%', 
+                    maxHeight: '100%', 
+                    width: 'auto', 
+                    height: 'auto', 
+                    objectFit: imageFit, 
+                    display: 'block',
+                    boxShadow: '0 4px 20px rgba(0,0,0,0.5)'
+                  }} 
+                />
+
+                {/* Hover / Tap Hint */}
+                <div 
+                  style={{
+                    position: 'absolute',
+                    top: '0.75rem',
+                    right: '0.75rem',
+                    zIndex: 3,
+                    background: 'rgba(9, 9, 11, 0.75)',
+                    backdropFilter: 'blur(6px)',
+                    color: '#ffffff',
+                    padding: '3px 8px',
+                    borderRadius: '6px',
+                    fontSize: '0.7rem',
+                    fontWeight: 600,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    border: '1px solid rgba(255,255,255,0.15)',
+                    pointerEvents: 'none'
+                  }}
+                >
+                  <MdFullscreen /> Tap to Enlarge
+                </div>
+              </>
             ) : (
-              <div style={{ textAlign: 'center', color: '#94a3b8', padding: '2rem' }}>
+              <div style={{ textAlign: 'center', color: '#94a3b8', padding: '2rem', position: 'relative', zIndex: 2 }}>
                 <MdWaterDrop style={{ fontSize: '3rem', marginBottom: '0.5rem' }} />
                 <p style={{ margin: 0, fontSize: '0.85rem' }}>Image Analyzed by Server</p>
               </div>
             )}
 
             {/* AI Vision Overlay Badge */}
-            <div style={{ position: 'absolute', bottom: '0.75rem', left: '0.75rem', background: 'rgba(15, 23, 42, 0.85)', backdropFilter: 'blur(8px)', color: '#ffffff', padding: '4px 10px', borderRadius: '6px', fontSize: '0.72rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px', border: '1px solid rgba(255,255,255,0.15)' }}>
-              <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: fallback.color, display: 'inline-block' }} />
-              CLIP Deep Vision + Physical Inundation Model
+            <div style={{ 
+              position: 'absolute', 
+              bottom: '0.75rem', 
+              left: '0.75rem', 
+              zIndex: 3,
+              background: 'rgba(9, 9, 11, 0.85)', 
+              backdropFilter: 'blur(8px)', 
+              color: '#ffffff', 
+              padding: '4px 10px', 
+              borderRadius: '6px', 
+              fontSize: '0.72rem', 
+              fontWeight: 700, 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '6px', 
+              border: '1px solid rgba(255,255,255,0.15)',
+              maxWidth: 'calc(100% - 1.5rem)',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap'
+            }}>
+              <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: fallback.color, display: 'inline-block', flexShrink: 0 }} />
+              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>CLIP Vision + Inundation Model</span>
             </div>
           </div>
 
@@ -711,6 +860,99 @@ const ReportAnalysis = () => {
           <MdAddCircle /> Submit Another Report
         </Link>
       </div>
+
+      {/* Fullscreen Lightbox Modal */}
+      {isLightboxOpen && imageSrc && (
+        <div 
+          onClick={() => setIsLightboxOpen(false)}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0, 0, 0, 0.92)',
+            backdropFilter: 'blur(10px)',
+            zIndex: 9999,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '1rem',
+            animation: 'fadeIn 0.2s ease-out'
+          }}
+        >
+          {/* Top Bar with Title and Close Button */}
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              position: 'absolute',
+              top: '1rem',
+              left: '1rem',
+              right: '1rem',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              zIndex: 10000
+            }}
+          >
+            <div style={{ color: '#ffffff', fontSize: '0.9rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: fallback.color }} />
+              High-Resolution Flood Evidence
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsLightboxOpen(false)}
+              style={{
+                background: 'rgba(255, 255, 255, 0.2)',
+                border: 'none',
+                color: '#ffffff',
+                borderRadius: '50%',
+                width: '38px',
+                height: '38px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                fontSize: '1.35rem',
+                transition: 'background 0.2s'
+              }}
+              title="Close (Esc)"
+            >
+              <MdClose />
+            </button>
+          </div>
+
+          {/* Centered High-Res Image (Uncropped, Full Aspect Ratio) */}
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              maxWidth: '95vw',
+              maxHeight: '85vh',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              position: 'relative'
+            }}
+          >
+            <img 
+              src={imageSrc} 
+              alt="High Resolution Incident Inspection"
+              style={{
+                maxWidth: '95vw',
+                maxHeight: '85vh',
+                width: 'auto',
+                height: 'auto',
+                objectFit: 'contain',
+                borderRadius: '8px',
+                boxShadow: '0 20px 40px rgba(0, 0, 0, 0.8)',
+                display: 'block'
+              }}
+            />
+          </div>
+
+          <div style={{ position: 'absolute', bottom: '1rem', color: '#94a3b8', fontSize: '0.75rem', fontWeight: 500 }}>
+            Click anywhere or press Esc to exit
+          </div>
+        </div>
+      )}
 
     </div>
   );

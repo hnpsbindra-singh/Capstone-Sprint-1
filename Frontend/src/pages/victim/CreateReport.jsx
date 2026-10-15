@@ -607,11 +607,48 @@ const CreateReport = () => {
               >
                 {/* State A: Preview of Captured Photo */}
                 {previewUrl ? (
-                  <div style={{ width: '100%', position: 'relative' }}>
+                  <div style={{ 
+                    width: '100%', 
+                    position: 'relative', 
+                    background: '#09090b', 
+                    minHeight: '260px', 
+                    maxHeight: '420px', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center', 
+                    overflow: 'hidden' 
+                  }}>
+                    {/* Ambient blurred backdrop for portrait / custom aspect ratios */}
+                    <div 
+                      style={{
+                        position: 'absolute',
+                        top: '-10%',
+                        left: '-10%',
+                        width: '120%',
+                        height: '120%',
+                        backgroundImage: `url(${previewUrl})`,
+                        backgroundPosition: 'center',
+                        backgroundSize: 'cover',
+                        filter: 'blur(20px) brightness(0.25)',
+                        transform: 'scale(1.1)',
+                        pointerEvents: 'none'
+                      }} 
+                    />
+
                     <img 
                       src={previewUrl} 
                       alt="Captured Flood Scene" 
-                      style={{ width: '100%', maxHeight: '360px', objectFit: 'cover', display: 'block' }}
+                      style={{ 
+                        position: 'relative',
+                        zIndex: 2,
+                        maxWidth: '100%', 
+                        maxHeight: '400px', 
+                        width: 'auto', 
+                        height: 'auto', 
+                        objectFit: 'contain', 
+                        display: 'block',
+                        boxShadow: '0 4px 15px rgba(0,0,0,0.5)'
+                      }}
                     />
                     
                     {/* Bottom Metadata Ribbon (Single clean overlay across bottom) */}
@@ -621,6 +658,7 @@ const CreateReport = () => {
                         bottom: 0, 
                         left: 0, 
                         right: 0, 
+                        zIndex: 3,
                         background: 'linear-gradient(to top, rgba(9, 9, 11, 0.92) 0%, rgba(9, 9, 11, 0.6) 70%, transparent 100%)', 
                         padding: '1.25rem 0.85rem 0.75rem',
                         display: 'flex', 

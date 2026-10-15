@@ -395,10 +395,11 @@ def analyze_with_openrouter(image_base64: str) -> Optional[Dict[str, Any]]:
     if custom_model:
         models_to_try.append(custom_model)
     for m in [
+        "openrouter/free",
+        "meta-llama/llama-3.2-11b-vision-instruct:free",
+        "qwen/qwen-2.5-vl-72b-instruct:free",
         "google/gemini-2.5-flash",
         "google/gemini-3.8-flash",
-        "qwen/qwen-2.5-vl-72b-instruct:free",
-        "meta-llama/llama-3.2-11b-vision-instruct:free",
     ]:
         if m not in models_to_try:
             models_to_try.append(m)
