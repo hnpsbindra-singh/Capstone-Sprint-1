@@ -390,65 +390,52 @@ def analyze_with_openrouter(image_base64: str) -> Optional[Dict[str, Any]]:
         "Content-Type": "application/json",
     }
 
-    models_to_try = []
-    custom_model = os.getenv("OPENROUTER_MODEL")
-    if custom_model:
-        models_to_try.append(custom_model)
-    for m in [
-        "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
-        "openrouter/free",
-        "meta-llama/llama-3.2-11b-vision-instruct:free",
-        "qwen/qwen-2.5-vl-72b-instruct:free",
-        "google/gemini-2.5-flash",
-        "google/gemini-3.8-flash",
-    ]:
-        if m not in models_to_try:
-            models_to_try.append(m)
+    model = os.getenv("OPENROUTER_MODEL", "dots-studio/dots-3-note-preview:free").strip()
 
-    for model in models_to_try:
-        payload = {
-            "model": model,
-            "messages": [
-                {
-                    "role": "user",
-                    "content": [
-                        {"type": "text", "text": SYSTEM_PROMPT},
-                        {
-                            "type": "image_url",
-                            "image_url": {
-                                "url": data_url
-                            }
+    payload = {
+        "model": model,
+        "messages": [
+            {
+                "role": "user",
+                "content": [
+                    {"type": "text", "text": SYSTEM_PROMPT},
+                    {
+                        "type": "image_url",
+                        "image_url": {
+                            "url": data_url
                         }
-                    ]
-                }
-            ],
-            "temperature": 0.1,
-            "max_tokens": 550,
-        }
+                    }
+                ]
+            }
+        ],
+        "temperature": 0.1,
+        "max_tokens": 1500,
+        "reasoning": {"max_tokens": 150},
+    }
 
-        try:
-            resp = requests.post(OPENROUTER_API_URL, headers=headers, json=payload, timeout=14)
-            if resp.status_code == 200:
-                data = resp.json()
-                msg = data["choices"][0]["message"]
-                content = msg.get("content") or ""
-                parsed = extract_json_object(content)
-                if parsed:
-                    score = int(max(1, min(10, round(parsed.get("severity_score", 1)))))
-                    parsed["severity_score"] = score
-                    parsed["confidence"] = float(parsed.get("confidence", 0.95))
-                    if not isinstance(parsed.get("recommendations"), list):
-                        parsed["recommendations"] = [str(parsed.get("recommendations", "Follow safety protocols."))]
+    try:
+        resp = requests.post(OPENROUTER_API_URL, headers=headers, json=payload, timeout=25)
+        if resp.status_code == 200:
+            data = resp.json()
+            msg = data["choices"][0]["message"]
+            content = msg.get("content") or msg.get("reasoning") or ""
+            parsed = extract_json_object(content)
+            if parsed and "severity_score" in parsed:
+                score = int(max(1, min(10, round(parsed.get("severity_score", 1)))))
+                parsed["severity_score"] = score
+                parsed["confidence"] = float(parsed.get("confidence", 0.95))
+                if not isinstance(parsed.get("recommendations"), list):
+                    parsed["recommendations"] = [str(parsed.get("recommendations", "Follow safety protocols."))]
 
-                    logger.info(
-                        f"[OpenRouter Vision ({model})] Assessed image successfully: "
-                        f"score={score}, level={parsed.get('severity_level')}, title={parsed.get('title')}"
-                    )
-                    return parsed
-            else:
-                logger.warning(f"[OpenRouter Vision ({model})] Status {resp.status_code}: {resp.text[:150]}")
-        except Exception as e:
-            logger.warning(f"[OpenRouter Vision ({model})] Call failed: {str(e)}")
+                logger.info(
+                    f"[OpenRouter Vision ({model})] Assessed image successfully: "
+                    f"score={score}, level={parsed.get('severity_level')}, title={parsed.get('title')}"
+                )
+                return parsed
+        else:
+            logger.warning(f"[OpenRouter Vision ({model})] Status {resp.status_code}: {resp.text[:150]}")
+    except Exception as e:
+        logger.warning(f"[OpenRouter Vision ({model})] Call failed: {str(e)}")
 
     return None
 
