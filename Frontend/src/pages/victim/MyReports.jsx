@@ -188,7 +188,7 @@ const MyReports = () => {
             </div>
           )}
         </div>
-        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+        <div className="my-reports-header-actions" style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
           <div className="tooltip-wrap" data-tip="Export visible reports as CSV">
             <button className="btn-export-csv" onClick={exportToCSV} disabled={reports.length === 0}>
               <MdDownload /> {t('exportCSV')}
@@ -321,70 +321,117 @@ const MyReports = () => {
         </div>
       ) : (
         <div className="glass-card">
-          <div className="table-container">
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th className={`th-sortable ${sortKey === 'title' ? `sort-${sortDir}` : ''}`} onClick={() => handleSort('title')}>
-                    Title <SortIcon col="title" />
-                  </th>
-                  <th>Description</th>
-                  <th className={`th-sortable ${sortKey === 'severityScore' ? `sort-${sortDir}` : ''}`} onClick={() => handleSort('severityScore')}>
-                    Severity <SortIcon col="severityScore" />
-                  </th>
-                  <th>Location (Lat, Lng)</th>
-                  <th className={`th-sortable ${sortKey === 'status' ? `sort-${sortDir}` : ''}`} onClick={() => handleSort('status')}>
-                    Status <SortIcon col="status" />
-                  </th>
-                  <th className={`th-sortable ${sortKey === 'createdAt' ? `sort-${sortDir}` : ''}`} onClick={() => handleSort('createdAt')}>
-                    Submitted At <SortIcon col="createdAt" />
-                  </th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {paged.map((report, idx) => {
-                  const score = Number(report.severityScore) || 0;
-                  const sStyle = getSeverityStyle(score);
-                  return (
-                    <tr key={report.id || idx}>
-                      <td style={{ fontWeight: 700, color: 'var(--text-primary)', minWidth: '140px', maxWidth: '200px', wordBreak: 'break-word' }}>
-                        {report.title || 'Untitled Report'}
-                      </td>
-                      <td className="td-description">
-                        <div style={{ wordBreak: 'break-word', overflowWrap: 'anywhere' }}>
-                          {report.description || 'N/A'}
-                        </div>
-                      </td>
-                      <td style={{ whiteSpace: 'nowrap' }}>
-                        <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '4px 12px', borderRadius: '12px', fontWeight: 700, fontSize: '0.85rem', color: sStyle.color, backgroundColor: sStyle.backgroundColor, border: sStyle.border }}>
-                          {score.toFixed(1)}
-                        </span>
-                      </td>
-                      <td style={{ fontFamily: 'monospace', fontSize: '0.85rem' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                          <MdLocationOn style={{ color: 'var(--accent-ocean)' }} />{formatReportLocation(report)}
-                        </div>
-                      </td>
-                      <td><StatusBadge status={report.status || (score >= 8 ? 'CRITICAL' : score >= 6 ? 'HIGH' : 'REPORTED')} /></td>
-                      <td style={{ fontSize: '0.85rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>{formatDate(report.createdAt || report.timestamp)}</td>
-                      <td style={{ whiteSpace: 'nowrap' }}>
-                        <Link 
-                          to={`/victim/report-analysis?id=${report.id || report._id}`} 
-                          state={{ report }}
-                          className="btn btn-secondary btn-sm"
-                          style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '0.78rem', padding: '4px 10px' }}
-                          title="View AI Severity Analysis"
-                        >
-                          <MdAnalytics style={{ color: 'var(--accent-ocean)' }} /> Analysis
-                        </Link>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+          {/* ── Desktop table (hidden on mobile) ── */}
+          <div className="desktop-only-table">
+            <div className="table-container">
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th className={`th-sortable ${sortKey === 'title' ? `sort-${sortDir}` : ''}`} onClick={() => handleSort('title')}>
+                      Title <SortIcon col="title" />
+                    </th>
+                    <th>Description</th>
+                    <th className={`th-sortable ${sortKey === 'severityScore' ? `sort-${sortDir}` : ''}`} onClick={() => handleSort('severityScore')}>
+                      Severity <SortIcon col="severityScore" />
+                    </th>
+                    <th>Location (Lat, Lng)</th>
+                    <th className={`th-sortable ${sortKey === 'status' ? `sort-${sortDir}` : ''}`} onClick={() => handleSort('status')}>
+                      Status <SortIcon col="status" />
+                    </th>
+                    <th className={`th-sortable ${sortKey === 'createdAt' ? `sort-${sortDir}` : ''}`} onClick={() => handleSort('createdAt')}>
+                      Submitted At <SortIcon col="createdAt" />
+                    </th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {paged.map((report, idx) => {
+                    const score = Number(report.severityScore) || 0;
+                    const sStyle = getSeverityStyle(score);
+                    return (
+                      <tr key={report.id || idx}>
+                        <td style={{ fontWeight: 700, color: 'var(--text-primary)', minWidth: '140px', maxWidth: '200px', wordBreak: 'break-word' }}>
+                          {report.title || 'Untitled Report'}
+                        </td>
+                        <td className="td-description">
+                          <div style={{ wordBreak: 'break-word', overflowWrap: 'anywhere' }}>
+                            {report.description || 'N/A'}
+                          </div>
+                        </td>
+                        <td style={{ whiteSpace: 'nowrap' }}>
+                          <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '4px 12px', borderRadius: '12px', fontWeight: 700, fontSize: '0.85rem', color: sStyle.color, backgroundColor: sStyle.backgroundColor, border: sStyle.border }}>
+                            {score.toFixed(1)}
+                          </span>
+                        </td>
+                        <td style={{ fontFamily: 'monospace', fontSize: '0.85rem' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                            <MdLocationOn style={{ color: 'var(--accent-ocean)' }} />{formatReportLocation(report)}
+                          </div>
+                        </td>
+                        <td><StatusBadge status={report.status || (score >= 8 ? 'CRITICAL' : score >= 6 ? 'HIGH' : 'REPORTED')} /></td>
+                        <td style={{ fontSize: '0.85rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>{formatDate(report.createdAt || report.timestamp)}</td>
+                        <td style={{ whiteSpace: 'nowrap' }}>
+                          <Link 
+                            to={`/victim/report-analysis?id=${report.id || report._id}`} 
+                            state={{ report }}
+                            className="btn btn-secondary btn-sm"
+                            style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '0.78rem', padding: '4px 10px' }}
+                            title="View AI Severity Analysis"
+                          >
+                            <MdAnalytics style={{ color: 'var(--accent-ocean)' }} /> Analysis
+                          </Link>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           </div>
+
+          {/* ── Mobile card layout (hidden on desktop) ── */}
+          <div className="mobile-only-cards" style={{ padding: '0.25rem' }}>
+            {paged.map((report, idx) => {
+              const score = Number(report.severityScore) || 0;
+              const sStyle = getSeverityStyle(score);
+              return (
+                <div key={report.id || idx} className="mobile-report-card">
+                  <div className="mobile-report-card-header">
+                    <div className="mobile-report-card-title">
+                      {report.title || 'Untitled Report'}
+                    </div>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '3px 10px', borderRadius: '12px', fontWeight: 700, fontSize: '0.8125rem', color: sStyle.color, backgroundColor: sStyle.background, border: sStyle.border, flexShrink: 0 }}>
+                      {score.toFixed(1)}
+                    </span>
+                  </div>
+                  {report.description && (
+                    <p className="mobile-report-card-desc">
+                      {report.description.length > 100 ? report.description.slice(0, 100) + '…' : report.description}
+                    </p>
+                  )}
+                  <div className="mobile-report-card-meta">
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+                      <MdLocationOn style={{ color: 'var(--accent-ocean)', fontSize: '0.875rem' }} />
+                      {formatReportLocation(report)}
+                    </span>
+                    <span>{formatDate(report.createdAt || report.timestamp)}</span>
+                  </div>
+                  <div className="mobile-report-card-footer">
+                    <StatusBadge status={report.status || (score >= 8 ? 'CRITICAL' : score >= 6 ? 'HIGH' : 'REPORTED')} />
+                    <Link 
+                      to={`/victim/report-analysis?id=${report.id || report._id}`} 
+                      state={{ report }}
+                      className="btn btn-secondary btn-sm"
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '0.8rem', padding: '5px 12px' }}
+                    >
+                      <MdAnalytics style={{ color: 'var(--accent-ocean)' }} /> View Analysis
+                    </Link>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
           {totalPages > 1 && (
             <div className="pagination-bar">
               <button className="page-btn" disabled={page === 1} onClick={() => setPage(p => p - 1)}>‹</button>

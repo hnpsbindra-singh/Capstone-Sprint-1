@@ -352,7 +352,7 @@ const ReportAnalysis = () => {
     <div className="page-container animate-fade-in-up" style={{ maxWidth: '1000px', margin: '0 auto' }}>
       
       {/* Top Breadcrumb & Action Bar */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.75rem' }}>
+      <div className="report-action-bar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.75rem' }}>
         <button 
           className="btn btn-secondary btn-sm"
           onClick={() => navigate('/victim/my-reports')}
@@ -383,7 +383,8 @@ const ReportAnalysis = () => {
       </div>
 
       {/* Status Banner */}
-      <div 
+      <div
+        className="report-status-banner"
         style={{ 
           background: score <= 2 
             ? 'linear-gradient(135deg, rgba(100, 116, 139, 0.08) 0%, rgba(59, 130, 246, 0.08) 100%)' 
@@ -669,7 +670,7 @@ const ReportAnalysis = () => {
 
       {/* Incident Summary & Location Info */}
       <div className="glass-card" style={{ marginBottom: '2rem' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
+        <div className="incident-summary-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
           <div>
             <span style={{ fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)' }}>
               AI Incident Title
@@ -677,15 +678,15 @@ const ReportAnalysis = () => {
             <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--text-primary)', marginTop: '2px', marginBottom: '0.5rem' }}>
               {displayTitle}
             </h3>
-            <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', maxWidth: '650px', lineHeight: 1.6, margin: 0 }}>
+            <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', maxWidth: '650px', lineHeight: 1.6, margin: 0, overflowWrap: 'break-word', wordBreak: 'break-word' }}>
               {displayDescription}
             </p>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', background: '#f8fafc', border: '1px solid var(--border-subtle)', borderRadius: '10px', padding: '0.875rem 1.25rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: 'var(--text-primary)' }}>
-              <MdLocationOn style={{ color: 'var(--accent-ocean)', fontSize: '1.2rem' }} />
-              <span>Coordinates: <strong>{coords.lat}, {coords.lng}</strong></span>
+          <div className="incident-location-box" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', background: '#f8fafc', border: '1px solid var(--border-subtle)', borderRadius: '10px', padding: '0.875rem 1.25rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: 'var(--text-primary)', flexWrap: 'wrap' }}>
+              <MdLocationOn style={{ color: 'var(--accent-ocean)', fontSize: '1.2rem', flexShrink: 0 }} />
+              <span style={{ overflowWrap: 'break-word', wordBreak: 'break-all' }}>Coordinates: <strong>{coords.lat}, {coords.lng}</strong></span>
             </div>
             <Link 
               to="/victim/heatmap" 
@@ -699,7 +700,7 @@ const ReportAnalysis = () => {
       </div>
 
       {/* Bottom Navigation Toolbar */}
-      <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+      <div className="report-bottom-nav" style={{ display: 'flex', justifyContent: 'center', gap: '1rem', flexWrap: 'wrap' }}>
         <Link to="/victim/heatmap" className="btn btn-secondary" style={{ minWidth: '180px' }}>
           <MdMap /> Live Risk Heatmap
         </Link>

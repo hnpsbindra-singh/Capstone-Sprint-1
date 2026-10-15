@@ -4983,3 +4983,481 @@ input, textarea, select {
 }
 
 
+
+/* ==========================================================================
+   COMPREHENSIVE MOBILE RESPONSIVENESS OVERRIDES
+   Ensures every paragraph, word, badge, button, and grid is
+   fully readable and usable on screens as small as 320px.
+   ========================================================================== */
+
+/* ── Global touch targets ── */
+@media (max-width: 640px) {
+  /* Minimum 44px touch target for all interactive elements */
+  .btn, .btn-sm, .filter-pill-btn, .page-btn, .btn-export-csv {
+    min-height: 40px;
+    min-width: 40px;
+  }
+
+  /* Readable body text floor */
+  p, li, td, th, label, span, div {
+    font-size: max(0.8125rem, 13px);
+    line-height: 1.55;
+  }
+
+  /* Prevent overflow globally */
+  .page-container {
+    padding: 1rem 0.875rem;
+    overflow-x: hidden;
+  }
+
+  /* Page title shrink */
+  .page-title {
+    font-size: 1.35rem;
+    letter-spacing: -0.025em;
+  }
+  .page-subtitle {
+    font-size: 0.875rem;
+  }
+
+  /* Page header stack vertically */
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 0.75rem;
+  }
+  .page-header .btn,
+  .page-header > a {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Glass card tighter padding */
+  .glass-card {
+    padding: 1rem;
+  }
+
+  /* Modal full-screen on mobile */
+  .modal-content {
+    padding: 1.25rem;
+    border-radius: 12px 12px 0 0;
+    max-width: 100%;
+    width: 100%;
+    margin: 0;
+    align-self: flex-end;
+  }
+  .modal-overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  /* Buttons full-width in action groups */
+  .modal-actions,
+  .confirm-modal-actions {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .modal-actions .btn,
+  .confirm-modal-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* All grids collapse to 1 column */
+  .grid-2, .grid-3, .grid-4 {
+    grid-template-columns: 1fr;
+  }
+
+  /* FAB repositioned so it clears the bottom nav on iOS */
+  .fab-button {
+    bottom: 1.25rem;
+    right: 1rem;
+    font-size: 0.8125rem;
+    padding: 0.625rem 1rem;
+  }
+}
+
+/* ── Report Analysis Page ── */
+@media (max-width: 640px) {
+
+  /* Breadcrumb / action bar: stack cleanly */
+  .report-action-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.625rem;
+  }
+  .report-action-bar .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Status banner text wraps on tiny screens */
+  .report-status-banner {
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: flex-start;
+  }
+  .report-status-banner h2 {
+    font-size: 0.9375rem !important;
+    line-height: 1.4 !important;
+  }
+  .report-status-banner p {
+    font-size: 0.8125rem !important;
+    line-height: 1.5 !important;
+  }
+
+  /* Score circle keeps compact, text alongside shrinks gracefully */
+  .score-display-row {
+    flex-direction: row !important;
+    align-items: center;
+    gap: 1rem;
+  }
+  .score-circle {
+    width: 80px !important;
+    height: 80px !important;
+  }
+  .score-circle-value {
+    font-size: 1.875rem !important;
+  }
+
+  /* Severity bar labels: hide middle labels, keep Safe/Extreme */
+  .severity-bar-labels span:not(:first-child):not(:last-child) {
+    display: none;
+  }
+
+  /* Depth + Road access matrix: always 2-col but smaller text */
+  .depth-road-matrix {
+    grid-template-columns: 1fr 1fr !important;
+  }
+  .depth-road-matrix > div > div:first-child {
+    font-size: 0.6875rem !important;
+  }
+  .depth-road-matrix > div > div:last-child {
+    font-size: 0.8125rem !important;
+  }
+
+  /* AI scene badge shrinks */
+  .ai-vision-overlay-badge {
+    font-size: 0.65rem !important;
+    padding: 3px 7px !important;
+  }
+
+  /* AI inspection feature tags wrap */
+  .ai-feature-tags {
+    flex-wrap: wrap;
+    gap: 0.375rem;
+  }
+
+  /* Bottom nav buttons stack */
+  .report-bottom-nav {
+    flex-direction: column;
+    gap: 0.625rem;
+  }
+  .report-bottom-nav .btn {
+    width: 100% !important;
+    min-width: unset !important;
+    justify-content: center;
+  }
+
+  /* Incident summary: location box goes full width */
+  .incident-summary-row {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  .incident-location-box {
+    width: 100%;
+  }
+}
+
+/* ── MyReports Page ── */
+@media (max-width: 640px) {
+  /* Header action row: vertical stack */
+  .my-reports-header-actions {
+    flex-direction: column;
+    width: 100%;
+    gap: 0.5rem;
+  }
+  .my-reports-header-actions .btn,
+  .my-reports-header-actions .btn-export-csv,
+  .my-reports-header-actions a {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Filter toolbar: wrap search and pills vertically */
+  .filter-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .search-box-wrapper {
+    min-width: unset;
+    width: 100%;
+  }
+  .filter-pills-container {
+    overflow-x: auto;
+    padding-bottom: 4px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Mobile card layout replaces table */
+  .mobile-report-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    background: #ffffff;
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 0.875rem;
+    margin-bottom: 0.625rem;
+  }
+  .mobile-report-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  .mobile-report-card-title {
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    flex: 1;
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+  .mobile-report-card-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 0.75rem;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    margin-top: 0.25rem;
+  }
+  .mobile-report-card-desc {
+    font-size: 0.8125rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+  .mobile-report-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 0.5rem;
+    border-top: 1px solid #f4f4f5;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  /* Offline queue cards: always full width on mobile */
+  .offline-queue-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Pagination: full-row */
+  .pagination-bar {
+    gap: 0.25rem;
+  }
+}
+
+/* Hide desktop table on mobile, show cards */
+@media (max-width: 640px) {
+  .desktop-only-table {
+    display: none !important;
+  }
+  .mobile-only-cards {
+    display: block !important;
+  }
+}
+@media (min-width: 641px) {
+  .mobile-only-cards {
+    display: none !important;
+  }
+  .desktop-only-table {
+    display: block !important;
+  }
+}
+
+/* ── VictimDashboard / AdminDashboard page headers ── */
+@media (max-width: 640px) {
+  /* Heatmap section header wraps */
+  .heatmap-section-header {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 0.25rem;
+  }
+  .heatmap-section-header h2 {
+    font-size: 1rem !important;
+  }
+
+  /* Recent reports "View All" row */
+  .recent-reports-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+  .recent-reports-header h2 {
+    font-size: 1rem !important;
+  }
+
+  /* Stats cards row */
+  .grid-4.stagger {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+}
+
+/* ── CreateReport page ── */
+@media (max-width: 640px) {
+  /* Process guide header */
+  .create-report-header h1 {
+    font-size: 1.35rem !important;
+  }
+  .create-report-header p {
+    font-size: 0.875rem !important;
+  }
+
+  /* Step cards in process guide: tighten icon */
+  .process-step-card {
+    padding: 1rem !important;
+  }
+  .process-step-card h3 {
+    font-size: 0.9375rem !important;
+  }
+
+  /* Camera step header */
+  .camera-step-header h1 {
+    font-size: 1.3rem !important;
+  }
+
+  /* Breadcrumb progress text */
+  .step-progress-text {
+    font-size: 0.75rem !important;
+  }
+
+  /* Post-capture action bar */
+  .post-capture-actions {
+    grid-template-columns: 1fr !important;
+    gap: 0.5rem;
+  }
+}
+
+/* ── Navbar mobile ── */
+@media (max-width: 640px) {
+  /* Ensure the navbar doesn't cause overflow */
+  nav {
+    overflow-x: hidden;
+  }
+}
+
+/* ── Auth pages ── */
+@media (max-width: 480px) {
+  .auth-card {
+    padding: 1.5rem 1.125rem;
+  }
+  .auth-title {
+    font-size: 1.25rem;
+  }
+  .auth-subtitle {
+    font-size: 0.8125rem;
+  }
+}
+
+/* ── Landing page ── */
+@media (max-width: 640px) {
+  .hero-title {
+    font-size: 1.875rem;
+    letter-spacing: -0.03em;
+  }
+  .hero-subtitle {
+    font-size: 0.9375rem;
+  }
+  .hero-cta-group {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  .landing-nav-links {
+    display: none;
+  }
+  .emergency-banner .banner-content {
+    justify-content: center;
+    text-align: center;
+  }
+}
+
+/* ── AiScanningModal mobile ── */
+@media (max-width: 480px) {
+  /* The modal itself should fill the screen vertically */
+  .ai-scanning-modal-inner {
+    padding: 1.25rem !important;
+    max-width: 100% !important;
+    margin: 0.5rem;
+    border-radius: 14px !important;
+  }
+  .ai-scanning-modal-inner h2 {
+    font-size: 1rem !important;
+  }
+  .ai-step-label {
+    font-size: 0.8125rem !important;
+  }
+  .ai-gps-telemetry {
+    font-size: 0.65rem !important;
+  }
+}
+
+/* ── OfflineBanner mobile ── */
+@media (max-width: 640px) {
+  .offline-banner-inner {
+    padding: 0.75rem 0.875rem !important;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .offline-banner-text {
+    font-size: 0.8125rem !important;
+  }
+}
+
+/* ── Global: prevent any element from overflowing viewport width ── */
+* {
+  max-width: 100vw;
+}
+img, video, canvas, svg {
+  max-width: 100%;
+  height: auto;
+}
+pre, code {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* ── Data tables: always horizontally scrollable on mobile ── */
+.table-container {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ── Small text never goes below 12px ── */
+@media (max-width: 640px) {
+  .font-xs-safe {
+    font-size: max(0.75rem, 12px) !important;
+  }
+  /* JetBrains Mono text (coordinates, telemetry) */
+  [style*="JetBrains Mono"], [style*="monospace"] {
+    font-size: max(0.72rem, 11.5px);
+    word-break: break-all;
+  }
+}
+
+/* ── Status pills never clip on mobile ── */
+@media (max-width: 400px) {
+  .status-pill {
+    font-size: 0.6rem;
+    padding: 2px 6px;
+    letter-spacing: 0.03em;
+  }
+}
+
+/* ── Severity bar labels: responsive spacing ── */
+@media (max-width: 380px) {
+  .severity-bar-label-row {
+    font-size: 0.6rem !important;
+  }
+}
