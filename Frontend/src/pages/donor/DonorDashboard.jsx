@@ -100,7 +100,7 @@ const DonorDashboard = () => {
       ) : (
         <>
           {/* Stats Cards Section */}
-          <div className="grid-4 stagger" style={{ marginBottom: '2rem' }}>
+          <div className="donor-stats-grid grid-4 stagger" style={{ marginBottom: '2rem' }}>
             <StatsCard
               icon={MdVolunteerActivism}
               label="Total Donations"
@@ -173,6 +173,7 @@ const DonorDashboard = () => {
           {/* Recent Donations List Section */}
           <div className="glass-card">
             <div
+              className="section-header-row"
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -216,12 +217,13 @@ const DonorDashboard = () => {
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'space-between',
-                      gap: '1rem',
+                      gap: '0.75rem',
                       backgroundColor: '#f8fafc',
-                      border: '1px solid var(--border-subtle)'
+                      border: '1px solid var(--border-subtle)',
+                      flexWrap: 'wrap'
                     }}
                   >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', minWidth: 0, flex: '1 1 200px' }}>
                       <div
                         style={{
                           width: '40px',
@@ -238,11 +240,11 @@ const DonorDashboard = () => {
                       >
                         <MdInventory />
                       </div>
-                      <div>
-                        <div style={{ fontWeight: 700, fontSize: '0.9375rem', color: 'var(--text-primary)' }}>
+                      <div style={{ minWidth: 0 }}>
+                        <div style={{ fontWeight: 700, fontSize: '0.9375rem', color: 'var(--text-primary)', wordBreak: 'break-word', overflowWrap: 'anywhere' }}>
                           {donation.itemName || donation.item || 'Relief Item'}
                         </div>
-                        <div style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>
+                        <div style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)', wordBreak: 'break-word' }}>
                           Quantity: <span style={{ color: 'var(--accent-ocean)', fontWeight: 700 }}>{donation.quantity}</span>
                           {(donation.createdAt || donation.donatedAt || donation.date) && (
                             <span> &bull; {formatDate(donation.createdAt || donation.donatedAt || donation.date)}</span>

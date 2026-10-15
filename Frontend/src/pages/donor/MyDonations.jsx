@@ -232,102 +232,179 @@ const MyDonations = () => {
           </p>
         </div>
       ) : (
-        <div className="glass-card" style={{ padding: 0, overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
-          <div className="table-container">
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th className={`th-sortable ${sortKey === 'itemName' ? `sort-${sortDir}` : ''}`} onClick={() => handleSort('itemName')}>
-                    Item Name <SortIcon col="itemName" />
-                  </th>
-                  <th className={`th-sortable ${sortKey === 'quantity' ? `sort-${sortDir}` : ''}`} onClick={() => handleSort('quantity')}>
-                    Quantity <SortIcon col="quantity" />
-                  </th>
-                  <th className={`th-sortable ${sortKey === 'status' ? `sort-${sortDir}` : ''}`} onClick={() => handleSort('status')}>
-                    Status <SortIcon col="status" />
-                  </th>
-                  <th>Delivery PIN</th>
-                  <th className={`th-sortable ${sortKey === 'createdAt' ? `sort-${sortDir}` : ''}`} onClick={() => handleSort('createdAt')}>
-                    Donated At <SortIcon col="createdAt" />
-                  </th>
-                  <th style={{ textAlign: 'right' }}>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {paged.map((donation, index) => {
-                  const donationId = donation.id || donation.donationId || donation._id || index;
-                  const statusStr = (donation.status || '').toString().toUpperCase();
-                  const isCopied = copiedPinId === donationId;
+        <div className="glass-card" style={{ padding: 0 }}>
+          {/* ── Desktop table ── */}
+          <div className="desktop-only-table">
+            <div className="table-container" style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th className={`th-sortable ${sortKey === 'itemName' ? `sort-${sortDir}` : ''}`} onClick={() => handleSort('itemName')}>
+                      Item Name <SortIcon col="itemName" />
+                    </th>
+                    <th className={`th-sortable ${sortKey === 'quantity' ? `sort-${sortDir}` : ''}`} onClick={() => handleSort('quantity')}>
+                      Quantity <SortIcon col="quantity" />
+                    </th>
+                    <th className={`th-sortable ${sortKey === 'status' ? `sort-${sortDir}` : ''}`} onClick={() => handleSort('status')}>
+                      Status <SortIcon col="status" />
+                    </th>
+                    <th>Delivery PIN</th>
+                    <th className={`th-sortable ${sortKey === 'createdAt' ? `sort-${sortDir}` : ''}`} onClick={() => handleSort('createdAt')}>
+                      Donated At <SortIcon col="createdAt" />
+                    </th>
+                    <th style={{ textAlign: 'right' }}>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {paged.map((donation, index) => {
+                    const donationId = donation.id || donation.donationId || donation._id || index;
+                    const statusStr = (donation.status || '').toString().toUpperCase();
+                    const isCopied = copiedPinId === donationId;
 
-                  return (
-                    <tr key={donationId}>
-                      <td>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                          <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'rgba(2, 132, 199, 0.12)', color: 'var(--accent-ocean)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', flexShrink: 0 }}>
-                            <MdInventory />
+                    return (
+                      <tr key={donationId}>
+                        <td>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                            <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'rgba(2, 132, 199, 0.12)', color: 'var(--accent-ocean)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', flexShrink: 0 }}>
+                              <MdInventory />
+                            </div>
+                            <div>
+                              <div style={{ fontWeight: 700 }}>{donation.itemName || donation.item || 'Relief Item'}</div>
+                              {donation.carrier && donation.trackingNumber && (
+                                <div style={{ fontSize: '0.75rem', color: '#7c3aed', display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
+                                  <MdLocalShipping size={12} /> {donation.carrier}: #{donation.trackingNumber}
+                                </div>
+                              )}
+                            </div>
                           </div>
-                          <div>
-                            <div style={{ fontWeight: 700 }}>{donation.itemName || donation.item || 'Relief Item'}</div>
-                            {donation.carrier && donation.trackingNumber && (
-                              <div style={{ fontSize: '0.75rem', color: '#7c3aed', display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
-                                <MdLocalShipping size={12} /> {donation.carrier}: #{donation.trackingNumber}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </td>
-                      <td><span style={{ fontWeight: 700, color: 'var(--accent-ocean)' }}>{donation.quantity}</span></td>
-                      <td><StatusBadge status={donation.status} /></td>
-                      <td>
-                        {donation.verificationCode ? (
-                          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(2, 132, 199, 0.08)', padding: '3px 8px', borderRadius: '6px' }}>
-                            <MdVpnKey size={14} style={{ color: 'var(--accent-ocean)' }} />
-                            <span style={{ fontFamily: 'monospace', fontWeight: 800, fontSize: '0.875rem', letterSpacing: '1px', color: 'var(--text-primary)' }}>
-                              {donation.verificationCode}
-                            </span>
-                            <button
-                              type="button"
-                              onClick={() => copyPin(donation.verificationCode, donationId)}
-                              title="Copy 6-digit PIN"
-                              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px', display: 'flex', alignItems: 'center', color: isCopied ? '#16a34a' : 'var(--text-muted)' }}
-                            >
-                              {isCopied ? <MdCheck size={14} /> : <MdContentCopy size={13} />}
-                            </button>
-                          </div>
-                        ) : (
-                          <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>—</span>
-                        )}
-                      </td>
-                      <td style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>{formatDate(donation.createdAt || donation.donatedAt || donation.date)}</td>
-                      <td style={{ textAlign: 'right' }}>
-                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
-                          {statusStr === 'ACCEPTED' && (
-                            <button
-                              type="button"
-                              className="btn btn-primary btn-sm"
-                              style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem', padding: '4px 9px', background: '#7c3aed', borderColor: '#7c3aed' }}
-                              onClick={() => openDispatchModal(donation)}
-                            >
-                              <MdLocalShipping /> Dispatch / Track
-                            </button>
+                        </td>
+                        <td><span style={{ fontWeight: 700, color: 'var(--accent-ocean)' }}>{donation.quantity}</span></td>
+                        <td><StatusBadge status={donation.status} /></td>
+                        <td>
+                          {donation.verificationCode ? (
+                            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(2, 132, 199, 0.08)', padding: '3px 8px', borderRadius: '6px' }}>
+                              <MdVpnKey size={14} style={{ color: 'var(--accent-ocean)' }} />
+                              <span style={{ fontFamily: 'monospace', fontWeight: 800, fontSize: '0.875rem', letterSpacing: '1px', color: 'var(--text-primary)' }}>
+                                {donation.verificationCode}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => copyPin(donation.verificationCode, donationId)}
+                                title="Copy 6-digit PIN"
+                                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px', display: 'flex', alignItems: 'center', color: isCopied ? '#16a34a' : 'var(--text-muted)' }}
+                              >
+                                {isCopied ? <MdCheck size={14} /> : <MdContentCopy size={13} />}
+                              </button>
+                            </div>
+                          ) : (
+                            <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>—</span>
                           )}
+                        </td>
+                        <td style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>{formatDate(donation.createdAt || donation.donatedAt || donation.date)}</td>
+                        <td style={{ textAlign: 'right' }}>
+                          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+                            {statusStr === 'ACCEPTED' && (
+                              <button
+                                type="button"
+                                className="btn btn-primary btn-sm"
+                                style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem', padding: '4px 9px', background: '#7c3aed', borderColor: '#7c3aed' }}
+                                onClick={() => openDispatchModal(donation)}
+                              >
+                                <MdLocalShipping /> Dispatch / Track
+                              </button>
+                            )}
 
-                          <button
-                            type="button"
-                            className="btn btn-secondary btn-sm"
-                            style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem', padding: '4px 8px' }}
-                            onClick={() => setSelectedDonation(donation)}
-                          >
-                            <MdLocationOn style={{ color: 'var(--accent-ocean)' }} /> Details
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                            <button
+                              type="button"
+                              className="btn btn-secondary btn-sm"
+                              style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem', padding: '4px 8px' }}
+                              onClick={() => setSelectedDonation(donation)}
+                            >
+                              <MdLocationOn style={{ color: 'var(--accent-ocean)' }} /> Details
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           </div>
+
+          {/* ── Mobile cards ── */}
+          <div className="mobile-only-cards" style={{ padding: '0.5rem' }}>
+            {paged.map((donation, index) => {
+              const donationId = donation.id || donation.donationId || donation._id || index;
+              const statusStr = (donation.status || '').toString().toUpperCase();
+              const isCopied = copiedPinId === donationId;
+
+              return (
+                <div key={donationId} className="admin-donation-card">
+                  <div className="admin-card-header">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', minWidth: 0, flex: 1 }}>
+                      <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'rgba(2, 132, 199, 0.12)', color: 'var(--accent-ocean)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', flexShrink: 0 }}>
+                        <MdInventory />
+                      </div>
+                      <div className="admin-card-title">{donation.itemName || donation.item || 'Relief Item'}</div>
+                    </div>
+                    <StatusBadge status={donation.status} />
+                  </div>
+
+                  <div className="admin-card-meta">
+                    <span>Qty: <strong style={{ color: 'var(--accent-ocean)' }}>{donation.quantity}</strong></span>
+                    <span>{formatDate(donation.createdAt || donation.donatedAt || donation.date)}</span>
+                  </div>
+
+                  {donation.carrier && donation.trackingNumber && (
+                    <div style={{ fontSize: '0.75rem', color: '#7c3aed', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <MdLocalShipping size={12} /> {donation.carrier}: #{donation.trackingNumber}
+                    </div>
+                  )}
+
+                  {donation.verificationCode && (
+                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(2, 132, 199, 0.08)', padding: '4px 8px', borderRadius: '6px', alignSelf: 'flex-start' }}>
+                      <MdVpnKey size={14} style={{ color: 'var(--accent-ocean)' }} />
+                      <span className="pin-display" style={{ fontFamily: 'monospace', fontWeight: 800, fontSize: '0.875rem', letterSpacing: '1px', color: 'var(--text-primary)' }}>
+                        PIN: {donation.verificationCode}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => copyPin(donation.verificationCode, donationId)}
+                        title="Copy 6-digit PIN"
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px', display: 'flex', alignItems: 'center', color: isCopied ? '#16a34a' : 'var(--text-muted)' }}
+                      >
+                        {isCopied ? <MdCheck size={14} /> : <MdContentCopy size={13} />}
+                      </button>
+                    </div>
+                  )}
+
+                  <div className="admin-card-footer my-donation-card-footer">
+                    {statusStr === 'ACCEPTED' && (
+                      <button
+                        type="button"
+                        className="btn btn-primary btn-sm"
+                        style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem', padding: '8px 12px', background: '#7c3aed', borderColor: '#7c3aed', width: '100%', justifyContent: 'center' }}
+                        onClick={() => openDispatchModal(donation)}
+                      >
+                        <MdLocalShipping /> Dispatch / Track
+                      </button>
+                    )}
+
+                    <button
+                      type="button"
+                      className="btn btn-secondary btn-sm"
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem', padding: '8px 12px', width: '100%', justifyContent: 'center' }}
+                      onClick={() => setSelectedDonation(donation)}
+                    >
+                      <MdLocationOn style={{ color: 'var(--accent-ocean)' }} /> Details & Drop-off
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
           {totalPages > 1 && (
             <div className="pagination-bar">
               <button className="page-btn" disabled={page === 1} onClick={() => setPage(p => p - 1)}>‹</button>
@@ -348,6 +425,7 @@ const MyDonations = () => {
           onClick={() => !dispatchSubmitting && setDispatchModalDonation(null)}
         >
           <div
+            className="delivery-modal-inner"
             onClick={e => e.stopPropagation()}
             style={{ background: '#ffffff', borderRadius: 'var(--radius-xl)', padding: '2rem', width: '100%', maxWidth: '480px', boxShadow: '0 24px 64px rgba(15,23,42,0.25)', position: 'relative', animation: 'fadeInScale 0.2s ease' }}
           >
@@ -488,6 +566,7 @@ const MyDonations = () => {
           onClick={() => setSelectedDonation(null)}
         >
           <div
+            className="delivery-modal-inner"
             onClick={e => e.stopPropagation()}
             style={{ background: '#ffffff', borderRadius: 'var(--radius-xl)', padding: '2rem', width: '100%', maxWidth: '480px', boxShadow: '0 24px 64px rgba(15,23,42,0.25)', position: 'relative', animation: 'fadeInScale 0.2s ease', maxHeight: '90vh', overflowY: 'auto' }}
           >
@@ -518,7 +597,7 @@ const MyDonations = () => {
                   <MdVpnKey style={{ color: '#2563eb' }} /> 6-Digit Delivery Handoff PIN:
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#ffffff', padding: '0.5rem 0.875rem', borderRadius: '8px', border: '1px solid #bfdbfe' }}>
-                  <span style={{ fontFamily: 'monospace', fontSize: '1.35rem', fontWeight: 900, letterSpacing: '4px', color: '#1e3a8a' }}>
+                  <span className="pin-display" style={{ fontFamily: 'monospace', fontSize: '1.35rem', fontWeight: 900, letterSpacing: '4px', color: '#1e3a8a' }}>
                     {selectedDonation.verificationCode}
                   </span>
                   <button

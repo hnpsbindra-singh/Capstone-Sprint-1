@@ -199,7 +199,7 @@ const CreateRequest = () => {
 
       {/* Form Container */}
       <div style={{ maxWidth: '720px', margin: '0 auto' }}>
-        <div className="glass-card">
+        <div className="glass-card ngo-create-form-card">
           {heatmapContext && (
             <div style={{ background: 'rgba(239, 68, 68, 0.08)', border: '1.5px solid rgba(239, 68, 68, 0.3)', borderRadius: 'var(--radius-md)', padding: '1rem 1.25rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
               <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.25rem', flexShrink: 0 }}>
@@ -263,7 +263,7 @@ const CreateRequest = () => {
             </div>
 
             {/* Resource Needed & Quantity Needed */}
-            <div className="grid-2">
+            <div className="grid-2 ngo-form-row-2">
               <div className="form-group">
                 <label className="form-label" htmlFor="resourceNeeded">
                   Resource Needed <span style={{ color: 'var(--color-critical)' }}>*</span>
@@ -325,7 +325,7 @@ const CreateRequest = () => {
               </div>
 
               {/* Contact Email & Phone */}
-              <div className="grid-2">
+              <div className="grid-2 ngo-form-row-2">
                 <div className="form-group" style={{ marginBottom: 0 }}>
                   <label className="form-label" htmlFor="contactEmail">
                     NGO Contact Email <span style={{ color: 'var(--color-critical)' }}>*</span>
@@ -451,7 +451,7 @@ const CreateRequest = () => {
             </div>
 
             {/* Submit Button */}
-            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', marginTop: '2rem' }}>
+            <div className="ngo-create-actions" style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', marginTop: '2rem' }}>
               <button
                 type="button"
                 className="btn btn-secondary"

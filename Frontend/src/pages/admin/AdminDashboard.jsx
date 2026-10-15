@@ -113,7 +113,7 @@ const AdminDashboard = () => {
 
       {/* Heatmap Section */}
       <div className="glass-card" style={{ marginBottom: '2rem' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+        <div className="section-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
           <h2 style={{ fontSize: '1.25rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0 }}>
             <MdMap style={{ color: 'var(--accent-blue)' }} /> Real-Time Hazard & Risk Heatmap
           </h2>
@@ -126,7 +126,7 @@ const AdminDashboard = () => {
 
       {/* Recent Activity Section */}
       <div className="glass-card">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+        <div className="section-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
           <h2 style={{ fontSize: '1.25rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0 }}>
             <MdWarning style={{ color: '#ef4444' }} /> Recent Activity (Last 5 Flood Reports)
           </h2>
@@ -171,6 +171,7 @@ const AdminDashboard = () => {
               return (
                 <div
                   key={report.id || idx}
+                  className="admin-recent-item"
                   style={{
                     display: 'flex',
                     alignItems: 'center',

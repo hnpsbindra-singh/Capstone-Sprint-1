@@ -70,76 +70,130 @@ const NgoRequests = () => {
           </div>
         </div>
       ) : (
-        <div className="table-container glass-card" style={{ padding: 0, overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Title</th>
-                <th>Resource Needed</th>
-                <th>Quantity Needed</th>
-                <th>Quantity Received</th>
-                <th>Progress</th>
-                <th>Status</th>
-                <th>Location</th>
-              </tr>
-            </thead>
-            <tbody>
-              {requests.map((request) => {
-                const needed = Number(request.quantityNeeded) || 0;
-                const received = Number(request.quantityReceived) || 0;
-                const percentage = needed > 0 ? Math.min(Math.round((received / needed) * 100), 100) : 0;
-
-                return (
-                  <tr key={request.id || Math.random()}>
-                    <td style={{ fontFamily: 'monospace', fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
-                      {request.id ? String(request.id) : 'N/A'}
-                    </td>
-                    <td style={{ fontWeight: 600, color: 'var(--text-primary)', minWidth: '140px', maxWidth: '220px', wordBreak: 'break-word', overflowWrap: 'anywhere' }}>
-                      {request.title || 'Untitled Request'}
-                    </td>
-                    <td style={{ color: 'var(--accent-cyan)', fontWeight: 500 }}>
-                      {request.resourceNeeded || 'N/A'}
-                    </td>
-                    <td style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
-                      {needed}
-                    </td>
-                    <td style={{ fontWeight: 600, color: 'var(--accent-emerald)' }}>
-                      {received}
-                    </td>
-                    <td>
-                      <div style={{ minWidth: '130px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', marginBottom: '4px', color: 'var(--text-secondary)', fontWeight: 500 }}>
-                          <span>{received} / {needed}</span>
-                          <span>{percentage}%</span>
-                        </div>
-                        <div className="progress-bar-container">
-                          <div
-                            className="progress-bar-fill"
-                            style={{
-                              width: `${percentage}%`,
-                              background: percentage >= 100
-                                ? 'linear-gradient(90deg, #10b981, #34d399)'
-                                : undefined
-                            }}
-                          />
-                        </div>
-                      </div>
-                    </td>
-                    <td>
-                      <StatusBadge status={request.status} />
-                    </td>
-                    <td style={{ color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>
-                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
-                        <MdLocationOn style={{ color: 'var(--accent-cyan)' }} />
-                        {formatLocation(request.location)}
-                      </span>
-                    </td>
+        <div className="glass-card" style={{ padding: 0 }}>
+          {/* ── Desktop table ── */}
+          <div className="desktop-only-table">
+            <div className="table-container" style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Title</th>
+                    <th>Resource Needed</th>
+                    <th>Quantity Needed</th>
+                    <th>Quantity Received</th>
+                    <th>Progress</th>
+                    <th>Status</th>
+                    <th>Location</th>
                   </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                </thead>
+                <tbody>
+                  {requests.map((request) => {
+                    const needed = Number(request.quantityNeeded) || 0;
+                    const received = Number(request.quantityReceived) || 0;
+                    const percentage = needed > 0 ? Math.min(Math.round((received / needed) * 100), 100) : 0;
+
+                    return (
+                      <tr key={request.id || Math.random()}>
+                        <td style={{ fontFamily: 'monospace', fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
+                          {request.id ? String(request.id) : 'N/A'}
+                        </td>
+                        <td style={{ fontWeight: 600, color: 'var(--text-primary)', minWidth: '140px', maxWidth: '220px', wordBreak: 'break-word', overflowWrap: 'anywhere' }}>
+                          {request.title || 'Untitled Request'}
+                        </td>
+                        <td style={{ color: 'var(--accent-cyan)', fontWeight: 500 }}>
+                          {request.resourceNeeded || 'N/A'}
+                        </td>
+                        <td style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
+                          {needed}
+                        </td>
+                        <td style={{ fontWeight: 600, color: 'var(--accent-emerald)' }}>
+                          {received}
+                        </td>
+                        <td>
+                          <div style={{ minWidth: '130px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', marginBottom: '4px', color: 'var(--text-secondary)', fontWeight: 500 }}>
+                              <span>{received} / {needed}</span>
+                              <span>{percentage}%</span>
+                            </div>
+                            <div className="progress-bar-container">
+                              <div
+                                className="progress-bar-fill"
+                                style={{
+                                  width: `${percentage}%`,
+                                  background: percentage >= 100
+                                    ? 'linear-gradient(90deg, #10b981, #34d399)'
+                                    : undefined
+                                }}
+                              />
+                            </div>
+                          </div>
+                        </td>
+                        <td>
+                          <StatusBadge status={request.status} />
+                        </td>
+                        <td style={{ color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
+                            <MdLocationOn style={{ color: 'var(--accent-cyan)' }} />
+                            {formatLocation(request.location)}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* ── Mobile cards ── */}
+          <div className="mobile-only-cards" style={{ padding: '0.5rem' }}>
+            {requests.map((request) => {
+              const needed = Number(request.quantityNeeded) || 0;
+              const received = Number(request.quantityReceived) || 0;
+              const percentage = needed > 0 ? Math.min(Math.round((received / needed) * 100), 100) : 0;
+
+              return (
+                <div key={request.id || Math.random()} className="admin-ngo-req-card">
+                  <div className="admin-card-header">
+                    <div className="admin-card-title">{request.title || 'Untitled Request'}</div>
+                    <StatusBadge status={request.status} />
+                  </div>
+
+                  <div className="admin-card-meta">
+                    <span style={{ color: 'var(--accent-ocean)', fontWeight: 600 }}>
+                      {request.resourceNeeded || 'Supplies'}
+                    </span>
+                    <span>
+                      <MdLocationOn style={{ color: 'var(--accent-cyan)' }} />
+                      {formatLocation(request.location)}
+                    </span>
+                    <span className="admin-card-id">
+                      ID: {request.id ? String(request.id).slice(0, 8) : 'N/A'}
+                    </span>
+                  </div>
+
+                  <div style={{ marginTop: '0.35rem' }}>
+                    <div className="ngo-req-progress-row">
+                      <span>Progress: {received} / {needed} units</span>
+                      <strong style={{ color: percentage >= 100 ? '#10b981' : 'var(--text-primary)' }}>{percentage}%</strong>
+                    </div>
+                    <div className="progress-bar-container">
+                      <div
+                        className="progress-bar-fill"
+                        style={{
+                          width: `${percentage}%`,
+                          background: percentage >= 100
+                            ? 'linear-gradient(90deg, #10b981, #34d399)'
+                            : undefined
+                        }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
     </div>

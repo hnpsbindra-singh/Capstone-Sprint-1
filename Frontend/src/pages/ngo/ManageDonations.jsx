@@ -142,7 +142,7 @@ const ManageDonations = () => {
           <h1 className="page-title">Manage Donations</h1>
           <p className="page-subtitle">Review, accept, track shipments, and verify incoming relief supplies for your NGO</p>
         </div>
-        <div style={{ display: 'flex', gap: '0.75rem' }}>
+        <div className="ngo-manage-header-actions" style={{ display: 'flex', gap: '0.75rem' }}>
           <button className="btn-export-csv" onClick={exportToCSV} disabled={donations.length === 0}>
             <MdDownload /> Export CSV
           </button>
@@ -209,95 +209,168 @@ const ManageDonations = () => {
           </p>
         </div>
       ) : (
-        <div className="glass-card" style={{ padding: '1rem', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
-          <div className="table-container">
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th>Item Name</th>
-                  <th>Quantity</th>
-                  <th>Donor ID</th>
-                  <th>Status</th>
-                  <th>Shipment / Tracking</th>
-                  <th style={{ textAlign: 'right' }}>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredDonations.map((donation) => {
-                  const donationId = donation.id || donation._id;
-                  const isAccepting = actionLoading[donationId] === 'accept';
-                  const statusStr = (donation.status || '').toString().toUpperCase();
+        <div className="glass-card" style={{ padding: 0 }}>
+          {/* ── Desktop table ── */}
+          <div className="desktop-only-table">
+            <div className="table-container" style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>Item Name</th>
+                    <th>Quantity</th>
+                    <th>Donor ID</th>
+                    <th>Status</th>
+                    <th>Shipment / Tracking</th>
+                    <th style={{ textAlign: 'right' }}>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredDonations.map((donation) => {
+                    const donationId = donation.id || donation._id;
+                    const isAccepting = actionLoading[donationId] === 'accept';
+                    const statusStr = (donation.status || '').toString().toUpperCase();
 
-                  return (
-                    <tr key={donationId}>
-                      <td style={{ fontWeight: 700 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                          <MdInventory style={{ color: 'var(--accent-ocean)', fontSize: '1.1rem', flexShrink: 0 }} />
-                          <div>
-                            <div>{donation.itemName || 'N/A'}</div>
+                    return (
+                      <tr key={donationId}>
+                        <td style={{ fontWeight: 700 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <MdInventory style={{ color: 'var(--accent-ocean)', fontSize: '1.1rem', flexShrink: 0 }} />
+                            <div>
+                              <div>{donation.itemName || 'N/A'}</div>
+                            </div>
                           </div>
-                        </div>
-                      </td>
-                      <td>
-                        <span style={{ fontWeight: 700, color: 'var(--accent-cyan)' }}>
-                          {donation.quantity}
-                        </span>
-                      </td>
-                      <td style={{ color: 'var(--text-secondary)', fontFamily: 'monospace', fontSize: '0.85rem' }}>
-                        {donation.donorId || 'Anonymous'}
-                      </td>
-                      <td>
-                        <StatusBadge status={donation.status} />
-                      </td>
-                      <td>
-                        {donation.carrier || donation.trackingNumber ? (
-                          <div style={{ fontSize: '0.8125rem', color: '#5b21b6', background: 'rgba(124, 58, 237, 0.08)', padding: '3px 8px', borderRadius: '6px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                            <MdLocalShipping size={13} style={{ color: '#7c3aed' }} />
-                            <span><strong>{donation.carrier || 'Courier'}</strong> {donation.trackingNumber ? `(#${donation.trackingNumber})` : ''}</span>
-                          </div>
-                        ) : (
-                          <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>Pending Dispatch</span>
-                        )}
-                      </td>
-                      <td style={{ textAlign: 'right' }}>
-                        {statusStr === 'PENDING' && (
-                          <button
-                            className="btn btn-primary btn-sm"
-                            onClick={() => handleAccept(donationId)}
-                            disabled={Boolean(actionLoading[donationId])}
-                            style={{ display: 'inline-flex', alignItems: 'center', gap: '0.375rem' }}
-                          >
-                            {isAccepting ? (
-                              <div className="spinner" style={{ width: '14px', height: '14px', borderWidth: '2px' }} />
-                            ) : (
-                              <MdCheckCircle style={{ fontSize: '1rem' }} />
-                            )}
-                            Accept
-                          </button>
-                        )}
-
-                        {(statusStr === 'ACCEPTED' || statusStr === 'DISPATCHED') && (
-                          <button
-                            className="btn btn-success btn-sm"
-                            onClick={() => openVerifyModal(donation)}
-                            style={{ display: 'inline-flex', alignItems: 'center', gap: '0.375rem', background: '#059669', borderColor: '#059669' }}
-                          >
-                            <MdCheckCircle style={{ fontSize: '1rem' }} />
-                            Verify & Receive
-                          </button>
-                        )}
-
-                        {statusStr === 'DELIVERED' && (
-                          <span style={{ color: 'var(--color-delivered)', fontSize: '0.8125rem', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
-                            <MdCheckCircle /> Delivered & Verified
+                        </td>
+                        <td>
+                          <span style={{ fontWeight: 700, color: 'var(--accent-cyan)' }}>
+                            {donation.quantity}
                           </span>
+                        </td>
+                        <td style={{ color: 'var(--text-secondary)', fontFamily: 'monospace', fontSize: '0.85rem' }}>
+                          {donation.donorId || 'Anonymous'}
+                        </td>
+                        <td>
+                          <StatusBadge status={donation.status} />
+                        </td>
+                        <td>
+                          {donation.carrier || donation.trackingNumber ? (
+                            <div style={{ fontSize: '0.8125rem', color: '#5b21b6', background: 'rgba(124, 58, 237, 0.08)', padding: '3px 8px', borderRadius: '6px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                              <MdLocalShipping size={13} style={{ color: '#7c3aed' }} />
+                              <span><strong>{donation.carrier || 'Courier'}</strong> {donation.trackingNumber ? `(#${donation.trackingNumber})` : ''}</span>
+                            </div>
+                          ) : (
+                            <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>Pending Dispatch</span>
+                          )}
+                        </td>
+                        <td style={{ textAlign: 'right' }}>
+                          {statusStr === 'PENDING' && (
+                            <button
+                              className="btn btn-primary btn-sm"
+                              onClick={() => handleAccept(donationId)}
+                              disabled={Boolean(actionLoading[donationId])}
+                              style={{ display: 'inline-flex', alignItems: 'center', gap: '0.375rem' }}
+                            >
+                              {isAccepting ? (
+                                <div className="spinner" style={{ width: '14px', height: '14px', borderWidth: '2px' }} />
+                              ) : (
+                                <MdCheckCircle style={{ fontSize: '1rem' }} />
+                              )}
+                              Accept
+                            </button>
+                          )}
+
+                          {(statusStr === 'ACCEPTED' || statusStr === 'DISPATCHED') && (
+                            <button
+                              className="btn btn-success btn-sm"
+                              onClick={() => openVerifyModal(donation)}
+                              style={{ display: 'inline-flex', alignItems: 'center', gap: '0.375rem', background: '#059669', borderColor: '#059669' }}
+                            >
+                              <MdCheckCircle style={{ fontSize: '1rem' }} />
+                              Verify & Receive
+                            </button>
+                          )}
+
+                          {statusStr === 'DELIVERED' && (
+                            <span style={{ color: 'var(--color-delivered)', fontSize: '0.8125rem', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
+                              <MdCheckCircle /> Delivered & Verified
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* ── Mobile cards ── */}
+          <div className="mobile-only-cards" style={{ padding: '0.5rem' }}>
+            {filteredDonations.map((donation) => {
+              const donationId = donation.id || donation._id;
+              const isAccepting = actionLoading[donationId] === 'accept';
+              const statusStr = (donation.status || '').toString().toUpperCase();
+
+              return (
+                <div key={donationId} className="admin-donation-card">
+                  <div className="admin-card-header">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', minWidth: 0, flex: 1 }}>
+                      <MdInventory style={{ color: 'var(--accent-ocean)', fontSize: '1.1rem', flexShrink: 0 }} />
+                      <div className="admin-card-title">{donation.itemName || 'N/A'}</div>
+                    </div>
+                    <StatusBadge status={donation.status} />
+                  </div>
+
+                  <div className="admin-card-meta">
+                    <span>Qty: <strong style={{ color: 'var(--accent-cyan)' }}>{donation.quantity}</strong></span>
+                    <span className="admin-card-id">Donor: {donation.donorId ? String(donation.donorId).slice(0, 10) + '…' : 'Anonymous'}</span>
+                  </div>
+
+                  {donation.carrier || donation.trackingNumber ? (
+                    <div style={{ fontSize: '0.78rem', color: '#5b21b6', background: 'rgba(124, 58, 237, 0.08)', padding: '4px 8px', borderRadius: '6px', display: 'inline-flex', alignItems: 'center', gap: '4px', alignSelf: 'flex-start' }}>
+                      <MdLocalShipping size={13} style={{ color: '#7c3aed' }} />
+                      <span><strong>{donation.carrier || 'Courier'}</strong> {donation.trackingNumber ? `(#${donation.trackingNumber})` : ''}</span>
+                    </div>
+                  ) : (
+                    <span style={{ color: 'var(--text-muted)', fontSize: '0.78rem' }}>Pending Dispatch</span>
+                  )}
+
+                  <div className="admin-card-footer">
+                    {statusStr === 'PENDING' && (
+                      <button
+                        className="btn btn-primary btn-sm"
+                        onClick={() => handleAccept(donationId)}
+                        disabled={Boolean(actionLoading[donationId])}
+                        style={{ width: '100%', justifyContent: 'center', display: 'inline-flex', alignItems: 'center', gap: '0.375rem', padding: '8px 12px' }}
+                      >
+                        {isAccepting ? (
+                          <div className="spinner" style={{ width: '14px', height: '14px', borderWidth: '2px' }} />
+                        ) : (
+                          <MdCheckCircle style={{ fontSize: '1rem' }} />
                         )}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                        Accept Donation
+                      </button>
+                    )}
+
+                    {(statusStr === 'ACCEPTED' || statusStr === 'DISPATCHED') && (
+                      <button
+                        className="btn btn-success btn-sm"
+                        onClick={() => openVerifyModal(donation)}
+                        style={{ width: '100%', justifyContent: 'center', display: 'inline-flex', alignItems: 'center', gap: '0.375rem', background: '#059669', borderColor: '#059669', padding: '8px 12px' }}
+                      >
+                        <MdCheckCircle style={{ fontSize: '1rem' }} />
+                        Verify & Receive
+                      </button>
+                    )}
+
+                    {statusStr === 'DELIVERED' && (
+                      <span style={{ color: 'var(--color-delivered)', fontSize: '0.8125rem', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '0.25rem', width: '100%', justifyContent: 'center', padding: '4px 0' }}>
+                        <MdCheckCircle /> Delivered & Verified
+                      </span>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}
@@ -310,6 +383,7 @@ const ManageDonations = () => {
           onClick={() => !isVerifying && setVerifyModalDonation(null)}
         >
           <div
+            className="delivery-modal-inner"
             onClick={e => e.stopPropagation()}
             style={{ background: '#ffffff', borderRadius: 'var(--radius-xl)', padding: '2rem', width: '100%', maxWidth: '460px', boxShadow: '0 24px 64px rgba(15,23,42,0.25)', position: 'relative', animation: 'fadeInScale 0.2s ease' }}
           >

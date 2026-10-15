@@ -221,71 +221,100 @@ const FloodReports = () => {
           </p>
         </div>
       ) : (
-        <div className="table-container glass-card" style={{ padding: 0, overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Title</th>
-                <th>Description</th>
-                <th>Victim ID</th>
-                <th>Severity Score</th>
-                <th>Location (Lat, Lng)</th>
-                <th style={{ textAlign: 'center' }}>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredReports.map((report) => (
-                <tr key={report.id || Math.random()}>
-                  <td style={{ fontFamily: 'monospace', fontSize: '0.8125rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
-                    {report.id ? String(report.id) : 'N/A'}
-                  </td>
-                  <td style={{ fontWeight: 700, color: 'var(--text-primary)', minWidth: '140px', maxWidth: '200px', wordBreak: 'break-word' }}>
-                    {report.title || 'Untitled'}
-                  </td>
-                  <td className="td-description">
-                    <div style={{ wordBreak: 'break-word', overflowWrap: 'anywhere' }}>
-                      {report.description || 'No description'}
-                    </div>
-                  </td>
-                  <td style={{ fontFamily: 'monospace', fontSize: '0.8125rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>
-                    {report.victimId ? String(report.victimId) : 'N/A'}
-                  </td>
-                  <td>
-                    {renderSeverityBadge(report.severityScore)}
-                  </td>
-                  <td style={{ color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>
-                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
-                      <MdLocationOn style={{ color: 'var(--accent-ocean)' }} />
-                      {formatLocation(report.location)}
-                    </span>
-                  </td>
-                  <td style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>
-                    <button
-                      className="btn btn-sm"
-                      style={{
-                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                        color: '#ef4444',
-                        border: '1px solid rgba(239, 68, 68, 0.3)',
-                        padding: '4px 10px',
-                        borderRadius: '6px',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '4px',
-                        fontWeight: 700,
-                        fontSize: '0.75rem',
-                        cursor: 'pointer'
-                      }}
-                      title="Soft delete this report"
-                      onClick={() => handleDeleteClick(report)}
-                    >
-                      <MdDeleteOutline size={16} /> Delete
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="glass-card" style={{ padding: 0 }}>
+          {/* ── Desktop table ── */}
+          <div className="desktop-only-table">
+            <div className="table-container" style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Title</th>
+                    <th>Description</th>
+                    <th>Victim ID</th>
+                    <th>Severity Score</th>
+                    <th>Location (Lat, Lng)</th>
+                    <th style={{ textAlign: 'center' }}>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredReports.map((report) => (
+                    <tr key={report.id || Math.random()}>
+                      <td style={{ fontFamily: 'monospace', fontSize: '0.8125rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
+                        {report.id ? String(report.id) : 'N/A'}
+                      </td>
+                      <td style={{ fontWeight: 700, color: 'var(--text-primary)', minWidth: '140px', maxWidth: '200px', wordBreak: 'break-word' }}>
+                        {report.title || 'Untitled'}
+                      </td>
+                      <td className="td-description">
+                        <div style={{ wordBreak: 'break-word', overflowWrap: 'anywhere' }}>
+                          {report.description || 'No description'}
+                        </div>
+                      </td>
+                      <td style={{ fontFamily: 'monospace', fontSize: '0.8125rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>
+                        {report.victimId ? String(report.victimId) : 'N/A'}
+                      </td>
+                      <td>
+                        {renderSeverityBadge(report.severityScore)}
+                      </td>
+                      <td style={{ color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
+                          <MdLocationOn style={{ color: 'var(--accent-ocean)' }} />
+                          {formatLocation(report.location)}
+                        </span>
+                      </td>
+                      <td style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>
+                        <button
+                          className="btn btn-sm"
+                          style={{ backgroundColor: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.3)', padding: '4px 10px', borderRadius: '6px', display: 'inline-flex', alignItems: 'center', gap: '4px', fontWeight: 700, fontSize: '0.75rem', cursor: 'pointer' }}
+                          title="Soft delete this report"
+                          onClick={() => handleDeleteClick(report)}
+                        >
+                          <MdDeleteOutline size={16} /> Delete
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* ── Mobile cards ── */}
+          <div className="mobile-only-cards" style={{ padding: '0.5rem' }}>
+            {filteredReports.map((report) => (
+              <div key={report.id || Math.random()} className="admin-flood-card">
+                <div className="admin-card-header">
+                  <div className="admin-card-title">{report.title || 'Untitled Report'}</div>
+                  {renderSeverityBadge(report.severityScore)}
+                </div>
+                {report.description && (
+                  <p className="admin-card-desc">
+                    {report.description.length > 100 ? report.description.slice(0, 100) + '…' : report.description}
+                  </p>
+                )}
+                <div className="admin-card-meta">
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+                    <MdLocationOn style={{ color: 'var(--accent-ocean)', fontSize: '0.875rem' }} />
+                    {formatLocation(report.location)}
+                  </span>
+                  {report.victimId && (
+                    <span className="admin-card-id">Victim: {String(report.victimId).slice(0, 10)}…</span>
+                  )}
+                </div>
+                <div className="admin-card-footer">
+                  <span className="admin-card-id">{report.id ? String(report.id).slice(0, 12) + '…' : 'N/A'}</span>
+                  <button
+                    className="btn btn-sm"
+                    style={{ backgroundColor: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.3)', padding: '5px 12px', borderRadius: '6px', display: 'inline-flex', alignItems: 'center', gap: '4px', fontWeight: 700, fontSize: '0.8125rem', cursor: 'pointer' }}
+                    onClick={() => handleDeleteClick(report)}
+                  >
+                    <MdDeleteOutline size={15} /> Delete
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 

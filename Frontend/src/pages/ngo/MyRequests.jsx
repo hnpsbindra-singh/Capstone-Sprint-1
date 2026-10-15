@@ -47,7 +47,7 @@ const MyRequests = () => {
           <h1 className="page-title">My Resource Requests</h1>
           <p className="page-subtitle">Track the status and progress of relief supplies requested by your organization</p>
         </div>
-        <div style={{ display: 'flex', gap: '0.75rem' }}>
+        <div className="ngo-manage-header-actions" style={{ display: 'flex', gap: '0.75rem' }}>
           <button
             className="btn btn-secondary btn-sm"
             onClick={fetchRequests}
@@ -98,7 +98,7 @@ const MyRequests = () => {
               <div key={req.id || req._id} className="glass-card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                 <div>
                   {/* Top Bar: Title & Status */}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.75rem', marginBottom: '0.75rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.75rem', marginBottom: '0.75rem', flexWrap: 'wrap' }}>
                     <h3 style={{ fontSize: '1.15rem', fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.3, wordBreak: 'break-word', overflowWrap: 'anywhere' }}>
                       {req.title}
                     </h3>
@@ -113,7 +113,7 @@ const MyRequests = () => {
                   )}
 
                   {/* Details Badge / Info */}
-                  <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginBottom: '1rem', fontSize: '0.875rem' }}>
+                  <div className="ngo-req-card-stats" style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginBottom: '1rem', fontSize: '0.875rem' }}>
                     <div style={{ background: 'rgba(255, 255, 255, 0.04)', padding: '0.375rem 0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)' }}>
                       <span style={{ color: 'var(--text-muted)' }}>Resource: </span>
                       <strong style={{ color: 'var(--accent-blue)' }}>{req.resourceNeeded}</strong>
@@ -124,7 +124,7 @@ const MyRequests = () => {
                   {req.deliveryAddress && (
                     <div style={{ display: 'flex', alignItems: 'flex-start', gap: '6px', fontSize: '0.8rem', color: '#475569', background: '#f8fafc', padding: '6px 10px', borderRadius: '6px', border: '1px solid var(--border-subtle)', marginBottom: '0.75rem' }}>
                       <MdLocationOn style={{ color: 'var(--accent-ocean)', fontSize: '1rem', flexShrink: 0, marginTop: '1px' }} />
-                      <span><strong>Drop-off Address:</strong> {req.deliveryAddress}</span>
+                      <span style={{ wordBreak: 'break-word', overflowWrap: 'anywhere' }}><strong>Drop-off Address:</strong> {req.deliveryAddress}</span>
                     </div>
                   )}
 

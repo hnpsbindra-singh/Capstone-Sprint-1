@@ -142,7 +142,7 @@ const NgoDashboard = () => {
 
       {/* Latest Requests Overview */}
       <div style={{ marginBottom: '2rem' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+        <div className="ngo-recent-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
           <h2 style={{ fontSize: '1.25rem', fontWeight: 700 }}>Recent Resource Requests</h2>
           {myRequests.length > 0 && (
             <button 

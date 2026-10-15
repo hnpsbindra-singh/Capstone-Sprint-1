@@ -5461,3 +5461,326 @@ pre, code {
     font-size: 0.6rem !important;
   }
 }
+
+/* ==========================================================================
+   ADMIN / NGO / DONOR PAGES — MOBILE RESPONSIVE FIXES
+   ========================================================================== */
+
+/* ── Shared: all page header action button groups stack on mobile ── */
+@media (max-width: 640px) {
+  /* Any flex row of buttons in a page-header becomes a column */
+  .page-header > div:last-child {
+    flex-direction: column;
+    width: 100%;
+  }
+  .page-header > div:last-child .btn,
+  .page-header > div:last-child .btn-export-csv,
+  .page-header > div:last-child button,
+  .page-header > div:last-child a {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Page title icon + text wrap on very small screens */
+  .page-title {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    line-height: 1.3;
+  }
+
+  /* Section headers inside glass cards */
+  .glass-card > div[style*="justify-content: space-between"] {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+}
+
+/* ── Admin Dashboard ── */
+@media (max-width: 640px) {
+  /* Heatmap section header + "N Active Zones" badge */
+  .admin-heatmap-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+
+  /* Recent activity items: let severity badge go below text */
+  .admin-recent-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.625rem;
+  }
+  .admin-recent-item > div:last-child {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+}
+
+/* ── All admin table pages: mobile card layout ── */
+@media (max-width: 640px) {
+
+  /* Admin FloodReports mobile cards */
+  .admin-flood-card,
+  .admin-donation-card,
+  .admin-victim-card,
+  .admin-ngo-req-card {
+    background: #ffffff;
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 0.875rem;
+    margin-bottom: 0.625rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .admin-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  .admin-card-title {
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    flex: 1;
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+  .admin-card-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 0.75rem;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    align-items: center;
+  }
+  .admin-card-meta span {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+  }
+  .admin-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid #f4f4f5;
+  }
+  .admin-card-desc {
+    font-size: 0.8125rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+  .admin-card-id {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    background: #f1f5f9;
+    padding: 1px 6px;
+    border-radius: 4px;
+    word-break: break-all;
+  }
+
+  /* Victim card: avatar + name row */
+  .victim-card-name-row {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+  }
+  .victim-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 0.875rem;
+    flex-shrink: 0;
+  }
+
+  /* NGO Request progress bar in card */
+  .ngo-req-progress-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+  }
+}
+
+/* ── NGO Pages ── */
+@media (max-width: 640px) {
+  /* NgoDashboard recent requests header */
+  .ngo-recent-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  .ngo-recent-header .btn {
+    align-self: flex-start;
+  }
+
+  /* CreateRequest form: two-column grid to 1 */
+  .ngo-form-row-2 {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* ManageDonations / MyRequests cards header actions */
+  .ngo-manage-header-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+  .ngo-manage-header-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* MyRequests request cards: stat row wrap */
+  .ngo-req-card-stats {
+    flex-wrap: wrap;
+    gap: 0.375rem;
+  }
+}
+
+/* ── Donor Pages ── */
+@media (max-width: 640px) {
+  /* DonorDashboard stats stay 2-col */
+  .donor-stats-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0.75rem;
+  }
+
+  /* BrowseRequests filter area: zone filter chips scroll horizontally */
+  .zone-filter-strip {
+    display: flex !important;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 6px;
+    flex-wrap: nowrap !important;
+    gap: 0.75rem !important;
+  }
+  .zone-filter-strip > * {
+    flex-shrink: 0 !important;
+    min-width: 240px !important;
+  }
+
+  /* BrowseRequests request cards: donation button full width */
+  .browse-card-footer {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .browse-card-footer .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* BrowseRequests donate modal: full width on mobile */
+  .donate-modal-inner {
+    padding: 1.25rem !important;
+    max-width: 100% !important;
+    margin: 0.5rem;
+    border-radius: 14px !important;
+  }
+  .donate-modal-inner h2 {
+    font-size: 1.05rem !important;
+  }
+
+  /* MyDonations delivery detail modal: full width */
+  .delivery-modal-inner {
+    padding: 1.25rem !important;
+    max-width: 100% !important;
+    margin: 0.5rem;
+    border-radius: 14px !important;
+    font-size: 0.875rem !important;
+  }
+
+  /* PIN display in delivery modal: don't let the 6-digit code overflow */
+  .pin-display {
+    font-size: 1.1rem !important;
+    letter-spacing: 3px !important;
+  }
+
+  /* MyDonations card status + actions row */
+  .my-donation-card-footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  .my-donation-card-footer .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* ── AdminDashboard: section headers inside glass-card ── */
+@media (max-width: 640px) {
+  /* "Recent Activity (Last 5 Flood Reports)" + "View All Reports →" */
+  .glass-card .section-header-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  .glass-card .section-header-row h2 {
+    font-size: 1rem !important;
+  }
+  .glass-card .section-header-row .btn {
+    align-self: flex-start;
+  }
+}
+
+/* ── Shared: monospace IDs truncate gracefully on mobile ── */
+@media (max-width: 640px) {
+  td[style*="monospace"],
+  .admin-card-id {
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+/* ── AnalyticsDashboard charts: never overflow on mobile ── */
+@media (max-width: 640px) {
+  .recharts-wrapper,
+  .recharts-responsive-container {
+    max-width: 100% !important;
+    overflow: hidden;
+  }
+}
+
+/* ── NGO Create Request form: max-width full on mobile ── */
+@media (max-width: 640px) {
+  .ngo-create-form-card {
+    padding: 1rem !important;
+  }
+  .ngo-create-form-card h1,
+  .ngo-create-form-card h2 {
+    font-size: 1.25rem !important;
+  }
+
+  /* NGO Create Request actions: stack on mobile */
+  .ngo-create-actions {
+    flex-direction: column-reverse !important;
+    gap: 0.75rem !important;
+  }
+  .ngo-create-actions .btn {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+
+  /* Admin recent activity list item on small mobile */
+  .admin-recent-item {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 0.75rem !important;
+  }
+}
+

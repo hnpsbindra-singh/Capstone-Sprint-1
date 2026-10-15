@@ -160,47 +160,72 @@ const AllDonations = () => {
           </div>
         </div>
       ) : (
-        <div className="table-container glass-card" style={{ padding: 0, overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Donor ID</th>
-                <th>Item Name</th>
-                <th>Quantity</th>
-                <th>Status</th>
-                <th>Donated At</th>
-                <th>NGO Request ID</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredDonations.map((donation) => (
-                <tr key={donation.id || Math.random()}>
-                  <td style={{ fontFamily: 'monospace', fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
-                    {donation.id ? String(donation.id) : 'N/A'}
-                  </td>
-                  <td style={{ fontFamily: 'monospace', fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>
-                    {donation.donorId ? String(donation.donorId) : 'N/A'}
-                  </td>
-                  <td style={{ fontWeight: 700, color: 'var(--text-primary)' }}>
-                    {donation.itemName || 'N/A'}
-                  </td>
-                  <td style={{ fontWeight: 700, color: 'var(--accent-ocean)' }}>
-                    {donation.quantity !== undefined && donation.quantity !== null ? donation.quantity : 0}
-                  </td>
-                  <td>
-                    <StatusBadge status={donation.status} />
-                  </td>
-                  <td style={{ color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>
-                    {formatDate(donation.donatedAt)}
-                  </td>
-                  <td style={{ fontFamily: 'monospace', fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>
-                    {donation.ngoRequestId ? String(donation.ngoRequestId) : 'N/A'}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="glass-card" style={{ padding: 0 }}>
+          {/* ── Desktop table ── */}
+          <div className="desktop-only-table">
+            <div className="table-container" style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Donor ID</th>
+                    <th>Item Name</th>
+                    <th>Quantity</th>
+                    <th>Status</th>
+                    <th>Donated At</th>
+                    <th>NGO Request ID</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredDonations.map((donation) => (
+                    <tr key={donation.id || Math.random()}>
+                      <td style={{ fontFamily: 'monospace', fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
+                        {donation.id ? String(donation.id) : 'N/A'}
+                      </td>
+                      <td style={{ fontFamily: 'monospace', fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>
+                        {donation.donorId ? String(donation.donorId) : 'N/A'}
+                      </td>
+                      <td style={{ fontWeight: 700, color: 'var(--text-primary)' }}>
+                        {donation.itemName || 'N/A'}
+                      </td>
+                      <td style={{ fontWeight: 700, color: 'var(--accent-ocean)' }}>
+                        {donation.quantity !== undefined && donation.quantity !== null ? donation.quantity : 0}
+                      </td>
+                      <td>
+                        <StatusBadge status={donation.status} />
+                      </td>
+                      <td style={{ color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>
+                        {formatDate(donation.donatedAt)}
+                      </td>
+                      <td style={{ fontFamily: 'monospace', fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>
+                        {donation.ngoRequestId ? String(donation.ngoRequestId) : 'N/A'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* ── Mobile cards ── */}
+          <div className="mobile-only-cards" style={{ padding: '0.5rem' }}>
+            {filteredDonations.map((donation) => (
+              <div key={donation.id || Math.random()} className="admin-donation-card">
+                <div className="admin-card-header">
+                  <div className="admin-card-title">{donation.itemName || 'N/A'}</div>
+                  <StatusBadge status={donation.status} />
+                </div>
+                <div className="admin-card-meta">
+                  <span>Qty: <strong style={{ color: 'var(--accent-ocean)' }}>{donation.quantity ?? 0}</strong></span>
+                  <span>{formatDate(donation.donatedAt)}</span>
+                </div>
+                <div className="admin-card-meta" style={{ marginTop: '2px' }}>
+                  <span className="admin-card-id">Donor: {donation.donorId ? String(donation.donorId).slice(0, 12) + '…' : 'N/A'}</span>
+                  <span className="admin-card-id">Req: {donation.ngoRequestId ? String(donation.ngoRequestId).slice(0, 10) + '…' : 'N/A'}</span>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>

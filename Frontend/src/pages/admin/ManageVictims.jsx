@@ -189,155 +189,296 @@ const ManageVictims = () => {
           </p>
         </div>
       ) : (
-        <div className="table-container glass-card" style={{ padding: 0, overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th>Victim Name</th>
-                <th>Username / Email</th>
-                <th>Verification</th>
-                <th>Reporting Permission</th>
-                <th style={{ textAlign: 'center' }}>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredVictims.map((victim) => {
-                const isBlocked = Boolean(victim.isBlockedFromReporting);
-                return (
-                  <tr key={victim._id || victim.id || victim.username}>
-                    <td style={{ fontWeight: 700, color: 'var(--text-primary)' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <div
-                          style={{
-                            width: '32px',
-                            height: '32px',
-                            borderRadius: '50%',
-                            backgroundColor: isBlocked ? '#fee2e2' : '#e0f2fe',
-                            color: isBlocked ? '#dc2626' : '#0284c7',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            fontWeight: 800,
-                            fontSize: '0.8125rem'
-                          }}
-                        >
-                          {(victim.name || 'V').charAt(0).toUpperCase()}
-                        </div>
-                        <span>{victim.name || 'Unnamed Victim'}</span>
-                      </div>
-                    </td>
-                    <td style={{ fontFamily: 'monospace', fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>
-                      {victim.username}
-                    </td>
-                    <td>
-                      {victim.Isverified ? (
-                        <span
-                          style={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '4px',
-                            padding: '3px 8px',
-                            borderRadius: '12px',
-                            fontSize: '0.75rem',
-                            fontWeight: 700,
-                            backgroundColor: 'rgba(16, 185, 129, 0.12)',
-                            color: '#10b981',
-                            border: '1px solid rgba(16, 185, 129, 0.3)'
-                          }}
-                        >
-                          <MdVerifiedUser size={14} /> Verified
-                        </span>
-                      ) : (
-                        <span
-                          style={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '4px',
-                            padding: '3px 8px',
-                            borderRadius: '12px',
-                            fontSize: '0.75rem',
-                            fontWeight: 700,
-                            backgroundColor: 'rgba(245, 158, 11, 0.12)',
-                            color: '#d97706',
-                            border: '1px solid rgba(245, 158, 11, 0.3)'
-                          }}
-                        >
-                          Pending OTP
-                        </span>
-                      )}
-                    </td>
-                    <td>
-                      {isBlocked ? (
-                        <span
-                          style={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '4px',
-                            padding: '4px 10px',
-                            borderRadius: '20px',
-                            fontSize: '0.75rem',
-                            fontWeight: 800,
-                            backgroundColor: 'rgba(239, 68, 68, 0.12)',
-                            color: '#ef4444',
-                            border: '1px solid rgba(239, 68, 68, 0.3)'
-                          }}
-                        >
-                          <MdBlock size={14} /> Blocked from Reporting
-                        </span>
-                      ) : (
-                        <span
-                          style={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '4px',
-                            padding: '4px 10px',
-                            borderRadius: '20px',
-                            fontSize: '0.75rem',
-                            fontWeight: 800,
-                            backgroundColor: 'rgba(16, 185, 129, 0.12)',
-                            color: '#10b981',
-                            border: '1px solid rgba(16, 185, 129, 0.3)'
-                          }}
-                        >
-                          <MdCheckCircle size={14} /> Allowed to Report
-                        </span>
-                      )}
-                    </td>
-                    <td style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>
-                      <button
-                        className="btn btn-sm"
+        <div className="glass-card" style={{ padding: 0 }}>
+          {/* ── Desktop table ── */}
+          <div className="desktop-only-table">
+            <div className="table-container" style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>Victim Name</th>
+                    <th>Username / Email</th>
+                    <th>Verification</th>
+                    <th>Reporting Permission</th>
+                    <th style={{ textAlign: 'center' }}>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredVictims.map((victim) => {
+                    const isBlocked = Boolean(victim.isBlockedFromReporting);
+                    return (
+                      <tr key={victim._id || victim.id || victim.username}>
+                        <td style={{ fontWeight: 700, color: 'var(--text-primary)' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <div
+                              style={{
+                                width: '32px',
+                                height: '32px',
+                                borderRadius: '50%',
+                                backgroundColor: isBlocked ? '#fee2e2' : '#e0f2fe',
+                                color: isBlocked ? '#dc2626' : '#0284c7',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontWeight: 800,
+                                fontSize: '0.8125rem'
+                              }}
+                            >
+                              {(victim.name || 'V').charAt(0).toUpperCase()}
+                            </div>
+                            <span>{victim.name || 'Unnamed Victim'}</span>
+                          </div>
+                        </td>
+                        <td style={{ fontFamily: 'monospace', fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>
+                          {victim.username}
+                        </td>
+                        <td>
+                          {victim.Isverified ? (
+                            <span
+                              style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                                padding: '3px 8px',
+                                borderRadius: '12px',
+                                fontSize: '0.75rem',
+                                fontWeight: 700,
+                                backgroundColor: 'rgba(16, 185, 129, 0.12)',
+                                color: '#10b981',
+                                border: '1px solid rgba(16, 185, 129, 0.3)'
+                              }}
+                            >
+                              <MdVerifiedUser size={14} /> Verified
+                            </span>
+                          ) : (
+                            <span
+                              style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                                padding: '3px 8px',
+                                borderRadius: '12px',
+                                fontSize: '0.75rem',
+                                fontWeight: 700,
+                                backgroundColor: 'rgba(245, 158, 11, 0.12)',
+                                color: '#d97706',
+                                border: '1px solid rgba(245, 158, 11, 0.3)'
+                              }}
+                            >
+                              Pending OTP
+                            </span>
+                          )}
+                        </td>
+                        <td>
+                          {isBlocked ? (
+                            <span
+                              style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                                padding: '4px 10px',
+                                borderRadius: '20px',
+                                fontSize: '0.75rem',
+                                fontWeight: 800,
+                                backgroundColor: 'rgba(239, 68, 68, 0.12)',
+                                color: '#ef4444',
+                                border: '1px solid rgba(239, 68, 68, 0.3)'
+                              }}
+                            >
+                              <MdBlock size={14} /> Blocked from Reporting
+                            </span>
+                          ) : (
+                            <span
+                              style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                                padding: '4px 10px',
+                                borderRadius: '20px',
+                                fontSize: '0.75rem',
+                                fontWeight: 800,
+                                backgroundColor: 'rgba(16, 185, 129, 0.12)',
+                                color: '#10b981',
+                                border: '1px solid rgba(16, 185, 129, 0.3)'
+                              }}
+                            >
+                              <MdCheckCircle size={14} /> Allowed to Report
+                            </span>
+                          )}
+                        </td>
+                        <td style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>
+                          <button
+                            className="btn btn-sm"
+                            style={{
+                              backgroundColor: isBlocked ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                              color: isBlocked ? '#10b981' : '#ef4444',
+                              border: isBlocked ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid rgba(239, 68, 68, 0.3)',
+                              padding: '5px 12px',
+                              borderRadius: '6px',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '6px',
+                              fontWeight: 700,
+                              fontSize: '0.75rem',
+                              cursor: 'pointer',
+                              transition: 'all 0.2s ease'
+                            }}
+                            onClick={() => handleToggleBlockClick(victim)}
+                          >
+                            {isBlocked ? (
+                              <>
+                                <MdCheckCircle size={15} /> Unblock Victim
+                              </>
+                            ) : (
+                              <>
+                                <MdPersonOff size={15} /> Block Reporting
+                              </>
+                            )}
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* ── Mobile cards ── */}
+          <div className="mobile-only-cards" style={{ padding: '0.5rem' }}>
+            {filteredVictims.map((victim) => {
+              const isBlocked = Boolean(victim.isBlockedFromReporting);
+              return (
+                <div key={victim._id || victim.id || victim.username} className="admin-victim-card">
+                  <div className="admin-card-header">
+                    <div className="victim-card-name-row">
+                      <div
+                        className="victim-avatar"
                         style={{
-                          backgroundColor: isBlocked ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
-                          color: isBlocked ? '#10b981' : '#ef4444',
-                          border: isBlocked ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid rgba(239, 68, 68, 0.3)',
-                          padding: '5px 12px',
-                          borderRadius: '6px',
+                          backgroundColor: isBlocked ? '#fee2e2' : '#e0f2fe',
+                          color: isBlocked ? '#dc2626' : '#0284c7'
+                        }}
+                      >
+                        {(victim.name || 'V').charAt(0).toUpperCase()}
+                      </div>
+                      <div>
+                        <div className="admin-card-title">{victim.name || 'Unnamed Victim'}</div>
+                        <div style={{ fontFamily: 'monospace', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                          {victim.username}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="admin-card-meta" style={{ marginTop: '0.25rem' }}>
+                    {victim.Isverified ? (
+                      <span
+                        style={{
                           display: 'inline-flex',
                           alignItems: 'center',
-                          gap: '6px',
+                          gap: '4px',
+                          padding: '3px 8px',
+                          borderRadius: '12px',
+                          fontSize: '0.72rem',
                           fontWeight: 700,
-                          fontSize: '0.75rem',
-                          cursor: 'pointer',
-                          transition: 'all 0.2s ease'
+                          backgroundColor: 'rgba(16, 185, 129, 0.12)',
+                          color: '#10b981',
+                          border: '1px solid rgba(16, 185, 129, 0.3)'
                         }}
-                        onClick={() => handleToggleBlockClick(victim)}
                       >
-                        {isBlocked ? (
-                          <>
-                            <MdCheckCircle size={15} /> Unblock Victim
-                          </>
-                        ) : (
-                          <>
-                            <MdPersonOff size={15} /> Block Reporting
-                          </>
-                        )}
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                        <MdVerifiedUser size={13} /> Verified
+                      </span>
+                    ) : (
+                      <span
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          padding: '3px 8px',
+                          borderRadius: '12px',
+                          fontSize: '0.72rem',
+                          fontWeight: 700,
+                          backgroundColor: 'rgba(245, 158, 11, 0.12)',
+                          color: '#d97706',
+                          border: '1px solid rgba(245, 158, 11, 0.3)'
+                        }}
+                      >
+                        Pending OTP
+                      </span>
+                    )}
+
+                    {isBlocked ? (
+                      <span
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          padding: '3px 8px',
+                          borderRadius: '12px',
+                          fontSize: '0.72rem',
+                          fontWeight: 700,
+                          backgroundColor: 'rgba(239, 68, 68, 0.12)',
+                          color: '#ef4444',
+                          border: '1px solid rgba(239, 68, 68, 0.3)'
+                        }}
+                      >
+                        <MdBlock size={13} /> Blocked
+                      </span>
+                    ) : (
+                      <span
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          padding: '3px 8px',
+                          borderRadius: '12px',
+                          fontSize: '0.72rem',
+                          fontWeight: 700,
+                          backgroundColor: 'rgba(16, 185, 129, 0.12)',
+                          color: '#10b981',
+                          border: '1px solid rgba(16, 185, 129, 0.3)'
+                        }}
+                      >
+                        <MdCheckCircle size={13} /> Active
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="admin-card-footer">
+                    <button
+                      className="btn btn-sm"
+                      style={{
+                        width: '100%',
+                        justifyContent: 'center',
+                        backgroundColor: isBlocked ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                        color: isBlocked ? '#10b981' : '#ef4444',
+                        border: isBlocked ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid rgba(239, 68, 68, 0.3)',
+                        padding: '8px 12px',
+                        borderRadius: '6px',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        fontWeight: 700,
+                        fontSize: '0.8rem',
+                        cursor: 'pointer'
+                      }}
+                      onClick={() => handleToggleBlockClick(victim)}
+                    >
+                      {isBlocked ? (
+                        <>
+                          <MdCheckCircle size={16} /> Unblock Victim
+                        </>
+                      ) : (
+                        <>
+                          <MdPersonOff size={16} /> Block Reporting
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
 

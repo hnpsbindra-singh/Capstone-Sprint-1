@@ -279,7 +279,7 @@ const BrowseRequests = () => {
             No verified flood emergency zones detected at this moment. Showing all general relief requests.
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 250px), 1fr))', gap: '0.75rem' }}>
+          <div className="zone-filter-strip" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 250px), 1fr))', gap: '0.75rem' }}>
             {floodZones.map((z, idx) => {
               const isSelected = activeZoneFilter &&
                 Math.abs(activeZoneFilter.latitude - z.latitude) < 0.001 &&
@@ -545,17 +545,18 @@ const BrowseRequests = () => {
                   </div>
 
                   {/* Donate button */}
-                  <button
-                    className={fulfilled ? 'btn btn-secondary btn-block' : 'btn btn-primary btn-block'}
-                    onClick={() => !fulfilled && handleOpenModal(req)}
-                    disabled={fulfilled}
-                    style={{ marginTop: 'auto' }}
-                  >
-                    {fulfilled
-                      ? <><MdCheckCircle /> Goal Reached</>
-                      : <><MdVolunteerActivism /> Donate Now</>
-                    }
-                  </button>
+                  <div className="browse-card-footer" style={{ marginTop: 'auto', display: 'flex' }}>
+                    <button
+                      className={fulfilled ? 'btn btn-secondary btn-block' : 'btn btn-primary btn-block'}
+                      onClick={() => !fulfilled && handleOpenModal(req)}
+                      disabled={fulfilled}
+                    >
+                      {fulfilled
+                        ? <><MdCheckCircle /> Goal Reached</>
+                        : <><MdVolunteerActivism /> Donate Now</>
+                      }
+                    </button>
+                  </div>
                 </div>
               );
             })}
@@ -582,6 +583,7 @@ const BrowseRequests = () => {
           onClick={handleCloseModal}
         >
           <div
+            className="donate-modal-inner"
             onClick={e => e.stopPropagation()}
             style={{ background: '#ffffff', borderRadius: 'var(--radius-xl)', padding: '2rem', width: '100%', maxWidth: '480px', boxShadow: '0 24px 64px rgba(15,23,42,0.25)', position: 'relative', animation: 'fadeInScale 0.2s ease' }}
           >
@@ -680,6 +682,7 @@ const BrowseRequests = () => {
           onClick={() => setConfirmedDonation(null)}
         >
           <div
+            className="donate-modal-inner"
             onClick={e => e.stopPropagation()}
             style={{ background: '#ffffff', borderRadius: 'var(--radius-xl)', padding: '2rem', width: '100%', maxWidth: '520px', boxShadow: '0 24px 64px rgba(15,23,42,0.3)', position: 'relative', animation: 'fadeInScale 0.2s ease' }}
           >
