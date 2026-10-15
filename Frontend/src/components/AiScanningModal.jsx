@@ -63,15 +63,16 @@ const AiScanningModal = ({ isOpen, previewUrl, coords, addressLabel }) => {
           position: fixed;
           inset: 0;
           z-index: 99999;
-          background: rgba(9, 9, 11, 0.76);
+          background: rgba(9, 9, 11, 0.82);
           backdrop-filter: blur(18px);
           -webkit-backdrop-filter: blur(18px);
           display: flex;
           align-items: center;
           justify-content: center;
-          padding: 1.25rem;
+          padding: 1rem;
           font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
           animation: modalFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+          overflow-y: auto;
         }
 
         @keyframes modalFadeIn {
@@ -81,24 +82,28 @@ const AiScanningModal = ({ isOpen, previewUrl, coords, addressLabel }) => {
 
         .sos-modal-card {
           width: 100%;
-          max-width: 520px;
+          max-width: 500px;
+          max-height: 92vh;
+          display: flex;
+          flex-direction: column;
           background: #09090b;
           border: 1px solid rgba(255, 255, 255, 0.12);
           border-radius: 18px;
           box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05);
-          overflow: hidden;
+          overflow-y: auto;
           color: #fafafa;
         }
 
         .sos-modal-header {
-          padding: 1rem 1.25rem;
-          background: rgba(24, 24, 27, 0.6);
+          padding: 0.875rem 1.25rem;
+          background: rgba(24, 24, 27, 0.7);
           border-bottom: 1px solid rgba(255, 255, 255, 0.08);
           display: flex;
           justify-content: space-between;
           align-items: center;
           flex-wrap: wrap;
           gap: 0.5rem;
+          flex-shrink: 0;
         }
 
         .sos-status-pill {
@@ -139,27 +144,31 @@ const AiScanningModal = ({ isOpen, previewUrl, coords, addressLabel }) => {
         .sos-image-viewport {
           position: relative;
           width: 100%;
-          height: 200px;
-          background: #18181b;
+          min-height: 240px;
+          height: 290px;
+          max-height: 380px;
+          background: #09090b;
           overflow: hidden;
           display: flex;
           align-items: center;
           justify-content: center;
+          flex-shrink: 0;
         }
 
         .sos-optical-sweep {
           position: absolute;
           left: 0;
           right: 0;
-          height: 48px;
-          background: linear-gradient(180deg, transparent 0%, rgba(255, 255, 255, 0.18) 50%, transparent 100%);
+          height: 52px;
+          background: linear-gradient(180deg, transparent 0%, rgba(2, 132, 199, 0.35) 45%, rgba(56, 189, 248, 0.75) 50%, rgba(2, 132, 199, 0.35) 55%, transparent 100%);
+          box-shadow: 0 0 16px rgba(56, 189, 248, 0.4);
           z-index: 10;
           pointer-events: none;
           animation: apertureSweep 2.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
         }
 
         @keyframes apertureSweep {
-          0% { top: -48px; opacity: 0; }
+          0% { top: -52px; opacity: 0; }
           15% { opacity: 1; }
           85% { opacity: 1; }
           100% { top: 100%; opacity: 0; }
@@ -247,13 +256,43 @@ const AiScanningModal = ({ isOpen, previewUrl, coords, addressLabel }) => {
           <div className="sos-optical-sweep" />
 
           {previewUrl ? (
-            <img 
-              src={previewUrl} 
-              alt="Flood Incident Frame" 
-              style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-            />
+            <>
+              {/* Ambient blurred backdrop for portrait / custom aspect ratios */}
+              <div 
+                style={{
+                  position: 'absolute',
+                  top: '-10%',
+                  left: '-10%',
+                  width: '120%',
+                  height: '120%',
+                  backgroundImage: `url(${previewUrl})`,
+                  backgroundPosition: 'center',
+                  backgroundSize: 'cover',
+                  filter: 'blur(20px) brightness(0.25)',
+                  transform: 'scale(1.1)',
+                  pointerEvents: 'none'
+                }} 
+              />
+
+              {/* Foreground Uncropped Image (Portrait & Landscape Friendly) */}
+              <img 
+                src={previewUrl} 
+                alt="Flood Incident Frame" 
+                style={{ 
+                  position: 'relative',
+                  zIndex: 2,
+                  maxWidth: '100%', 
+                  maxHeight: '100%', 
+                  width: 'auto', 
+                  height: 'auto', 
+                  objectFit: 'contain', 
+                  display: 'block',
+                  boxShadow: '0 4px 20px rgba(0, 0, 0, 0.6)'
+                }} 
+              />
+            </>
           ) : (
-            <div style={{ color: '#71717a', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
+            <div style={{ color: '#71717a', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', position: 'relative', zIndex: 2 }}>
               <MdSensors size={36} />
               <span style={{ fontSize: '0.75rem', letterSpacing: '0.02em' }}>Validating Sensor Payload...</span>
             </div>
