@@ -85,17 +85,21 @@
    2. NAVBAR
    ───────────────────────────────────────────────────────────── */
 .rp-navbar {
+  position: -webkit-sticky;
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: 1000;
   background: rgba(255, 255, 255, 0.94);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid #e4e4e7;
   padding: 0.85rem 0;
-  padding-top: max(0.85rem, calc(0.45rem + env(safe-area-inset-top, 0px)));
+  padding-top: calc(0.85rem + env(safe-area-inset-top, 0px));
   padding-left: env(safe-area-inset-left, 0px);
   padding-right: env(safe-area-inset-right, 0px);
+  -webkit-transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0);
+  touch-action: manipulation;
 }
 
 .rp-nav-inner {
@@ -108,8 +112,11 @@
 .rp-brand {
   text-decoration: none;
   display: inline-flex;
-  align-items: baseline;
+  align-items: center;
   gap: 0.45rem;
+  min-height: 44px;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .rp-brand-text {
@@ -141,6 +148,10 @@
   color: #52525b;
   text-decoration: none;
   transition: color 120ms ease;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  touch-action: manipulation;
 }
 
 .rp-nav-link:hover {
@@ -155,8 +166,8 @@
 
 .rp-mobile-trigger {
   display: none;
-  width: 38px;
-  height: 38px;
+  width: 44px;
+  height: 44px;
   border-radius: 8px;
   background: #fafafa;
   border: 1px solid #e4e4e7;
@@ -166,8 +177,14 @@
   cursor: pointer;
   transition: all 140ms ease;
   padding: 0;
-  min-height: 38px !important;
-  min-width: 38px !important;
+  min-height: 44px !important;
+  min-width: 44px !important;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.rp-mobile-trigger svg {
+  pointer-events: none;
 }
 
 .rp-mobile-trigger:active {
@@ -1064,7 +1081,9 @@ html {
   border-radius: 0 0 18px 18px;
   box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.25);
   padding: 1.15rem 1.25rem 1.6rem;
-  padding-top: max(1.15rem, calc(0.75rem + env(safe-area-inset-top, 0px)));
+  padding-top: calc(1.15rem + env(safe-area-inset-top, 0px));
+  padding-left: max(1.25rem, env(safe-area-inset-left, 0px));
+  padding-right: max(1.25rem, env(safe-area-inset-right, 0px));
   display: flex;
   flex-direction: column;
   gap: 1rem;
@@ -1081,6 +1100,37 @@ html {
   justify-content: space-between;
   padding-bottom: 0.5rem;
   border-bottom: 1px solid #f4f4f5;
+}
+
+.app-drawer-close-btn,
+.rp-drawer-close-btn {
+  width: 44px;
+  height: 44px;
+  min-width: 44px !important;
+  min-height: 44px !important;
+  border-radius: 8px;
+  border: 1px solid #e4e4e7;
+  background: #fafafa;
+  color: #09090b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 120ms ease;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  padding: 0;
+}
+
+.app-drawer-close-btn:active,
+.rp-drawer-close-btn:active {
+  transform: scale(0.95);
+  background: #f4f4f5;
+}
+
+.app-drawer-close-btn svg,
+.rp-drawer-close-btn svg {
+  pointer-events: none;
 }
 
 .rp-drawer-nav {

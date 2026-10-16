@@ -71,6 +71,7 @@ html {
   font-size: 16px;
   scroll-behavior: smooth;
   overflow-x: hidden;
+  overflow-x: clip;
   max-width: 100%;
 }
 
@@ -80,17 +81,17 @@ body {
   color: var(--text-primary);
   line-height: 1.6;
   min-height: 100vh;
+  min-height: 100dvh;
   overflow-x: hidden;
+  overflow-x: clip;
   max-width: 100%;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 #root {
-  position: relative;
-  z-index: 1;
   min-height: 100vh;
-  overflow-x: hidden;
+  min-height: 100dvh;
   max-width: 100%;
 }
 
@@ -596,9 +597,10 @@ a:hover {
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   padding: 0.85rem 2rem;
-  padding-top: max(0.85rem, calc(0.5rem + env(safe-area-inset-top, 0px)));
+  padding-top: calc(0.85rem + env(safe-area-inset-top, 0px));
   padding-left: max(2rem, env(safe-area-inset-left, 0px));
   padding-right: max(2rem, env(safe-area-inset-right, 0px));
+  touch-action: manipulation;
 }
 
 .ambient-topbar-inner {
@@ -616,6 +618,9 @@ a:hover {
   gap: 0.65rem;
   text-decoration: none;
   color: #0f172a;
+  min-height: 44px;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .ambient-brand-icon {
@@ -663,6 +668,11 @@ a:hover {
   border-radius: 6px;
   text-decoration: none;
   transition: all 150ms ease;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .ambient-hotline-tag:hover {
@@ -679,6 +689,7 @@ a:hover {
 .ambient-back-btn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.35rem;
   font-size: 0.8125rem;
   font-weight: 700;
@@ -688,6 +699,10 @@ a:hover {
   border: 1px solid #e2e8f0;
   padding: 0.35rem 0.85rem;
   border-radius: 6px;
+  min-height: 44px;
+  min-width: 44px;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
   transition: all 150ms ease;
 }
 
@@ -834,9 +849,15 @@ a:hover {
 }
 
 @media (max-width: 768px) {
-  .auth-ambient-topbar,
+  .auth-ambient-topbar {
+    padding: 0.75rem 1rem;
+    padding-top: calc(0.75rem + env(safe-area-inset-top, 0px));
+    padding-left: max(1rem, env(safe-area-inset-left, 0px));
+    padding-right: max(1rem, env(safe-area-inset-right, 0px));
+  }
   .auth-ambient-footer {
     padding: 0.75rem 1rem;
+    padding-bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
   }
   .ambient-footer-inner {
     flex-direction: column;
@@ -1263,7 +1284,7 @@ a:hover {
 
 .dashboard-main {
   flex: 1;
-  padding-top: 72px;
+  padding-top: 0;
 }
 
 /* ===== Loading Spinner ===== */
@@ -5409,9 +5430,10 @@ input, textarea, select {
 
 /* ── Navbar mobile ── */
 @media (max-width: 640px) {
-  /* Ensure the navbar doesn't cause overflow */
-  nav {
-    overflow-x: hidden;
+  /* Prevent navigation overflow while preserving touch interaction */
+  .app-navbar-container,
+  .rp-nav-inner {
+    max-width: 100%;
   }
 }
 

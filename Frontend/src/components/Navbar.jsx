@@ -133,6 +133,7 @@ const Navbar = () => {
     <>
       <style>{`
         .app-navbar-header {
+          position: -webkit-sticky;
           position: sticky;
           top: 0;
           z-index: 1000;
@@ -146,6 +147,9 @@ const Navbar = () => {
           padding-top: env(safe-area-inset-top, 0px);
           padding-left: env(safe-area-inset-left, 0px);
           padding-right: env(safe-area-inset-right, 0px);
+          -webkit-transform: translate3d(0, 0, 0);
+          transform: translate3d(0, 0, 0);
+          touch-action: manipulation;
         }
 
         .app-navbar-container {
@@ -161,11 +165,14 @@ const Navbar = () => {
 
         .app-brand-link {
           display: inline-flex;
-          align-items: baseline;
+          align-items: center;
           gap: 8px;
           text-decoration: none;
           color: #09090b;
           flex-shrink: 0;
+          min-height: 44px;
+          touch-action: manipulation;
+          -webkit-tap-highlight-color: transparent;
         }
 
         .app-brand-text {
@@ -245,13 +252,13 @@ const Navbar = () => {
           font-size: 0.6875rem;
           font-weight: 700;
           color: #71717a;
-          padding: 3px 7px;
+          padding: 5px 8px;
           border-radius: 4px;
           cursor: pointer;
           transition: all 120ms ease;
           line-height: 1.2;
-          min-height: unset !important;
-          min-width: unset !important;
+          touch-action: manipulation;
+          -webkit-tap-highlight-color: transparent;
         }
 
         .app-lang-btn.active {
@@ -329,8 +336,8 @@ const Navbar = () => {
         /* Mobile Trigger */
         .app-mobile-trigger {
           display: none;
-          width: 38px;
-          height: 38px;
+          width: 44px;
+          height: 44px;
           border-radius: 8px;
           background: #fafafa;
           border: 1px solid #e4e4e7;
@@ -340,8 +347,14 @@ const Navbar = () => {
           cursor: pointer;
           transition: all 140ms ease;
           padding: 0;
-          min-height: 38px !important;
-          min-width: 38px !important;
+          min-height: 44px !important;
+          min-width: 44px !important;
+          touch-action: manipulation;
+          -webkit-tap-highlight-color: transparent;
+        }
+
+        .app-mobile-trigger svg {
+          pointer-events: none;
         }
 
         .app-mobile-trigger:active {
@@ -413,7 +426,9 @@ const Navbar = () => {
           border-radius: 0 0 18px 18px;
           box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.25);
           padding: 1rem 1.15rem 1.5rem;
-          padding-top: max(1rem, calc(0.75rem + env(safe-area-inset-top, 0px)));
+          padding-top: calc(1rem + env(safe-area-inset-top, 0px));
+          padding-left: max(1.15rem, env(safe-area-inset-left, 0px));
+          padding-right: max(1.15rem, env(safe-area-inset-right, 0px));
           display: flex;
           flex-direction: column;
           gap: 0.85rem;
@@ -443,11 +458,16 @@ const Navbar = () => {
           gap: 8px;
           text-decoration: none;
           color: #09090b;
+          min-height: 44px;
+          touch-action: manipulation;
+          -webkit-tap-highlight-color: transparent;
         }
 
         .app-drawer-close-btn {
-          width: 36px;
-          height: 36px;
+          width: 44px;
+          height: 44px;
+          min-width: 44px !important;
+          min-height: 44px !important;
           border-radius: 8px;
           border: 1px solid #e4e4e7;
           background: #fafafa;
@@ -457,6 +477,13 @@ const Navbar = () => {
           justify-content: center;
           cursor: pointer;
           transition: all 120ms ease;
+          touch-action: manipulation;
+          -webkit-tap-highlight-color: transparent;
+          padding: 0;
+        }
+
+        .app-drawer-close-btn svg {
+          pointer-events: none;
         }
 
         .app-drawer-close-btn:active {

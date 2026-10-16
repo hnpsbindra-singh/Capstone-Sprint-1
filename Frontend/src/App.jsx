@@ -118,9 +118,14 @@ function App() {
       <AuthProvider>
         <Toaster
           position="top-right"
+          containerStyle={{
+            pointerEvents: 'none',
+            top: 'max(16px, env(safe-area-inset-top, 16px))',
+          }}
           toastOptions={{
             duration: 4000,
             style: {
+              pointerEvents: 'auto',
               background: 'rgba(15, 23, 42, 0.95)',
               color: '#f1f5f9',
               border: '1px solid rgba(255,255,255,0.1)',
