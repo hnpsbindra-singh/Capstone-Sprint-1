@@ -36,6 +36,21 @@ const AiScanningModal = ({ isOpen, previewUrl, coords, addressLabel }) => {
   const [activeStep, setActiveStep] = useState(0);
   const [progress, setProgress] = useState(18);
 
+  // Lock background scrolling and prevent page dragging while modal is open
+  useEffect(() => {
+    if (isOpen) {
+      const prevOverflow = document.body.style.overflow;
+      const prevTouchAction = document.body.style.touchAction;
+      document.body.style.overflow = 'hidden';
+      document.body.style.touchAction = 'none';
+      return () => {
+        document.body.style.overflow = prevOverflow;
+        document.body.style.touchAction = prevTouchAction;
+      };
+    }
+  }, [isOpen]);
+
+  // Step sequencer
   useEffect(() => {
     if (!isOpen) {
       setActiveStep(0);
@@ -57,22 +72,24 @@ const AiScanningModal = ({ isOpen, previewUrl, coords, addressLabel }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="sos-modal-overlay">
+    <div className="sos-modal-overlay" role="dialog" aria-modal="true" aria-label="AI Incident Analysis">
       <style>{`
         .sos-modal-overlay {
           position: fixed;
           inset: 0;
           z-index: 99999;
-          background: rgba(9, 9, 11, 0.82);
-          backdrop-filter: blur(18px);
-          -webkit-backdrop-filter: blur(18px);
+          background: rgba(9, 9, 11, 0.85);
+          backdrop-filter: blur(4px);
+          -webkit-backdrop-filter: blur(4px);
           display: flex;
           align-items: center;
           justify-content: center;
           padding: 1rem;
           font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
           animation: modalFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-          overflow-y: auto;
+          overflow: hidden;
+          touch-action: none;
+          overscroll-behavior: contain;
         }
 
         @keyframes modalFadeIn {
@@ -82,21 +99,24 @@ const AiScanningModal = ({ isOpen, previewUrl, coords, addressLabel }) => {
 
         .sos-modal-card {
           width: 100%;
-          max-width: 500px;
+          max-width: 480px;
           max-height: 92vh;
+          max-height: 92dvh;
           display: flex;
           flex-direction: column;
           background: #09090b;
           border: 1px solid rgba(255, 255, 255, 0.12);
-          border-radius: 18px;
-          box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05);
+          border-radius: 16px;
+          box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
           overflow-y: auto;
           color: #fafafa;
+          touch-action: pan-y;
+          overscroll-behavior: contain;
         }
 
         .sos-modal-header {
           padding: 0.875rem 1.25rem;
-          background: rgba(24, 24, 27, 0.7);
+          background: #121215;
           border-bottom: 1px solid rgba(255, 255, 255, 0.08);
           display: flex;
           justify-content: space-between;
@@ -114,17 +134,17 @@ const AiScanningModal = ({ isOpen, previewUrl, coords, addressLabel }) => {
           font-weight: 700;
           letter-spacing: 0.06em;
           text-transform: uppercase;
-          color: #0284c7;
-          background: rgba(2, 132, 199, 0.12);
+          color: #38bdf8;
+          background: rgba(2, 132, 199, 0.15);
           padding: 0.25rem 0.6rem;
           border-radius: 9999px;
-          border: 1px solid rgba(2, 132, 199, 0.3);
+          border: 1px solid rgba(2, 132, 199, 0.35);
         }
 
         .sos-status-dot {
           width: 7px;
           height: 7px;
-          background: #0284c7;
+          background: #38bdf8;
           border-radius: 50%;
           animation: sosDotPulse 1.4s ease-in-out infinite alternate;
         }
@@ -144,10 +164,11 @@ const AiScanningModal = ({ isOpen, previewUrl, coords, addressLabel }) => {
         .sos-image-viewport {
           position: relative;
           width: 100%;
-          min-height: 240px;
-          height: 290px;
-          max-height: 380px;
+          min-height: 220px;
+          height: 270px;
+          max-height: 340px;
           background: #09090b;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.08);
           overflow: hidden;
           display: flex;
           align-items: center;
@@ -155,38 +176,49 @@ const AiScanningModal = ({ isOpen, previewUrl, coords, addressLabel }) => {
           flex-shrink: 0;
         }
 
+        .sos-hud-bracket {
+          position: absolute;
+          width: 12px;
+          height: 12px;
+          pointer-events: none;
+          z-index: 5;
+        }
+        .sos-hud-tl { top: 12px; left: 12px; border-top: 2px solid #0284c7; border-left: 2px solid #0284c7; }
+        .sos-hud-tr { top: 12px; right: 12px; border-top: 2px solid #0284c7; border-right: 2px solid #0284c7; }
+        .sos-hud-bl { bottom: 12px; left: 12px; border-bottom: 2px solid #0284c7; border-left: 2px solid #0284c7; }
+        .sos-hud-br { bottom: 12px; right: 12px; border-bottom: 2px solid #0284c7; border-right: 2px solid #0284c7; }
+
         .sos-optical-sweep {
           position: absolute;
           left: 0;
           right: 0;
-          height: 52px;
-          background: linear-gradient(180deg, transparent 0%, rgba(2, 132, 199, 0.35) 45%, rgba(56, 189, 248, 0.75) 50%, rgba(2, 132, 199, 0.35) 55%, transparent 100%);
-          box-shadow: 0 0 16px rgba(56, 189, 248, 0.4);
+          height: 2px;
+          background: #38bdf8;
+          box-shadow: 0 0 10px 2px rgba(56, 189, 248, 0.7);
           z-index: 10;
           pointer-events: none;
-          animation: apertureSweep 2.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+          animation: apertureSweep 2s ease-in-out infinite;
         }
 
         @keyframes apertureSweep {
-          0% { top: -52px; opacity: 0; }
-          15% { opacity: 1; }
-          85% { opacity: 1; }
-          100% { top: 100%; opacity: 0; }
+          0% { top: 4%; opacity: 0; }
+          10% { opacity: 1; }
+          90% { opacity: 1; }
+          100% { top: 96%; opacity: 0; }
         }
 
         .sos-image-badge {
           position: absolute;
-          bottom: 10px;
-          left: 12px;
+          bottom: 12px;
+          left: 14px;
           z-index: 15;
           display: inline-flex;
           align-items: center;
           gap: 0.35rem;
-          background: rgba(9, 9, 11, 0.82);
-          backdrop-filter: blur(8px);
+          background: rgba(9, 9, 11, 0.88);
+          border: 1px solid rgba(255, 255, 255, 0.12);
           padding: 0.25rem 0.6rem;
           border-radius: 6px;
-          border: 1px solid rgba(255, 255, 255, 0.12);
           font-size: 0.7rem;
           font-weight: 500;
           color: #e4e4e7;
@@ -272,46 +304,34 @@ const AiScanningModal = ({ isOpen, previewUrl, coords, addressLabel }) => {
           </span>
         </div>
 
-        {/* Viewport with Image & Optical Aperture Sweep */}
+        {/* Viewport with Clean Image & Laser Scan Line */}
         <div className="sos-image-viewport">
+          {/* Laser Scanner Line */}
           <div className="sos-optical-sweep" />
 
-          {previewUrl ? (
-            <>
-              {/* Ambient blurred backdrop for portrait / custom aspect ratios */}
-              <div 
-                style={{
-                  position: 'absolute',
-                  top: '-10%',
-                  left: '-10%',
-                  width: '120%',
-                  height: '120%',
-                  backgroundImage: `url(${previewUrl})`,
-                  backgroundPosition: 'center',
-                  backgroundSize: 'cover',
-                  filter: 'blur(20px) brightness(0.25)',
-                  transform: 'scale(1.1)',
-                  pointerEvents: 'none'
-                }} 
-              />
+          {/* Corner HUD Telemetry Brackets */}
+          <div className="sos-hud-bracket sos-hud-tl" />
+          <div className="sos-hud-bracket sos-hud-tr" />
+          <div className="sos-hud-bracket sos-hud-bl" />
+          <div className="sos-hud-bracket sos-hud-br" />
 
-              {/* Foreground Uncropped Image (Portrait & Landscape Friendly) */}
-              <img 
-                src={previewUrl} 
-                alt="Flood Incident Frame" 
-                style={{ 
-                  position: 'relative',
-                  zIndex: 2,
-                  maxWidth: '100%', 
-                  maxHeight: '100%', 
-                  width: 'auto', 
-                  height: 'auto', 
-                  objectFit: 'contain', 
-                  display: 'block',
-                  boxShadow: '0 4px 20px rgba(0, 0, 0, 0.6)'
-                }} 
-              />
-            </>
+          {previewUrl ? (
+            <img 
+              src={previewUrl} 
+              alt="Flood Incident Frame" 
+              style={{ 
+                position: 'relative',
+                zIndex: 2,
+                maxWidth: '92%', 
+                maxHeight: '92%', 
+                width: 'auto', 
+                height: 'auto', 
+                objectFit: 'contain', 
+                display: 'block',
+                borderRadius: '6px',
+                boxShadow: '0 4px 16px rgba(0, 0, 0, 0.6)'
+              }} 
+            />
           ) : (
             <div style={{ color: '#71717a', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', position: 'relative', zIndex: 2 }}>
               <MdSensors size={36} />
