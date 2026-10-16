@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
-  MdRadar, 
   MdSensors, 
   MdArrowBack, 
   MdHome, 
@@ -17,7 +16,6 @@ const NotFound = () => {
   const navigate = useNavigate();
   const { user, token } = useAuth();
   const [timeUtc, setTimeUtc] = useState('');
-  const [radarDegree, setRadarDegree] = useState(0);
 
   useEffect(() => {
     const updateTime = () => {
@@ -26,10 +24,6 @@ const NotFound = () => {
     };
     updateTime();
     const timer = setInterval(updateTime, 1000);
-
-    const radarTimer = setInterval(() => {
-      setRadarDegree((prev) => (prev + 2) % 360);
-    }, 16);
 
     // Keyboard shortcut [ESC] to return home
     const handleKeyDown = (e) => {
@@ -41,8 +35,7 @@ const NotFound = () => {
 
     return () => {
       clearInterval(timer);
-      clearInterval(radarTimer);
-      removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keydown', handleKeyDown);
     };
   }, []);
 
@@ -85,42 +78,39 @@ const NotFound = () => {
               <div className="radar-crosshair-h" />
               <div className="radar-crosshair-v" />
               
-              {/* Rotating Sweep Line */}
-              <div 
-                className="radar-sweep-beam"
-                style={{ transform: `rotate(${radarDegree}deg)` }}
-              />
+              {/* Rotating Sweep Line (animated via CSS) */}
+              <div className="radar-sweep-beam" />
 
               {/* Ping Marker for Missing Route */}
               <div className="radar-lost-target">
                 <span className="ping-wave" />
                 <span className="ping-dot" />
-                <span className="ping-label">WAYPOINT NULL</span>
+                <span className="ping-label">PAGE NOT FOUND</span>
               </div>
 
               {/* Coordinates Box */}
               <div className="radar-coords-tag">
                 <MdSensors />
-                <span>GRID: 28.6139° N, 77.2090° E // SECTOR Ø</span>
+                <span>RESQFLOW ROUTER // STATUS 404</span>
               </div>
             </div>
 
             <div className="radar-caption">
-              <div className="caption-code">PROTOCOL ERR_ROUTE_NOT_FOUND</div>
-              <p>Scanning active relief sectors and node endpoints. Target URI unresolved.</p>
+              <div className="caption-code">HTTP 404 - RESOURCE NOT LOCATED</div>
+              <p>The requested endpoint or dispatch corridor could not be verified in the routing registry.</p>
             </div>
           </div>
 
           {/* Right Column: Editorial Message & Navigation Fallbacks */}
           <div className="not-found-content-pane">
             <div className="not-found-kicker">
-              <span>WAYPOINT DISCONNECTED</span>
-              <span className="error-pill">HTTP 404</span>
+              <span>UNRESOLVED DESTINATION</span>
+              <span className="error-pill">404</span>
             </div>
 
             <h1 className="not-found-title">
-              Sector coordinates <br />
-              unreachable.
+              Page or resource <br />
+              not found.
             </h1>
 
             <div className="not-found-target-url">
@@ -129,8 +119,7 @@ const NotFound = () => {
             </div>
 
             <p className="not-found-desc">
-              The disaster grid node or dispatch view you attempted to access does not exist, 
-              has been rerouted to a secure cluster, or was retired following incident triage.
+              The page you are trying to reach does not exist, has been moved, or requires different authentication privileges.
             </p>
 
             {/* Quick Action Matrix */}
@@ -140,7 +129,7 @@ const NotFound = () => {
                 className="action-btn action-primary"
               >
                 <MdHome className="btn-icon" />
-                <span>{token ? 'Return to Command Dashboard' : 'Return to Operations Base'}</span>
+                <span>{token ? 'Return to Dashboard' : 'Return to Home'}</span>
               </button>
 
               <button 
@@ -148,13 +137,13 @@ const NotFound = () => {
                 className="action-btn action-secondary"
               >
                 <MdArrowBack className="btn-icon" />
-                <span>Previous Sector</span>
+                <span>Go Back</span>
               </button>
             </div>
 
             {/* Tactical Safe Navigation Directory */}
             <div className="not-found-directory">
-              <div className="dir-title">VERIFIED ACTIVE CORRIDORS:</div>
+              <div className="dir-title">HELPFUL CORRIDORS:</div>
               <div className="dir-grid">
                 <Link to="/victim/create-report" className="dir-card">
                   <div className="dir-icon danger">
@@ -162,7 +151,7 @@ const NotFound = () => {
                   </div>
                   <div>
                     <div className="dir-card-title">SOS Report</div>
-                    <div className="dir-card-sub">Broadcast flood emergency</div>
+                    <div className="dir-card-sub">Submit flood emergency</div>
                   </div>
                 </Link>
 
@@ -171,8 +160,8 @@ const NotFound = () => {
                     <MdShield />
                   </div>
                   <div>
-                    <div className="dir-card-title">Grid Auth</div>
-                    <div className="dir-card-sub">Access verified roles</div>
+                    <div className="dir-card-title">Sign In</div>
+                    <div className="dir-card-sub">Access your account</div>
                   </div>
                 </Link>
 
@@ -181,8 +170,8 @@ const NotFound = () => {
                     <MdExplore />
                   </div>
                   <div>
-                    <div className="dir-card-title">Telemetry Overview</div>
-                    <div className="dir-card-sub">System architecture & specs</div>
+                    <div className="dir-card-title">Home Overview</div>
+                    <div className="dir-card-sub">Platform & emergency info</div>
                   </div>
                 </Link>
               </div>

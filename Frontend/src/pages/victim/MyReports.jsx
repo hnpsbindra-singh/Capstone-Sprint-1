@@ -359,7 +359,7 @@ const MyReports = () => {
                           </div>
                         </td>
                         <td style={{ whiteSpace: 'nowrap' }}>
-                          <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '4px 12px', borderRadius: '12px', fontWeight: 700, fontSize: '0.85rem', color: sStyle.color, backgroundColor: sStyle.backgroundColor, border: sStyle.border }}>
+                          <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '4px 12px', borderRadius: '12px', fontWeight: 700, fontSize: '0.85rem', color: sStyle.color, backgroundColor: sStyle.background, border: sStyle.border }}>
                             {score.toFixed(1)}
                           </span>
                         </td>

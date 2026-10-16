@@ -130,9 +130,11 @@ const BrowseRequests = () => {
         contactPhone: selectedRequest.contactPhone || res?.ngoContactPhone || ''
       });
 
-      toast.success('🎉 Donation submitted! Delivery details sent to your email.');
-      handleCloseModal();
-      fetchNgoRequests();
+      toast.success('Donation submitted! Delivery instructions displayed below.');
+      setSelectedRequest(null);
+      setItemName('');
+      setQuantity('');
+      fetchData();
     } catch (error) {
       toast.error(error?.response?.data?.message || 'Failed to submit donation');
     } finally {
