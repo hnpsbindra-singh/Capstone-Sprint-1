@@ -55,7 +55,7 @@ const ManageVictims = () => {
     fetchUsers();
   }, []);
 
-  const isUserBlocked = (u) => Boolean(u.isBlocked || u.isBlockedFromReporting);
+  const isUserBlocked = (u) => Boolean(u && (u.isBlocked || u.isBlockedFromReporting));
 
   const isSelf = (targetUser) => {
     if (!targetUser || !currentAuthUser) return false;
@@ -649,8 +649,8 @@ const ManageVictims = () => {
         title={isUserBlocked(selectedUser) ? `Unblock ${selectedUser?.role || 'User'}` : `Block ${selectedUser?.role || 'User'}`}
         message={
           isUserBlocked(selectedUser)
-            ? `Are you sure you want to UNBLOCK "${selectedUser?.name}" (${selectedUser?.username})? Their account permissions and access will be immediately restored.`
-            : `Are you sure you want to BLOCK ${selectedUser?.role} "${selectedUser?.name}" (${selectedUser?.username})? They will be suspended from accessing ResQFlow services and logging in.`
+            ? `Are you sure you want to UNBLOCK "${selectedUser?.name || 'this user'}" (${selectedUser?.username || ''})? Their account permissions and access will be immediately restored.`
+            : `Are you sure you want to BLOCK ${selectedUser?.role || 'user'} "${selectedUser?.name || 'this user'}" (${selectedUser?.username || ''})? They will be suspended from accessing ResQFlow services and logging in.`
         }
         confirmLabel={
           processing
