@@ -326,7 +326,7 @@ const HeatmapView = ({ data = [], role = null, onRequestFromZone = null, onDonat
                           <button
                             type="button"
                             className="btn btn-primary btn-sm"
-                            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px', width: '100%', padding: '6px 10px', fontSize: '0.8rem', fontWeight: 700, background: 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)' }}
+                            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px', width: '100%', padding: '6px 10px', fontSize: '0.8rem', fontWeight: 700 }}
                             onClick={() => onDonateInZone(point)}
                           >
                             <MdVolunteerActivism style={{ fontSize: '1.1rem' }} /> Find NGOs & Donate Here

@@ -17,6 +17,9 @@
     "workbox-window": "^7.4.1"
   },
   "dependencies": {
+    "@capacitor/cli": "^8.5.3",
+    "@capacitor/core": "^8.5.3",
+    "@capacitor/ios": "^8.5.3",
     "axios": "^1.19.0",
     "jwt-decode": "^4.0.0",
     "leaflet": "^1.9.4",

@@ -1092,9 +1092,11 @@ const ManageVictims = () => {
             style={{
               backgroundColor: '#ffffff',
               borderRadius: '16px',
-              padding: '2rem',
+              padding: 'clamp(1.25rem, 4vw, 2rem)',
               maxWidth: '480px',
               width: '100%',
+              maxHeight: '90vh',
+              overflowY: 'auto',
               boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
               border: '1px solid #e2e8f0'
             }}

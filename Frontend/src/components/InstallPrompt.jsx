@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { MdDownload, MdClose, MdPhoneAndroid } from "react-icons/md";
 
 const InstallPrompt = () => {
@@ -48,35 +48,33 @@ const InstallPrompt = () => {
 
   const base = {
     position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 9999,
-    background: "rgba(2, 52, 92, 0.97)",
-    backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)",
-    borderTop: "1px solid rgba(14, 165, 233, 0.3)",
+    background: "#09090b",
+    borderTop: "1px solid rgba(255, 255, 255, 0.12)",
     padding: "14px 20px",
     paddingBottom: "max(14px, env(safe-area-inset-bottom))",
-    boxShadow: "0 -8px 32px rgba(2, 132, 199, 0.25)",
-    animation: "slideUpBanner 0.4s cubic-bezier(0.16, 1, 0.3, 1)",
+    boxShadow: "0 -8px 24px rgba(0, 0, 0, 0.25)",
+    animation: "slideUpBanner 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
   };
 
   const iconWrap = {
-    width: "48px", height: "48px", borderRadius: "12px", flexShrink: 0,
-    background: "linear-gradient(135deg, #0284c7 0%, #0369a1 100%)",
+    width: "44px", height: "44px", borderRadius: "10px", flexShrink: 0,
+    background: "#0284c7",
     display: "flex", alignItems: "center", justifyContent: "center",
-    boxShadow: "0 4px 12px rgba(2, 132, 199, 0.4)",
   };
 
-  const titleS = { color: "#f0f9ff", fontSize: "15px", fontWeight: 700, lineHeight: 1.3 };
-  const subS   = { color: "#94a3b8", fontSize: "12px", marginTop: "2px" };
+  const titleS = { color: "#ffffff", fontSize: "14px", fontWeight: 700, lineHeight: 1.3 };
+  const subS   = { color: "#a1a1aa", fontSize: "12px", marginTop: "2px" };
   const btnS   = {
-    background: "linear-gradient(135deg, #0284c7 0%, #0369a1 100%)",
-    color: "#fff", border: "none", borderRadius: "10px", padding: "10px 18px",
-    fontSize: "14px", fontWeight: 700, cursor: "pointer",
+    background: "#0284c7",
+    color: "#ffffff", border: "1px solid #0369a1", borderRadius: "8px", padding: "8px 16px",
+    fontSize: "13px", fontWeight: 700, cursor: "pointer",
     display: "flex", alignItems: "center", gap: "6px", flexShrink: 0,
-    whiteSpace: "nowrap", boxShadow: "0 4px 12px rgba(2, 132, 199, 0.4)",
+    whiteSpace: "nowrap", transition: "all 140ms ease"
   };
   const xBtn = {
-    background: "transparent", color: "#64748b", border: "none",
+    background: "transparent", color: "#a1a1aa", border: "none",
     padding: "8px", cursor: "pointer", display: "flex", alignItems: "center",
-    borderRadius: "8px", flexShrink: 0,
+    borderRadius: "6px", flexShrink: 0,
   };
 
   return (

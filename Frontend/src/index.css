@@ -326,6 +326,12 @@ a:hover {
   font-size: 0.875rem;
   transition: all var(--transition-fast);
   outline: none;
+  box-sizing: border-box;
+}
+
+.form-input,
+.form-select {
+  min-height: 42px;
 }
 
 .form-input:focus,
@@ -367,6 +373,8 @@ a:hover {
   justify-content: center;
   gap: 0.5rem;
   padding: 0.625rem 1.25rem;
+  min-height: 42px;
+  box-sizing: border-box;
   border-radius: var(--radius-md);
   font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 0.875rem;
@@ -434,6 +442,8 @@ a:hover {
 
 .btn-sm {
   padding: 0.375rem 0.75rem;
+  min-height: 34px;
+  box-sizing: border-box;
   font-size: 0.8125rem;
   border-radius: var(--radius-sm);
 }
@@ -1526,6 +1536,8 @@ a:hover {
 
 .search-box-input {
   width: 100%;
+  min-height: 42px;
+  box-sizing: border-box;
   padding: 0.6rem 0.875rem 0.6rem 2.25rem;
   background: #ffffff;
   border: 1px solid var(--border-subtle);
@@ -1548,6 +1560,7 @@ a:hover {
   transform: translateY(-50%);
   color: var(--text-muted);
   font-size: 1rem;
+  pointer-events: none;
 }
 
 .filter-pills-container {
@@ -3916,16 +3929,16 @@ input, textarea, select {
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
 
-/* Dark mode media query – keep consistent with system theme */
-@media (prefers-color-scheme: dark) {
-  /* ResQFlow already has a light theme – keep it, but soften pure whites */
-  body {
-    background-color: #e8eef5;
-  }
+/* Global Accessible Keyboard Focus Indicator (WCAG 2.1 AA) */
+:focus-visible {
+  outline: 2px solid #0284c7;
+  outline-offset: 2px;
 }
 
 /* Landscape phone adjustments */
@@ -4496,6 +4509,20 @@ input, textarea, select {
 
   .page-title {
     font-size: 1.25rem !important;
+  }
+
+  .role-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .otp-box {
+    width: 36px !important;
+    height: 44px !important;
+    font-size: 1.1rem !important;
+  }
+
+  .otp-input-group {
+    gap: 0.35rem !important;
   }
 }
 
@@ -5292,6 +5319,10 @@ input, textarea, select {
   .pagination-bar {
     gap: 0.25rem;
   }
+  .page-btn {
+    min-width: 36px;
+    min-height: 36px;
+  }
 }
 
 /* Hide desktop table on mobile, show cards */
@@ -5721,6 +5752,8 @@ pre, code {
   .donate-modal-inner {
     padding: 1.25rem !important;
     max-width: 100% !important;
+    max-height: 90vh !important;
+    overflow-y: auto !important;
     margin: 0.5rem;
     border-radius: 14px !important;
   }
@@ -5732,6 +5765,8 @@ pre, code {
   .delivery-modal-inner {
     padding: 1.25rem !important;
     max-width: 100% !important;
+    max-height: 90vh !important;
+    overflow-y: auto !important;
     margin: 0.5rem;
     border-radius: 14px !important;
     font-size: 0.875rem !important;
@@ -5817,5 +5852,21 @@ pre, code {
     align-items: flex-start !important;
     gap: 0.75rem !important;
   }
+
+  /* Create Report card padding on mobile */
+  .create-report-card {
+    padding: 1.125rem !important;
+  }
+
+  /* Create Report post-capture buttons stack on small mobile */
+  .create-report-post-actions {
+    grid-template-columns: 1fr !important;
+  }
 }
+
+/* Create Report Card base padding */
+.create-report-card {
+  padding: 2rem;
+}
+
 

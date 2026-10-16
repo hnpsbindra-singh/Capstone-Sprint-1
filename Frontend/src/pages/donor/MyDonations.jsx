@@ -427,7 +427,7 @@ const MyDonations = () => {
           <div
             className="delivery-modal-inner"
             onClick={e => e.stopPropagation()}
-            style={{ background: '#ffffff', borderRadius: 'var(--radius-xl)', padding: '2rem', width: '100%', maxWidth: '480px', boxShadow: '0 24px 64px rgba(15,23,42,0.25)', position: 'relative', animation: 'fadeInScale 0.2s ease' }}
+            style={{ background: '#ffffff', borderRadius: 'var(--radius-xl)', padding: '2rem', width: '100%', maxWidth: '480px', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 24px 64px rgba(15,23,42,0.25)', position: 'relative', animation: 'fadeInScale 0.2s ease' }}
           >
             <button
               onClick={() => !dispatchSubmitting && setDispatchModalDonation(null)}

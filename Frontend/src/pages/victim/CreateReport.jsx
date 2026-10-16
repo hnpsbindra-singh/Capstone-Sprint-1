@@ -423,7 +423,7 @@ const CreateReport = () => {
       {/* STEP 1: COMPLETE PROCESS EXPLANATION                          */}
       {/* ───────────────────────────────────────────────────────────── */}
       {step === 'process' && (
-        <div className="glass-card animate-fade-in-up" style={{ padding: '2.25rem' }}>
+        <div className="glass-card animate-fade-in-up create-report-card">
           
           {/* Header */}
           <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
@@ -549,7 +549,7 @@ const CreateReport = () => {
       {/* STEP 2: LIVE CAMERA VIEWFINDER & SUBMISSION                   */}
       {/* ───────────────────────────────────────────────────────────── */}
       {step === 'camera' && (
-        <div className="glass-card animate-fade-in-up" style={{ padding: '2rem' }}>
+        <div className="glass-card animate-fade-in-up create-report-card">
           
           {/* Header */}
           <div style={{ textAlign: 'center', marginBottom: '1.75rem' }}>
@@ -825,7 +825,7 @@ const CreateReport = () => {
 
               {/* Dedicated Post-Capture Action Bar (Rendered cleanly beneath preview) */}
               {previewUrl && (
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.65rem', marginTop: '0.75rem' }}>
+                <div className="create-report-post-actions" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 200px), 1fr))', gap: '0.65rem', marginTop: '0.75rem' }}>
                   <button 
                     type="button"
                     onClick={retakePhoto}

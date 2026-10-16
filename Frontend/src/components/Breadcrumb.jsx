@@ -14,6 +14,8 @@ const LABEL_MAP = {
   'my-requests':    'My Requests',
   'manage-donations':'Manage Donations',
   'flood-reports':  'Flood Reports',
+  'manage-victims': 'Manage Account',
+  'report-analysis':'Incident Analysis',
   'ngo-requests':   'NGO Requests',
   donations:        'All Donations',
   heatmap:          'Heatmap',

@@ -237,6 +237,27 @@ const AiScanningModal = ({ isOpen, previewUrl, coords, addressLabel }) => {
           border-radius: 9999px;
           transition: width 0.4s ease;
         }
+
+        @media (max-width: 480px) {
+          .sos-modal-overlay {
+            padding: 0.5rem;
+          }
+          .sos-modal-card {
+            max-height: 94vh;
+            border-radius: 14px;
+          }
+          .sos-image-viewport {
+            height: 200px;
+            min-height: 180px;
+          }
+          .sos-steps-list {
+            padding: 0.875rem 1rem;
+            gap: 0.625rem;
+          }
+          .sos-progress-container {
+            padding: 0 1rem 1rem 1rem;
+          }
+        }
       `}</style>
 
       <div className="sos-modal-card">

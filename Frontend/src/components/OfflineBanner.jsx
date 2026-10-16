@@ -91,19 +91,18 @@ const OfflineBanner = () => {
   return (
     <div
       style={{
-        background: !isOnline
-          ? 'linear-gradient(90deg, #9a3412 0%, #c2410c 100%)'
-          : 'linear-gradient(90deg, #1e3a8a 0%, #2563eb 100%)',
+        background: !isOnline ? '#9a3412' : '#0f172a',
+        borderBottom: !isOnline ? '1px solid #7c2d12' : '1px solid #1e293b',
         color: '#ffffff',
         padding: '0.625rem 1rem',
-        fontSize: '0.875rem',
+        fontSize: '0.85rem',
         fontWeight: 500,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
         flexWrap: 'wrap',
         gap: '0.75rem',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
         zIndex: 1050,
         position: 'relative'
       }}

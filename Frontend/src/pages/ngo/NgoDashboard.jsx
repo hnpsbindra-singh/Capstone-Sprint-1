@@ -100,7 +100,7 @@ const NgoDashboard = () => {
       </div>
 
       {/* Stats Section */}
-      <div className="grid-4 stagger" style={{ marginBottom: '2.5rem' }}>
+      <div className="grid-4 stagger" style={{ marginBottom: '2rem' }}>
         <StatsCard 
           icon={MdBusinessCenter} 
           label="Total Requests" 
@@ -128,7 +128,7 @@ const NgoDashboard = () => {
       </div>
 
       {/* Heatmap Section */}
-      <div className="glass-card" style={{ marginBottom: '2.5rem' }}>
+      <div className="glass-card" style={{ marginBottom: '2rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.25rem' }}>
           <MdMap style={{ fontSize: '1.5rem', color: 'var(--accent-blue)' }} />
           <h2 style={{ fontSize: '1.25rem', fontWeight: 700 }}>Disaster Risk Heatmap</h2>
