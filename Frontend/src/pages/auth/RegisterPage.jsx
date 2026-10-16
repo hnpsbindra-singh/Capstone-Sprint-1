@@ -39,18 +39,6 @@ const ROLES = [
       </svg>
     ),
   },
-  {
-    value: 'ADMIN',
-    label: 'Admin',
-    desc: 'System administration',
-    icon: (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <circle cx="12" cy="12" r="3" />
-        <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
-        <path d="M4.93 4.93a10 10 0 0 0 0 14.14" />
-      </svg>
-    ),
-  },
 ];
 
 const RegisterPage = () => {
@@ -62,7 +50,7 @@ const RegisterPage = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [role, setRole] = useState(
-    ['VICTIM', 'DONOR', 'NGO', 'ADMIN'].includes(initialRole) ? initialRole : 'VICTIM'
+    ['VICTIM', 'DONOR', 'NGO'].includes(initialRole) ? initialRole : 'VICTIM'
   );
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -112,7 +100,7 @@ const RegisterPage = () => {
       await register(trimmedName, trimmedUsername, password, role);
 
       toast.success('OTP sent to your email! Please verify your account.');
-      navigate(`/verify-otp?username=${encodeURIComponent(trimmedUsername)}`);
+      navigate(`/verify-otp?username=${encodeURIComponent(trimmedUsername)}&role=${encodeURIComponent(role)}`);
     } catch (err) {
       const errorMsg =
         err.response?.data?.message ||
@@ -159,6 +147,28 @@ const RegisterPage = () => {
                 </button>
               ))}
             </div>
+            {role === 'NGO' && (
+              <div
+                style={{
+                  marginTop: '0.75rem',
+                  padding: '10px 14px',
+                  background: 'rgba(2, 132, 199, 0.08)',
+                  borderRadius: '8px',
+                  border: '1px solid rgba(2, 132, 199, 0.25)',
+                  fontSize: '0.8rem',
+                  color: '#0369a1',
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: '8px',
+                  lineHeight: 1.45,
+                }}
+              >
+                <span style={{ fontSize: '1rem', flexShrink: 0 }}>🛡️</span>
+                <span>
+                  <strong>NGO Verification Policy:</strong> After email OTP verification, your organization account will undergo administrator review before platform access is granted.
+                </span>
+              </div>
+            )}
           </div>
 
           {/* Name */}

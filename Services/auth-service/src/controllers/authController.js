@@ -135,6 +135,25 @@ class AuthController {
       next(err);
     }
   }
+
+  async createAdmin(req, res, next) {
+    try {
+      const result = await authService.createAdmin(req.body);
+      res.status(201).json(result);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async setNgoApproval(req, res, next) {
+    try {
+      const { isApproved } = req.body;
+      const result = await authService.setNgoApprovalStatus(req.params.id, isApproved);
+      res.json(result);
+    } catch (err) {
+      next(err);
+    }
+  }
 }
 
 module.exports = new AuthController();

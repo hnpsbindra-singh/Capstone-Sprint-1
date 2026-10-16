@@ -76,10 +76,21 @@ const VerifyOtpPage = () => {
 
     setVerifying(true);
     try {
-      // Backend: POST /api/auth/verify-otp?username=&otp= → returns "Registration Successful"
       const response = await verifyOtp(username, otp);
-      const successMsg = typeof response === 'string' ? response : 'Account verified successfully!';
-      toast.success(successMsg);
+      const isPendingNgo =
+        response?.role === 'NGO' ||
+        response?.isApproved === false ||
+        (searchParams.get('role') || '').toUpperCase() === 'NGO';
+
+      if (isPendingNgo) {
+        toast.success(
+          'Email verified! Your NGO account is pending administrator approval before you can log in.',
+          { duration: 7000 }
+        );
+      } else {
+        const successMsg = typeof response === 'string' ? response : (response?.message || 'Account verified successfully!');
+        toast.success(successMsg);
+      }
       navigate('/login');
     } catch (err) {
       const errorMsg =

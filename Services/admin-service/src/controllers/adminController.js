@@ -123,6 +123,35 @@ class AdminController {
       res.status(status).json({ error: 'Could not delete flood report: ' + message });
     }
   }
+
+  async createAdmin(req, res, next) {
+    try {
+      const { name, username, password } = req.body;
+      if (!name || !username || !password) {
+        return res.status(400).json({ error: 'Name, email/username, and password are required' });
+      }
+      const result = await adminService.createAdmin({ name, username, password });
+      res.status(201).json(result);
+    } catch (err) {
+      console.error('[Admin Create Admin]', err.message);
+      const status = err.response?.status || err.statusCode || 500;
+      const message = err.response?.data?.error || err.response?.data?.message || err.message;
+      res.status(status).json({ error: 'Could not create administrator: ' + message });
+    }
+  }
+
+  async approveNgo(req, res, next) {
+    try {
+      const isApproved = req.body.isApproved !== undefined ? req.body.isApproved : true;
+      const result = await adminService.setNgoApprovalStatus(req.params.id, isApproved);
+      res.json(result);
+    } catch (err) {
+      console.error('[Admin Approve NGO]', err.message);
+      const status = err.response?.status || err.statusCode || 500;
+      const message = err.response?.data?.error || err.response?.data?.message || err.message;
+      res.status(status).json({ error: 'Could not update NGO approval status: ' + message });
+    }
+  }
 }
 
 module.exports = new AdminController();

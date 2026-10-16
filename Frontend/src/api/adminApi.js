@@ -61,3 +61,13 @@ export const softDeleteReport = async (reportId) => {
   return response.data;
 };
 
+export const createAdmin = async ({ name, username, password }) => {
+  const response = await API.post('/api/admin/admins', { name, username, password });
+  return response.data;
+};
+
+export const setNgoApprovalStatus = async (ngoId, isApproved) => {
+  const response = await API.put(`/api/admin/ngos/${ngoId}/approve`, { isApproved });
+  return response.data;
+};
+

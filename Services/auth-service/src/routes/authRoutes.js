@@ -20,5 +20,7 @@ router.get('/internal/admins', (req, res, next) => authController.getAdmins(req,
 router.get('/internal/users', (req, res, next) => authController.getAllUsers(req, res, next));
 router.put('/internal/user/:id/block', (req, res, next) => authController.blockUser(req, res, next));
 router.put('/internal/user/:id/block-reporting', (req, res, next) => authController.blockReporting(req, res, next));
+router.post('/internal/admin/create-admin', (req, res, next) => authController.createAdmin(req, res, next));
+router.put('/internal/ngo/:id/approve', (req, res, next) => authController.setNgoApproval(req, res, next));
 
 module.exports = router;

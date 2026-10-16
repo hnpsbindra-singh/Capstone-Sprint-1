@@ -19,6 +19,9 @@ router.put('/victims/:id/block', auth(['ADMIN']), (req, res, next) => adminContr
 router.put('/donors/:id/block', auth(['ADMIN']), (req, res, next) => adminController.blockUser(req, res, next));
 router.put('/ngos/:id/block', auth(['ADMIN']), (req, res, next) => adminController.blockUser(req, res, next));
 router.put('/admins/:id/block', auth(['ADMIN']), (req, res, next) => adminController.blockUser(req, res, next));
+router.post('/admins', auth(['ADMIN']), (req, res, next) => adminController.createAdmin(req, res, next));
+router.put('/ngos/:id/approve', auth(['ADMIN']), (req, res, next) => adminController.approveNgo(req, res, next));
+router.put('/users/:id/approve', auth(['ADMIN']), (req, res, next) => adminController.approveNgo(req, res, next));
 router.delete('/reports/:id', auth(['ADMIN']), (req, res, next) => adminController.softDeleteReport(req, res, next));
 
 module.exports = router;

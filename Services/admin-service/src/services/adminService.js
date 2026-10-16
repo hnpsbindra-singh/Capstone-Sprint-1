@@ -51,6 +51,14 @@ class AdminService {
   async softDeleteReport(reportId) {
     return victimClient.softDeleteReport(reportId);
   }
+
+  async createAdmin(adminData) {
+    return authClient.createAdmin(adminData);
+  }
+
+  async setNgoApprovalStatus(ngoId, isApproved) {
+    return authClient.setNgoApprovalStatus(ngoId, isApproved);
+  }
 }
 
 module.exports = new AdminService();

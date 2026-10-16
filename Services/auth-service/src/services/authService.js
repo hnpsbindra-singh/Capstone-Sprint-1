@@ -20,6 +20,13 @@ class AuthService {
       throw err;
     }
 
+    const cleanRole = role.toUpperCase().trim();
+    if (cleanRole === 'ADMIN') {
+      const err = new Error('Administrator accounts cannot be registered publicly. They must be created by an existing administrator.');
+      err.statusCode = 403;
+      throw err;
+    }
+
     const cleanUsername = username.toLowerCase().trim();
     const exists = await User.exists({ username: cleanUsername });
     if (exists) {
@@ -30,7 +37,7 @@ class AuthService {
 
     const otp = generateOtp();
     const hashedPass = await bcrypt.hash(password, 10);
-    const pendingUser = { name, username: cleanUsername, password: hashedPass, role };
+    const pendingUser = { name, username: cleanUsername, password: hashedPass, role: cleanRole };
 
     // Store OTP and pending user in Redis with 5 min (300s) TTL
     await redis.set(`user: ${cleanUsername}`, otp, 'EX', 300);
@@ -86,7 +93,12 @@ class AuthService {
       throw err;
     }
 
-    const user = new User({ ...pendingUser, Isverified: true });
+    const isNgo = pendingUser.role === 'NGO';
+    const user = new User({
+      ...pendingUser,
+      Isverified: true,
+      isApproved: !isNgo, // NGOs require administrator approval
+    });
     await user.save();
 
     // Clean up Redis keys
@@ -95,7 +107,18 @@ class AuthService {
       redis.del(`userObject: ${cleanUsername}`),
     ]);
 
-    await emailService.sendWelcomeEmail(cleanUsername, pendingUser.name);
+    if (!isNgo) {
+      await emailService.sendWelcomeEmail(cleanUsername, pendingUser.name);
+    }
+
+    if (isNgo) {
+      return {
+        message: 'Registration successful! Your NGO account has been submitted for administrator approval. You will gain access once an admin approves your account.',
+        role: 'NGO',
+        isApproved: false,
+      };
+    }
+
     return 'Registration Successful';
   }
 
@@ -126,6 +149,12 @@ class AuthService {
 
     if (user.isBlocked) {
       const err = new Error('Your account has been suspended or blocked by the administrator.');
+      err.statusCode = 403;
+      throw err;
+    }
+
+    if (user.role === 'NGO' && user.isApproved === false) {
+      const err = new Error('Your NGO account is pending administrator approval. Please wait for an administrator to approve your account.');
       err.statusCode = 403;
       throw err;
     }
@@ -318,6 +347,96 @@ class AuthService {
    */
   async setVictimReportingBlock(id, isBlocked) {
     return this.setUserBlockStatus(id, isBlocked);
+  }
+
+  /**
+   * Inter-service: Directly create a verified administrator account
+   */
+  async createAdmin({ name, username, password }) {
+    if (!name || !username || !password) {
+      const err = new Error('Name, email/username, and password are required');
+      err.statusCode = 400;
+      throw err;
+    }
+
+    const cleanUsername = username.toLowerCase().trim();
+    const exists = await User.exists({ username: cleanUsername });
+    if (exists) {
+      const err = new Error('A user with this email or username already exists');
+      err.statusCode = 409;
+      throw err;
+    }
+
+    if (password.length < 8 || password.length > 25) {
+      const err = new Error('Password must be between 8 and 25 characters');
+      err.statusCode = 400;
+      throw err;
+    }
+
+    const hashedPass = await bcrypt.hash(password, 10);
+    const newAdmin = new User({
+      name: name.trim(),
+      username: cleanUsername,
+      password: hashedPass,
+      role: 'ADMIN',
+      Isverified: true,
+      isApproved: true,
+      isBlocked: false,
+    });
+    await newAdmin.save();
+
+    try {
+      await emailService.sendWelcomeEmail(cleanUsername, name);
+    } catch (e) {
+      console.warn('[AuthService] Welcome email notice for admin:', e.message);
+    }
+
+    const userObj = newAdmin.toObject();
+    delete userObj.password;
+
+    return {
+      message: `Administrator "${name}" successfully created.`,
+      user: userObj,
+    };
+  }
+
+  /**
+   * Inter-service: Approve or revoke approval for an NGO account
+   */
+  async setNgoApprovalStatus(id, isApproved) {
+    const shouldApprove = isApproved !== undefined ? Boolean(isApproved) : true;
+    const targetUser = await User.findById(id);
+    if (!targetUser) {
+      const err = new Error('User not found');
+      err.statusCode = 404;
+      throw err;
+    }
+
+    if (targetUser.role !== 'NGO') {
+      const err = new Error('Approval status can only be modified for NGO accounts');
+      err.statusCode = 400;
+      throw err;
+    }
+
+    const user = await User.findByIdAndUpdate(
+      id,
+      { isApproved: shouldApprove },
+      { new: true }
+    ).select('-password');
+
+    // If revoked, invalidate active token sessions in Redis
+    if (!shouldApprove && user.username) {
+      try {
+        await redis.del(`RT:${user.username}`);
+      } catch (e) {
+        console.warn('[AuthService] Redis RT deletion notice:', e.message);
+      }
+    }
+
+    return {
+      message: `NGO "${user.name}" has been ${shouldApprove ? 'APPROVED' : 'APPROVAL REVOKED'}.`,
+      user,
+    };
   }
 }
 

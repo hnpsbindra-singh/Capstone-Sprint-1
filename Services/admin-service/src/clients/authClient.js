@@ -46,6 +46,22 @@ class AuthClient {
   async setVictimBlockStatus(victimId, isBlocked) {
     return this.setUserBlockStatus(victimId, isBlocked);
   }
+
+  async createAdmin({ name, username, password }) {
+    const res = await this.client.post('/api/auth/internal/admin/create-admin', {
+      name,
+      username,
+      password,
+    });
+    return res.data;
+  }
+
+  async setNgoApprovalStatus(ngoId, isApproved) {
+    const res = await this.client.put(`/api/auth/internal/ngo/${ngoId}/approve`, {
+      isApproved,
+    });
+    return res.data;
+  }
 }
 
 module.exports = new AuthClient();
