@@ -8,7 +8,6 @@ import {
   MdRefresh,
   MdLogout,
   MdPhone,
-  MdEmail,
   MdInfoOutline
 } from 'react-icons/md';
 import { useAuth } from '../context/AuthContext';
@@ -277,9 +276,6 @@ const NgoPendingApprovalGuard = () => {
         <div style={{ marginTop: '2rem', paddingTop: '1.25rem', borderTop: '1px solid #f1f5f9', fontSize: '0.78rem', color: '#94a3b8', display: 'flex', justifyContent: 'center', gap: '1.5rem', flexWrap: 'wrap' }}>
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
             <MdPhone size={14} /> National Helpline: 112
-          </span>
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-            <MdEmail size={14} /> Support: admin@resqflow.org
           </span>
         </div>
       </div>
