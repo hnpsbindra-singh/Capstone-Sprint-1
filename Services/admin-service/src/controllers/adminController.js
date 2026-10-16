@@ -51,17 +51,65 @@ class AdminController {
     }
   }
 
-  async blockVictim(req, res, next) {
+  async getDonors(req, res, next) {
+    try {
+      const donors = await adminService.getDonors();
+      res.json(donors);
+    } catch (err) {
+      console.error('[Admin Donors]', err.message);
+      res.status(500).json({ error: 'Could not fetch donors: ' + err.message });
+    }
+  }
+
+  async getNgos(req, res, next) {
+    try {
+      const ngos = await adminService.getNgos();
+      res.json(ngos);
+    } catch (err) {
+      console.error('[Admin NGOs]', err.message);
+      res.status(500).json({ error: 'Could not fetch NGOs: ' + err.message });
+    }
+  }
+
+  async getAdmins(req, res, next) {
+    try {
+      const admins = await adminService.getAdmins();
+      res.json(admins);
+    } catch (err) {
+      console.error('[Admin Admins]', err.message);
+      res.status(500).json({ error: 'Could not fetch admins: ' + err.message });
+    }
+  }
+
+  async getAllUsers(req, res, next) {
+    try {
+      const { role } = req.query;
+      const users = await adminService.getAllUsers(role);
+      res.json(users);
+    } catch (err) {
+      console.error('[Admin Users]', err.message);
+      res.status(500).json({ error: 'Could not fetch users: ' + err.message });
+    }
+  }
+
+  async blockUser(req, res, next) {
     try {
       const isBlocked = req.body.isBlocked !== undefined ? req.body.isBlocked : true;
-      const result = await adminService.blockVictim(req.params.id, isBlocked);
+      if (req.user?.userId === req.params.id && isBlocked) {
+        return res.status(400).json({ error: 'You cannot block your own admin account.' });
+      }
+      const result = await adminService.blockUser(req.params.id, isBlocked);
       res.json(result);
     } catch (err) {
-      console.error('[Admin Block Victim]', err.message);
+      console.error('[Admin Block User]', err.message);
       const status = err.response?.status || 500;
       const message = err.response?.data?.error || err.message;
-      res.status(status).json({ error: 'Could not update victim block status: ' + message });
+      res.status(status).json({ error: 'Could not update user block status: ' + message });
     }
+  }
+
+  async blockVictim(req, res, next) {
+    return this.blockUser(req, res, next);
   }
 
   async softDeleteReport(req, res, next) {

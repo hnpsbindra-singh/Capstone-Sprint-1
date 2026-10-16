@@ -124,6 +124,12 @@ class AuthService {
       throw err;
     }
 
+    if (user.isBlocked) {
+      const err = new Error('Your account has been suspended or blocked by the administrator.');
+      err.statusCode = 403;
+      throw err;
+    }
+
     const passwordValid = await bcrypt.compare(password, user.password);
     if (!passwordValid) {
       const err = new Error('Invalid credentials');
@@ -239,26 +245,79 @@ class AuthService {
   }
 
   /**
-   * Inter-service: Block or unblock a victim from flood reporting
+   * Inter-service lookup: Get all donors without password
    */
-  async setVictimReportingBlock(id, isBlocked) {
-    const shouldBlock = isBlocked !== undefined ? Boolean(isBlocked) : true;
-    const user = await User.findByIdAndUpdate(
-      id,
-      { isBlockedFromReporting: shouldBlock },
-      { new: true }
-    ).select('-password');
+  async getDonors() {
+    return User.find({ role: 'DONOR' }).select('-password');
+  }
 
-    if (!user) {
+  /**
+   * Inter-service lookup: Get all NGOs without password
+   */
+  async getNgos() {
+    return User.find({ role: 'NGO' }).select('-password');
+  }
+
+  /**
+   * Inter-service lookup: Get all Admins without password
+   */
+  async getAdmins() {
+    return User.find({ role: 'ADMIN' }).select('-password');
+  }
+
+  /**
+   * Inter-service lookup: Get users optionally filtered by role
+   */
+  async getAllUsers(roleFilter) {
+    const query = roleFilter ? { role: roleFilter.toUpperCase() } : {};
+    return User.find(query).select('-password');
+  }
+
+  /**
+   * Inter-service: Block or unblock any user (Donor, NGO, Admin, Victim)
+   */
+  async setUserBlockStatus(id, isBlocked) {
+    const shouldBlock = isBlocked !== undefined ? Boolean(isBlocked) : true;
+    
+    const targetUser = await User.findById(id);
+    if (!targetUser) {
       const err = new Error('User not found');
       err.statusCode = 404;
       throw err;
     }
 
+    const updateData = { isBlocked: shouldBlock };
+    // If user is a victim, keep isBlockedFromReporting in sync
+    if (targetUser.role === 'VICTIM') {
+      updateData.isBlockedFromReporting = shouldBlock;
+    }
+
+    const user = await User.findByIdAndUpdate(
+      id,
+      updateData,
+      { new: true }
+    ).select('-password');
+
+    // Invalidate refresh token in Redis on block so active sessions are terminated
+    if (shouldBlock && user.username) {
+      try {
+        await redis.del(`RT:${user.username}`);
+      } catch (e) {
+        console.warn('[AuthService] Redis RT deletion notice:', e.message);
+      }
+    }
+
     return {
-      message: `User reporting status successfully updated to: ${shouldBlock ? 'BLOCKED' : 'UNBLOCKED'}`,
+      message: `User ${user.role} (${user.name}) successfully ${shouldBlock ? 'BLOCKED' : 'UNBLOCKED'}`,
       user,
     };
+  }
+
+  /**
+   * Inter-service: Block or unblock a victim from flood reporting (legacy compatibility)
+   */
+  async setVictimReportingBlock(id, isBlocked) {
+    return this.setUserBlockStatus(id, isBlocked);
   }
 }
 

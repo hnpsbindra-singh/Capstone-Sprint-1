@@ -79,10 +79,57 @@ class AuthController {
     }
   }
 
+  async getDonors(req, res, next) {
+    try {
+      const donors = await authService.getDonors();
+      res.json(donors);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async getNgos(req, res, next) {
+    try {
+      const ngos = await authService.getNgos();
+      res.json(ngos);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async getAdmins(req, res, next) {
+    try {
+      const admins = await authService.getAdmins();
+      res.json(admins);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async getAllUsers(req, res, next) {
+    try {
+      const { role } = req.query;
+      const users = await authService.getAllUsers(role);
+      res.json(users);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async blockUser(req, res, next) {
+    try {
+      const { isBlocked } = req.body;
+      const result = await authService.setUserBlockStatus(req.params.id, isBlocked);
+      res.json(result);
+    } catch (err) {
+      next(err);
+    }
+  }
+
   async blockReporting(req, res, next) {
     try {
       const { isBlocked } = req.body;
-      const result = await authService.setVictimReportingBlock(req.params.id, isBlocked);
+      const result = await authService.setUserBlockStatus(req.params.id, isBlocked);
       res.json(result);
     } catch (err) {
       next(err);

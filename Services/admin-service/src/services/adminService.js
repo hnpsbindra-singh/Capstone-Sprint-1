@@ -24,8 +24,28 @@ class AdminService {
     return authClient.getVictims();
   }
 
+  async getDonors() {
+    return authClient.getDonors();
+  }
+
+  async getNgos() {
+    return authClient.getNgos();
+  }
+
+  async getAdmins() {
+    return authClient.getAdmins();
+  }
+
+  async getAllUsers(role) {
+    return authClient.getAllUsers(role);
+  }
+
+  async blockUser(userId, isBlocked) {
+    return authClient.setUserBlockStatus(userId, isBlocked);
+  }
+
   async blockVictim(victimId, isBlocked) {
-    return authClient.setVictimBlockStatus(victimId, isBlocked);
+    return authClient.setUserBlockStatus(victimId, isBlocked);
   }
 
   async softDeleteReport(reportId) {

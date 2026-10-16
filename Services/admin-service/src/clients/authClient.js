@@ -14,11 +14,37 @@ class AuthClient {
     return res.data;
   }
 
-  async setVictimBlockStatus(victimId, isBlocked) {
-    const res = await this.client.put(`/api/auth/internal/user/${victimId}/block-reporting`, {
+  async getDonors() {
+    const res = await this.client.get('/api/auth/internal/donors');
+    return res.data;
+  }
+
+  async getNgos() {
+    const res = await this.client.get('/api/auth/internal/ngos');
+    return res.data;
+  }
+
+  async getAdmins() {
+    const res = await this.client.get('/api/auth/internal/admins');
+    return res.data;
+  }
+
+  async getAllUsers(role) {
+    const res = await this.client.get('/api/auth/internal/users', {
+      params: role ? { role } : {},
+    });
+    return res.data;
+  }
+
+  async setUserBlockStatus(userId, isBlocked) {
+    const res = await this.client.put(`/api/auth/internal/user/${userId}/block`, {
       isBlocked,
     });
     return res.data;
+  }
+
+  async setVictimBlockStatus(victimId, isBlocked) {
+    return this.setUserBlockStatus(victimId, isBlocked);
   }
 }
 

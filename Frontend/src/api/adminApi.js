@@ -25,9 +25,35 @@ export const getVictims = async () => {
   return response.data;
 };
 
-export const setVictimBlockStatus = async (victimId, isBlocked) => {
-  const response = await API.put(`/api/admin/victims/${victimId}/block`, { isBlocked });
+export const getDonors = async () => {
+  const response = await API.get('/api/admin/donors');
   return response.data;
+};
+
+export const getNgos = async () => {
+  const response = await API.get('/api/admin/ngos');
+  return response.data;
+};
+
+export const getAdmins = async () => {
+  const response = await API.get('/api/admin/admins');
+  return response.data;
+};
+
+export const getAllUsers = async (role) => {
+  const response = await API.get('/api/admin/users', {
+    params: role && role !== 'ALL' ? { role } : {},
+  });
+  return response.data;
+};
+
+export const setUserBlockStatus = async (userId, isBlocked) => {
+  const response = await API.put(`/api/admin/users/${userId}/block`, { isBlocked });
+  return response.data;
+};
+
+export const setVictimBlockStatus = async (victimId, isBlocked) => {
+  return setUserBlockStatus(victimId, isBlocked);
 };
 
 export const softDeleteReport = async (reportId) => {
