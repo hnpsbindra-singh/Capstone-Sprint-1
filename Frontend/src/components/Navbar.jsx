@@ -34,7 +34,7 @@ const getNavItems = (t) => ({
   ADMIN: [
     { label: t('dashboard') || 'Dashboard', path: '/admin' },
     { label: t('floodReports') || 'Flood Reports', path: '/admin/flood-reports' },
-    { label: t('manageVictims') || 'Manage Victims', path: '/admin/manage-victims' },
+    { label: t('manageAccounts') || t('manageVictims') || 'Manage Account', path: '/admin/manage-victims' },
     { label: t('ngoRequests') || 'NGO Requests', path: '/admin/ngo-requests' },
     { label: t('allDonations') || 'All Donations', path: '/admin/donations' },
     { label: t('heatmap') || 'Heatmap', path: '/admin/heatmap' }
@@ -142,6 +142,9 @@ const Navbar = () => {
           border-bottom: 1px solid #e4e4e7;
           box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
           font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+          padding-top: env(safe-area-inset-top, 0px);
+          padding-left: env(safe-area-inset-left, 0px);
+          padding-right: env(safe-area-inset-right, 0px);
         }
 
         .app-navbar-container {
@@ -409,6 +412,7 @@ const Navbar = () => {
           border-radius: 0 0 18px 18px;
           box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.25);
           padding: 1rem 1.15rem 1.5rem;
+          padding-top: max(1rem, calc(0.75rem + env(safe-area-inset-top, 0px)));
           display: flex;
           flex-direction: column;
           gap: 0.85rem;
