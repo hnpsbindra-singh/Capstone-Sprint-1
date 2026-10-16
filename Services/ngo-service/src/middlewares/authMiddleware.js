@@ -10,10 +10,16 @@ function authMiddleware(req, res, next) {
   const token = header.split(' ')[1];
   try {
     const decoded = jwt.verify(token, config.jwt.secret, { algorithms: ['HS256'] });
+
+    if (decoded.role === 'NGO' && decoded.isApproved === false) {
+      return res.status(403).json({ error: 'Your NGO account is pending administrator approval.' });
+    }
+
     req.user = {
       username: decoded.sub,
       role: decoded.role,
       userId: decoded.userId,
+      isApproved: decoded.isApproved !== false,
     };
     next();
   } catch (err) {

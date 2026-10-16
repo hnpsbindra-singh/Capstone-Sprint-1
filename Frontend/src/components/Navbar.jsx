@@ -93,8 +93,9 @@ const Navbar = () => {
   const initials = getInitials(username, rawRole);
   const logout = auth.logout || auth.handleLogout || (() => {});
 
+  const isUnapprovedNgo = rawRole === 'NGO' && auth.user?.isApproved === false;
   const navItemsMap = getNavItems(t);
-  const navLinks = navItemsMap[rawRole] || navItemsMap.VICTIM;
+  const navLinks = isUnapprovedNgo ? [] : (navItemsMap[rawRole] || navItemsMap.VICTIM);
 
   // Auto-close mobile drawer on route changes
   useEffect(() => {
@@ -576,6 +577,24 @@ const Navbar = () => {
             >
               {roleTheme.label}
             </span>
+            {isUnapprovedNgo && (
+              <span
+                style={{
+                  fontSize: '0.6875rem',
+                  fontWeight: 800,
+                  backgroundColor: 'rgba(245, 158, 11, 0.15)',
+                  color: '#b45309',
+                  border: '1px solid rgba(245, 158, 11, 0.35)',
+                  borderRadius: '12px',
+                  padding: '2px 8px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px'
+                }}
+              >
+                ⏳ Pending Approval
+              </span>
+            )}
           </Link>
 
           {/* Center Navigation Group (Desktop $\ge$ 960px) */}
@@ -739,6 +758,22 @@ const Navbar = () => {
 
             {/* Mobile Navigation Links */}
             <nav className="app-drawer-nav-list" aria-label="Mobile Navigation Links">
+              {isUnapprovedNgo && (
+                <div
+                  style={{
+                    padding: '12px 14px',
+                    borderRadius: '10px',
+                    backgroundColor: 'rgba(245, 158, 11, 0.12)',
+                    border: '1px solid rgba(245, 158, 11, 0.3)',
+                    color: '#92400e',
+                    fontSize: '0.8rem',
+                    lineHeight: 1.45,
+                    marginBottom: '0.5rem'
+                  }}
+                >
+                  ⏳ <strong>Approval In Review:</strong> Navigation is locked while your NGO account awaits administrator verification.
+                </div>
+              )}
               {navLinks.map((item) => (
                 <NavLink
                   key={item.path}

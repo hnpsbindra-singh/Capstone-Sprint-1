@@ -49,17 +49,30 @@ const LoginPage = () => {
       const token = await loginApi(trimmedUsername, password);
 
       let role = 'victim';
+      let isApproved = true;
       try {
         const decoded = jwtDecode(token);
         if (decoded && decoded.role) {
           role = decoded.role.toLowerCase();
+          if (decoded.role === 'NGO') {
+            isApproved = decoded.isApproved !== false;
+          }
         }
       } catch (decodeErr) {
         console.error('Error decoding JWT token:', decodeErr);
       }
 
       login(token);
-      toast.success('Login successful!');
+
+      if (role === 'ngo' && !isApproved) {
+        toast('Logged in! Your NGO account is pending administrator review.', {
+          icon: '⏳',
+          duration: 6000,
+        });
+      } else {
+        toast.success('Login successful!');
+      }
+
       navigate(`/${role}`);
     } catch (err) {
       const errorMsg =

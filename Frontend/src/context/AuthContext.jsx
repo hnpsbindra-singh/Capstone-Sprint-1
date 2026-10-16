@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
+import { getMe } from '../api/authApi';
 
 export const AuthContext = createContext(null);
 
@@ -88,6 +89,19 @@ export const AuthProvider = ({ children }) => {
     return user?.sub;
   };
 
+  const refreshUser = async () => {
+    try {
+      const data = await getMe();
+      if (data?.token) {
+        login(data.token, data.user?.id);
+        return data.user;
+      }
+    } catch (error) {
+      console.warn('Error refreshing user status:', error);
+    }
+    return null;
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -98,7 +112,8 @@ export const AuthProvider = ({ children }) => {
         isAuthenticated,
         getUserId,
         getRole,
-        getUsername
+        getUsername,
+        refreshUser
       }}
     >
       {children}

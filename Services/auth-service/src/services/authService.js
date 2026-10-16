@@ -153,12 +153,6 @@ class AuthService {
       throw err;
     }
 
-    if (user.role === 'NGO' && user.isApproved === false) {
-      const err = new Error('Your NGO account is pending administrator approval. Please wait for an administrator to approve your account.');
-      err.statusCode = 403;
-      throw err;
-    }
-
     const passwordValid = await bcrypt.compare(password, user.password);
     if (!passwordValid) {
       const err = new Error('Invalid credentials');
@@ -166,9 +160,16 @@ class AuthService {
       throw err;
     }
 
-    // Spring Boot JwtUtils claim format
+    const isApproved = user.isApproved !== false;
+
+    // Spring Boot JwtUtils claim format with approval status
     const token = jwt.sign(
-      { role: user.role, userId: user._id.toString() },
+      {
+        role: user.role,
+        userId: user._id.toString(),
+        isApproved,
+        name: user.name,
+      },
       config.jwt.secret,
       { subject: user.username, algorithm: 'HS256', expiresIn: config.jwt.expiresIn }
     );
@@ -436,6 +437,51 @@ class AuthService {
     return {
       message: `NGO "${user.name}" has been ${shouldApprove ? 'APPROVED' : 'APPROVAL REVOKED'}.`,
       user,
+    };
+  }
+
+  /**
+   * Get current authenticated user profile and fresh token with updated approval status
+   */
+  async getMe(userId, username) {
+    let user;
+    if (userId) {
+      user = await User.findById(userId).select('-password');
+    }
+    if (!user && username) {
+      user = await User.findOne({ username: username.toLowerCase().trim() }).select('-password');
+    }
+    if (!user) {
+      const err = new Error('User not found');
+      err.statusCode = 404;
+      throw err;
+    }
+
+    const isApproved = user.isApproved !== false;
+
+    // Issue refreshed token with latest status
+    const token = jwt.sign(
+      {
+        role: user.role,
+        userId: user._id.toString(),
+        isApproved,
+        name: user.name,
+      },
+      config.jwt.secret,
+      { subject: user.username, algorithm: 'HS256', expiresIn: config.jwt.expiresIn }
+    );
+
+    return {
+      user: {
+        id: user._id,
+        name: user.name,
+        username: user.username,
+        role: user.role,
+        isApproved,
+        isBlocked: Boolean(user.isBlocked),
+        isVerified: Boolean(user.Isverified),
+      },
+      token,
     };
   }
 }

@@ -154,6 +154,15 @@ class AuthController {
       next(err);
     }
   }
+
+  async getMe(req, res, next) {
+    try {
+      const result = await authService.getMe(req.user?.userId, req.user?.username);
+      res.json(result);
+    } catch (err) {
+      next(err);
+    }
+  }
 }
 
 module.exports = new AuthController();

@@ -74,3 +74,12 @@ export const resetPassword = async (username, otp, newpassword) => {
   });
   return response.data;
 };
+
+/**
+ * Fetch current authenticated user profile and fresh token
+ * Backend: GET /api/auth/me
+ */
+export const getMe = async () => {
+  const response = await API.get('/api/auth/me');
+  return response.data;
+};
