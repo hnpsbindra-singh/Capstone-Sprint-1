@@ -100,21 +100,7 @@ const LandingPage = () => {
 
   return (
     <div className="rp-landing">
-      {/* ─── 1. TOP UTILITY HELPLINE STRIP ─── */}
-      <div className="rp-utility-strip">
-        <div className="rp-container rp-utility-inner">
-          <div className="rp-utility-helpline">
-            <span className="rp-utility-dot" />
-            <span>24/7 National Emergency Hotlines: Police & Rescue <strong>112</strong> • Ambulance <strong>108</strong> • Disaster <strong>1078</strong></span>
-          </div>
-          <div className="rp-utility-links">
-            <a href="tel:112" className="rp-helpline-tag">POLICE 112</a>
-            <a href="tel:108" className="rp-helpline-tag">AMBULANCE 108</a>
-          </div>
-        </div>
-      </div>
-
-      {/* ─── 2. CLEAN NAVBAR ─── */}
+      {/* ─── 1. CLEAN NAVBAR ─── */}
       <header className="rp-navbar">
         <div className="rp-container rp-nav-inner">
           <Link to="/" className="rp-brand">
