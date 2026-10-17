@@ -54,6 +54,7 @@ const ForgotPasswordPage = () => {
     } catch (err) {
       const errorMsg =
         err.response?.data?.message ||
+        err.response?.data?.error ||
         (typeof err.response?.data === 'string' ? err.response.data : null) ||
         err.message ||
         'Failed to send reset OTP. Please verify your email address.';
@@ -134,6 +135,7 @@ const ForgotPasswordPage = () => {
     } catch (err) {
       const errorMsg =
         err.response?.data?.message ||
+        err.response?.data?.error ||
         (typeof err.response?.data === 'string' ? err.response.data : null) ||
         err.message ||
         'Failed to reset password. Please check your OTP and try again.';
