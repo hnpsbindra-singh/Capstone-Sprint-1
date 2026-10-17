@@ -12,7 +12,8 @@ class AuthController {
 
   async verifyOtp(req, res, next) {
     try {
-      const { username, otp } = req.query;
+      const username = req.query?.username || req.body?.username;
+      const otp = req.query?.otp || req.query?.OTP || req.body?.otp || req.body?.OTP;
       const result = await authService.verifyOtp({ username, otp });
       res.json(result);
     } catch (err) {
@@ -30,9 +31,9 @@ class AuthController {
     }
   }
 
-  async sendResetOtp(req, res, next) {
+  async sendOtp(req, res, next) {
     try {
-      const { username } = req.query;
+      const username = req.query?.username || req.body?.username;
       const result = await authService.sendResetOtp(username);
       res.json(result);
     } catch (err) {
@@ -40,9 +41,15 @@ class AuthController {
     }
   }
 
+  async sendResetOtp(req, res, next) {
+    return this.sendOtp(req, res, next);
+  }
+
   async verifyResetOtp(req, res, next) {
     try {
-      const { username, OTP: otp, newpassword } = req.body;
+      const username = req.body?.username || req.query?.username;
+      const otp = req.body?.OTP || req.body?.otp || req.query?.OTP || req.query?.otp;
+      const newpassword = req.body?.newpassword || req.body?.newPassword || req.query?.newpassword || req.query?.newPassword;
       const result = await authService.verifyResetOtp({ username, otp, newpassword });
       res.json(result);
     } catch (err) {

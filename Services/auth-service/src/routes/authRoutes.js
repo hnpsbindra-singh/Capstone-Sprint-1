@@ -9,7 +9,9 @@ router.post('/register', (req, res, next) => authController.register(req, res, n
 router.post('/verify-otp', (req, res, next) => authController.verifyOtp(req, res, next));
 router.post('/login', (req, res, next) => authController.login(req, res, next));
 router.post('/send-otp', (req, res, next) => authController.sendOtp(req, res, next));
+router.post('/send-reset-otp', (req, res, next) => authController.sendOtp(req, res, next));
 router.put('/verify-reset-otp', (req, res, next) => authController.verifyResetOtp(req, res, next));
+router.post('/verify-reset-otp', (req, res, next) => authController.verifyResetOtp(req, res, next));
 router.get('/me', authMiddleware, (req, res, next) => authController.getMe(req, res, next));
 
 // Inter-service internal endpoints (Feign equivalent)

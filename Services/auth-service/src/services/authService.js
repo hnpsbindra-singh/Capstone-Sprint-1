@@ -71,7 +71,7 @@ class AuthService {
       throw err;
     }
 
-    if (storedOtp !== otp) {
+    if (String(storedOtp).trim() !== String(otp).trim()) {
       const err = new Error('Invalid OTP.');
       err.statusCode = 400;
       throw err;
@@ -182,7 +182,7 @@ class AuthService {
    */
   async sendResetOtp(username) {
     if (!username) {
-      const err = new Error('username query param required');
+      const err = new Error('Username is required');
       err.statusCode = 400;
       throw err;
     }
@@ -222,7 +222,7 @@ class AuthService {
       throw err;
     }
 
-    if (storedOtp !== otp) {
+    if (String(storedOtp).trim() !== String(otp).trim()) {
       const err = new Error('Invalid OTP.');
       err.statusCode = 400;
       throw err;
